@@ -23,7 +23,7 @@ import org.vertx.java.core.logging.Logger
 import org.vertx.java.core.eventbus.Message
 import org.vertx.java.core.json.JsonArray
 
-class BusModBase extends Verticle {
+trait BusModBase extends Verticle {
 
   var eb: EventBus = null
 
