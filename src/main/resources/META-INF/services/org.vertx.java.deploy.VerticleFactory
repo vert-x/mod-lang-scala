@@ -1,0 +1,2 @@
+org.vertx.java.deploy.impl.scala.ScalaVerticleFactory
+org.vertx.scala.deploy.impl.scala.ScalaVerticleFactory
