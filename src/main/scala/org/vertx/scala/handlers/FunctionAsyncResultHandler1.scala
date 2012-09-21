@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.deploy
+package org.vertx.scala.handlers
 
 import org.vertx.java.core.AsyncResult
 import org.vertx.java.core.AsyncResultHandler
 
-class FunctionAsyncResultHandler0(delegate: () => Unit) extends AsyncResultHandler[Void] {
+object FunctionAsyncResultHandler1 {
+  def apply[T](actual: (AsyncResult[T]) => Unit) =
+    new FunctionAsyncResultHandler1(actual)
+}
 
-  def handle(message: AsyncResult[Void]):Unit = {
-    delegate()
+class FunctionAsyncResultHandler1[T](delegate: (AsyncResult[T]) => Unit) extends AsyncResultHandler[T] {
+
+  def handle(message: AsyncResult[T]):Unit = {
+    delegate(message)
   }
 
 }

@@ -16,63 +16,51 @@
 
 package org.vertx.scala.core
 
-import org.vertx.scala.deploy.FunctionHandler0
-import org.vertx.scala.deploy.FunctionHandler1
+import org.vertx.java.core.{Vertx => JVertx}
+import scala.actors.Actor
+import org.vertx.scala.handlers.ActorHandler0
+import org.vertx.scala.handlers.FunctionHandler0
+import org.vertx.scala.handlers.FunctionHandler1
+import org.vertx.java.deploy.impl.VertxLocator
 
+object Vertx {
+  def apply(actual: JVertx) =
+    new Vertx(actual)
 
-class Vertx(internal: org.vertx.java.core.Vertx) {
+  def find() =
+    new Vertx(VertxLocator.vertx)
+}
 
-  val eventBus:EventBus = new EventBus(internal.eventBus())
+class Vertx(internal: JVertx) {
 
-  def cancelTimer(id: Long):Boolean = {
-    internal.cancelTimer(id)
-  }
+  val eventBus:EventBus = new EventBus(internal.eventBus)
 
-  def createHttpClient():HttpClient = {
-    new HttpClient(internal.createHttpClient())
-  }
+  def cancelTimer(id: Long):Boolean = internal.cancelTimer(id)
 
-  def createHttpServer():HttpServer = {
-    new HttpServer(internal.createHttpServer())
-  }
+  def createHttpClient():HttpClient = new HttpClient(internal.createHttpClient)
 
-  def createNetClient():NetClient = {
-    new NetClient(internal.createNetClient())
-  }
+  def createHttpServer():HttpServer = new HttpServer(internal.createHttpServer)
 
-  def createNetServer():NetServer = {
-    new NetServer(internal.createNetServer())
-  }
+  def createNetClient():NetClient = new NetClient(internal.createNetClient)
 
-  def createSockJSServer(httpServer: HttpServer):SockJSServer = {
-    new SockJSServer(internal.createSockJSServer(httpServer.internal()))
-  }
+  def createNetServer():NetServer = new NetServer(internal.createNetServer)
 
-  def fileSystem():FileSystem = {
-    new FileSystem(internal.fileSystem())
-  }
+  def createSockJSServer(httpServer: HttpServer):SockJSServer = new SockJSServer(internal.createSockJSServer(httpServer.actual))
 
-  def eventLoop():Boolean = {
-    internal.isEventLoop()
-  }
+  def fileSystem():FileSystem = new FileSystem(internal.fileSystem)
 
-  def worker():Boolean = {
-    internal.isWorker()
-  }
+  def eventLoop():Boolean = internal.isEventLoop
 
-  def runOnLoop(handler: () => Unit):Unit = {
-    internal.runOnLoop(new FunctionHandler0(handler))
-  }
-  def periodic(delay: Long, handler: (java.lang.Long) => Unit):Unit = {
-    internal.setPeriodic(delay, new FunctionHandler1(handler))
-  }
+  def worker():Boolean = internal.isWorker
 
-  def timer(delay: Long, handler: (java.lang.Long) => Unit):Unit = {
-    internal.setTimer(delay, new FunctionHandler1(handler))
-  }
+  def runOnLoop(handler: () => Unit):Unit = internal.runOnLoop(new FunctionHandler0(handler))
 
-  def sharedData():SharedData = {
-    new SharedData(internal.sharedData())
-  }
+  def runOnLoop(handler: () => Actor, async: Boolean):Unit = internal.runOnLoop(new ActorHandler0(handler))
+
+  def periodic(delay: Long, handler: (java.lang.Long) => Unit):Unit = internal.setPeriodic(delay, new FunctionHandler1(handler))
+
+  def timer(delay: Long, handler: (java.lang.Long) => Unit):Unit = internal.setTimer(delay, new FunctionHandler1(handler))
+
+  def sharedData():SharedData = new SharedData(internal.sharedData)
 
 }

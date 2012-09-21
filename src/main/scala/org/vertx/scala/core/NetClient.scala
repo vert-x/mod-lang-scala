@@ -16,6 +16,82 @@
 
 package org.vertx.scala.core
 
-class NetClient(internal: org.vertx.java.core.net.NetClient) {
+import collection.JavaConversions._
+import org.vertx.java.core.net.{NetClient => JNetClient}
+import org.vertx.java.core.net.{NetSocket => JNetSocket}
+import org.vertx.scala.handlers.FunctionHandler1
+
+class NetClient(internal: JNetClient) extends ClientConfigurer {
+
+  def connect(port: Int, host: String, handler: (JNetSocket) => Unit): Unit = {
+    internal.connect(port, host, FunctionHandler1(handler))
+  }
+
+  def connect(port: Int, handler: (JNetSocket) => Unit): Unit = {
+    internal.connect(port, FunctionHandler1(handler))
+  }
+
+  def exceptionHandler(handler: (Exception) => Unit): Unit = {
+    internal.exceptionHandler(FunctionHandler1(handler))
+  }
+
+  def close(): Unit = internal.close()
+
+  def bossThreads(): Int = internal.getBossThreads()
+
+  def connectTimeout(): Long = internal.getConnectTimeout()
+
+  def keyStorePassword(): String = internal.getKeyStorePassword()
+
+  def keyStorePath(): String = internal.getKeyStorePath()
+
+  def keyStorePassword(keyStorePassword: String): NetClient.this.type = {
+    internal.setKeyStorePassword(keyStorePassword)
+    this
+  }
+
+  def keyStorePath(keyStorePath: String): NetClient.this.type = {
+    internal.setKeyStorePath(keyStorePath)
+    this
+  }
+
+  def reconnectAttempts():Int = internal.getReconnectAttempts()
+
+  def reconnectInterval():Long = internal.getReconnectInterval()
+
+  def receiveBufferSize():Int = internal.getReceiveBufferSize()
+
+  def receiveBufferSize(receiveBufferSize: Int):NetClient.this.type = {
+    internal.setReceiveBufferSize(receiveBufferSize)
+    this
+  }
+
+  def sendBufferSize(): Int = internal.getSendBufferSize()
+
+  def sendBufferSize(sendBufferSize: Int): NetClient.this.type = {
+    internal.setSendBufferSize(sendBufferSize)
+    this
+  }
+
+  def trafficClass(): Int = internal.getTrafficClass()
+
+  def trafficClass(trafficClass: Int): NetClient.this.type = {
+    internal.setTrafficClass(trafficClass)
+    this
+  }
+
+  def trustStorePassword(): String = internal.getTrustStorePassword()
+
+  def trustStorePassword(password: String): NetClient.this.type = {
+    internal.setTrustStorePassword(password)
+    this
+  }
+
+  def trustStorePath(): String = internal.getTrustStorePath()
+
+  def trustStorePath(path: String): NetClient.this.type = {
+    internal.setTrustStorePath(path)
+    this
+  }
 
 }

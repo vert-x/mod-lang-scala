@@ -18,6 +18,7 @@ package org.vertx.scala.deploy.impl.scala
 
 import org.vertx.java.core.impl.VertxInternal
 import org.vertx.java.deploy.impl.VerticleManager
+import org.vertx.java.deploy.{Verticle => JVerticle}
 import org.vertx.java.deploy.VerticleFactory
 import org.vertx.java.deploy.impl.VertxLocator
 import org.vertx.scala.core.Vertx
@@ -38,35 +39,24 @@ class ScalaVerticleFactory extends VerticleFactory {
     manager = amanager
   }
 
-  def getLanguage(): String = { LANGUAGE }
+  def getLanguage(): String = LANGUAGE
 
-  def isFactoryFor(main: String): Boolean = {
-    main.startsWith(PREFIX) || main.endsWith(SUFFIX)
-  }
+  def isFactoryFor(main: String): Boolean = main.startsWith(PREFIX) || main.endsWith(SUFFIX)
 
   @throws(classOf[Exception])
-  def createVerticle(main: String, parent: ClassLoader): org.vertx.java.deploy.Verticle = {
+  def createVerticle(main: String, parent: ClassLoader): JVerticle = {
 
     if (main.endsWith(SUFFIX)) {
       throw new RuntimeException("scala scripts are not yet supported")
     }
 
-    var className: String = null
-    if (main.startsWith(PREFIX)) {
-      className = main.replaceFirst(PREFIX, "")
-    }
-    else {
-      className = main
-    }
-
+    val className = if (main.startsWith(PREFIX)) main.replaceFirst(PREFIX, "") else main
     val rawClass = Class.forName(className, true, parent)
     val verticle = rawClass.newInstance().asInstanceOf[Verticle]
 
     new ScalaVerticle(verticle)
   }
 
-  def reportException(t: Throwable): Unit = {
-    manager.getLogger().error("oops!", t);
-  }
+  def reportException(t: Throwable): Unit = manager.getLogger().error("oops!", t)
 
 }

@@ -16,122 +16,100 @@
 
 package org.vertx.scala.core
 
-import org.vertx.scala.deploy.FunctionHandler0
-import org.vertx.scala.deploy.FunctionHandler1
-import org.vertx.java.core.http.HttpServerRequest
-import org.vertx.java.core.http.ServerWebSocket
+import org.vertx.java.core.http.{HttpServer => VertxHttpServer}
+import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
+import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
+import org.vertx.scala.handlers.FunctionHandler0
+import org.vertx.scala.handlers.FunctionHandler1
+import org.vertx.java.core.Handler
 
-class HttpServer(internal: org.vertx.java.core.http.HttpServer) {
+class HttpServer(val actual: VertxHttpServer) extends SocketConfigurer {
 
-  def internal():org.vertx.java.core.http.HttpServer = {
-    internal
-  }
+  def close():Unit = actual.close
 
-  def close():Unit = {
-    internal.close()
-  }
+  def close(handler: () => Unit):Unit = actual.close(FunctionHandler0(handler))
 
-  def close(handler: () => Unit):Unit = {
-    internal.close(new FunctionHandler0(handler))
-  }
-
-  def listen(port: Int):HttpServer = {
-    internal.listen(port)
+  def listen(port: Int):HttpServer.this.type = {
+    actual.listen(port)
     this
   }
 
-  def listen(port: Int, address: String):HttpServer = {
-    internal.listen(port, address)
+  def listen(port: Int, address: String):HttpServer.this.type = {
+    actual.listen(port, address)
     this
   }
 
-  def requestHandler():Unit = {
-    (e: HttpServerRequest) => internal.requestHandler().handle(e)
-  }
+  def requestHandler():Handler[JHttpServerRequest] =
+    actual.requestHandler
 
-  def requestHandler(handler: (HttpServerRequest) => Unit):HttpServer = {
-    internal.requestHandler(new FunctionHandler1(handler))
+  def requestHandler(handler: (JHttpServerRequest) => Unit):HttpServer.this.type = {
+    actual.requestHandler(FunctionHandler1(handler))
     this
   }
 
-  def websocketHandler():Unit = {
-    (s: ServerWebSocket) => internal.websocketHandler().handle(s)
-  }
+  def websocketHandler():Handler[JServerWebSocket] =
+    actual.websocketHandler
 
-  def websocketHandler(handler: (ServerWebSocket) => Unit):HttpServer = {
-    internal.websocketHandler(new FunctionHandler1(handler))
+  def websocketHandler(handler: (JServerWebSocket) => Unit):HttpServer.this.type = {
+    actual.websocketHandler(FunctionHandler1(handler))
     this
   }
 
-  def acceptBacklog():java.lang.Integer = {
-    internal.getAcceptBacklog()
+  def acceptBacklog():Int = {
+    actual.getAcceptBacklog()
   }
 
-  def acceptBacklog(backlog: Int):HttpServer = {
-    internal.setAcceptBacklog(backlog)
+  def acceptBacklog(backlog: Int):HttpServer.this.type = {
+    actual.setAcceptBacklog(backlog)
     this
   }
 
-  def keyStorePassword():String = {
-    internal.getKeyStorePassword()
-  }
+  def keyStorePassword():String = actual.getKeyStorePassword
 
-  def keyStorePassword(keyStorePassword: String):HttpServer = {
-    internal.setKeyStorePassword(keyStorePassword)
+  def keyStorePassword(keyStorePassword: String):HttpServer.this.type = {
+    actual.setKeyStorePassword(keyStorePassword)
     this
   }
 
-  def keyStorePath():String = {
-    internal.getKeyStorePath()
-  }
+  def keyStorePath():String = actual.getKeyStorePath
 
-  def keyStorePath(keyStorePath: String):HttpServer = {
-    internal.setKeyStorePath(keyStorePath)
+  def keyStorePath(keyStorePath: String):HttpServer.this.type = {
+    actual.setKeyStorePath(keyStorePath)
     this
   }
 
-  def receiveBufferSize():java.lang.Integer = {
-    internal.getReceiveBufferSize()
-  }
+  def receiveBufferSize():Int = actual.getReceiveBufferSize
 
-  def receiveBufferSize(receiveBufferSize: Int):HttpServer = {
-    internal.setReceiveBufferSize(receiveBufferSize)
+  def receiveBufferSize(receiveBufferSize: Int):HttpServer.this.type = {
+    actual.setReceiveBufferSize(receiveBufferSize)
     this
   }
 
-  def sendBufferSize():java.lang.Integer = {
-    internal.getSendBufferSize()
-  }
+  def sendBufferSize():Int = actual.getSendBufferSize
 
-  def sendBufferSize(sendBufferSize: Int):HttpServer = {
-    internal.setSendBufferSize(sendBufferSize)
+  def sendBufferSize(sendBufferSize: Int):HttpServer.this.type = {
+    actual.setSendBufferSize(sendBufferSize)
     this
   }
 
-  def trafficClass():java.lang.Integer = {
-    internal.getTrafficClass()
-  }
+  def trafficClass():Int = actual.getTrafficClass
 
-  def trafficClass(trafficClass: Int):HttpServer = {
-    internal.setTrafficClass(trafficClass)
+  def trafficClass(trafficClass: Int):HttpServer.this.type = {
+    actual.setTrafficClass(trafficClass)
     this
   }
 
-  def trustStorePassword():String = {
-    internal.getTrustStorePassword()
-  }
+  def trustStorePassword():String = actual.getTrustStorePassword
 
-  def trustStorePassword(password: String):HttpServer = {
-    internal.setTrustStorePassword(password)
+  def trustStorePassword(password: String):HttpServer.this.type = {
+    actual.setTrustStorePassword(password)
     this
   }
 
-  def trustStorePath():String = {
-    internal.getTrustStorePath()
-  }
+  def trustStorePath():String = actual.getTrustStorePath
 
-  def trustStorePath(path: String):HttpServer = {
-    internal.setTrustStorePath(path)
+  def trustStorePath(path: String):HttpServer.this.type = {
+    actual.setTrustStorePath(path)
     this
   }
 

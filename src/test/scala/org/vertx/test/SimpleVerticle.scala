@@ -2,6 +2,7 @@ package org.vertx.test
 
 import org.vertx.scala.deploy.Verticle
 import org.vertx.java.core.eventbus.Message
+import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
 
 class SimpleVerticle extends Verticle {
 
@@ -18,6 +19,11 @@ class SimpleVerticle extends Verticle {
 
     vertx.sharedData.map("one")
 
+    vertx
+      .createHttpServer
+      .websocketHandler({s: JServerWebSocket => })
+      .listen(9090)
+
     println("started after hello world!")
   }
 
@@ -26,5 +32,4 @@ class SimpleVerticle extends Verticle {
     super.stop
     println("stopped!")
   }
-
 }

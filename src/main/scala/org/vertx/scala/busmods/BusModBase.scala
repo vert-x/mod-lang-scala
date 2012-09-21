@@ -42,17 +42,18 @@ trait BusModBase extends Verticle {
     sendOK(message, null)
   }
 
-  def sendStatus(status: String, message: Message[JsonObject]):Unit = {
-    sendStatus(status, message, null)
-  }
+//  def sendStatus(status: String, message: Message[JsonObject]):Unit = {
+//    sendStatus(status, message, null)
+//  }
 
-  def sendStatus(status: String, message: Message[JsonObject], json: JsonObject):Unit = {
-    var reply: JsonObject = json
-    if (json == null) {
-      reply = new JsonObject()
-    }
-    reply.putString("status", status)
-    message.reply(reply)
+  implicit def sendStatus(status: String, message: Message[JsonObject], json: JsonObject = new JsonObject()):Unit = {
+//    var reply: JsonObject = json
+//    if (json == null) {
+//      reply = new JsonObject()
+//    }
+//    reply.putString("status", status)
+//    message.reply(reply)
+    message.reply(json)
   }
 
   def sendOK(message: Message[JsonObject], json: JsonObject):Unit = {
@@ -150,7 +151,7 @@ trait BusModBase extends Verticle {
     if (b == null) {
       throw new IllegalArgumentException(fieldName + " must be specified in config for busmod")
     }
-    return b
+    b
   }
 
   def getMandatoryStringConfig(fieldName: String):String = {
@@ -158,7 +159,7 @@ trait BusModBase extends Verticle {
     if (s == null) {
       throw new IllegalArgumentException(fieldName + " must be specified in config for busmod")
     }
-    return s
+    s
   }
 
   def getMandatoryIntConfig(fieldName: String):Int = {
@@ -166,7 +167,7 @@ trait BusModBase extends Verticle {
     if (i == null) {
       throw new IllegalArgumentException(fieldName + " must be specified in config for busmod")
     }
-    return i
+    i
   }
 
   def getMandatoryLongConfig(fieldName: String):Long = {
@@ -174,7 +175,7 @@ trait BusModBase extends Verticle {
     if (l == null) {
       throw new IllegalArgumentException(fieldName + " must be specified in config for busmod")
     }
-    return l
+    l
   }
 
 }

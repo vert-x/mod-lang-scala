@@ -17,6 +17,7 @@
 package org.vertx.scala.deploy
 
 import org.vertx.scala.core.Vertx
+import scala.reflect.BeanProperty
 
 trait Verticle {
 

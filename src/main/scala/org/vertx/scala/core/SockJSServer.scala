@@ -16,12 +16,14 @@
 
 package org.vertx.scala.core
 
-import org.vertx.java.core.json.JsonObject
-import org.vertx.scala.deploy.FunctionHandler1
-import org.vertx.java.core.sockjs.SockJSSocket
 import org.vertx.java.core.json.JsonArray
+import org.vertx.java.core.json.JsonObject
+import org.vertx.java.core.sockjs.SockJSSocket
+import org.vertx.java.core.sockjs.{SockJSServer => JSockJSServer}
 
-class SockJSServer(internal: org.vertx.java.core.sockjs.SockJSServer) {
+import org.vertx.scala.handlers.FunctionHandler1
+
+class SockJSServer(internal: JSockJSServer) {
 
   def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray): Unit = {
     internal.bridge(sjsConfig, inboundPermitted, outboundPermitted)

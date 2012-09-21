@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.deploy
+package org.vertx.scala.handlers
 
 import org.vertx.java.core.Handler
 
-class FunctionHandler1[T](delegate: (T) => Unit) extends Handler[T] {
+object FunctionHandler0 {
+  def apply(actual: () => Unit) =
+    new FunctionHandler0(actual)
+}
 
-  def handle(message: T) {
-    delegate(message)
+class FunctionHandler0(delegate: () => Unit) extends Handler[Void] {
+
+  def handle(message: Void) {
+    delegate
   }
 
   override def hashCode():Int = {
-    delegate.hashCode() * 37
+    delegate.hashCode() * 23
   }
 
   override def equals(obj: Any):Boolean = {

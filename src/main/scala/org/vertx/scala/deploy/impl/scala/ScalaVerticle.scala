@@ -16,30 +16,30 @@
 
 package org.vertx.scala.deploy.impl.scala
 
+import org.vertx.java.core.{Vertx => JVertx}
+import org.vertx.java.deploy.{Verticle => JVerticle}
+import org.vertx.java.deploy.{Container => JContainer}
+
 import org.vertx.scala.deploy.Container
 import org.vertx.scala.deploy.Verticle
 import org.vertx.scala.core.Vertx
 
-final class ScalaVerticle(delegate: => Verticle) extends org.vertx.java.deploy.Verticle {
+final class ScalaVerticle(delegate: => Verticle) extends JVerticle {
 
-  override def setContainer(container: org.vertx.java.deploy.Container) {
+  override def setContainer(container: JContainer) {
     super.setContainer(container)
-    delegate.container_=(new Container(container))
+    delegate.container = Container(container)
   }
 
-  override def setVertx(vertx: org.vertx.java.core.Vertx) {
+  override def setVertx(vertx: JVertx) {
     super.setVertx(vertx)
-    delegate.vertx_=(new Vertx(vertx))
+    delegate.vertx = Vertx(vertx)
   }
 
   @throws(classOf[Exception])
-  override def start(): Unit = {
-    delegate.start()
-  }
+  override def start(): Unit = delegate.start
 
   @throws(classOf[Exception])
-  override def stop(): Unit = {
-    delegate.stop()
-  }
+  override def stop(): Unit = delegate.stop
 
 }

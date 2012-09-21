@@ -18,98 +18,81 @@ package org.vertx.scala.deploy
 
 import java.io.File
 import java.net.URL
+import org.vertx.java.deploy.{Container => JContainer}
 import org.vertx.java.deploy.impl.Deployment
-import org.vertx.java.core.Handler
 import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.logging.Logger
+import org.vertx.scala.handlers.FunctionHandler0
+import org.vertx.scala.handlers.FunctionHandler1
+import org.vertx.java.deploy.impl.VertxLocator
 
-class Container(delegate: org.vertx.java.deploy.Container) {
+object Container {
 
-  def deployModule(name: String):Unit = {
-    delegate.deployModule(name);
-  }
+  def apply(actual: JContainer) =
+    new Container(actual)
 
-  def deployModule(name: String, instances: Int):Unit = {
-    delegate.deployModule(name, instances);
-  }
+  def find() =
+    new Container(VertxLocator.container)
+}
 
-  def deployModule(name: String, config: JsonObject):Unit = {
-    delegate.deployModule(name, config);
-  }
+class Container(internal: JContainer) {
 
-  def deployModule(name: String, config: JsonObject, instances: Int):Unit = {
-    delegate.deployModule(name, config, instances);
-  }
+  def deployModule(name: String):Unit = internal.deployModule(name)
 
-  def deployModule(name: String, config: JsonObject, instances: Int, handler: (String) => Unit):Unit = {
-    delegate.deployModule(name, config, instances, new FunctionHandler1(handler));
-  }
+  def deployModule(name: String, instances: Int):Unit = internal.deployModule(name, instances)
 
-  def deployVerticle(name: String):Unit = {
-    delegate.deployVerticle(name);
-  }
+  def deployModule(name: String, config: JsonObject):Unit = internal.deployModule(name, config)
 
-  def deployVerticle(name: String, instances: Int):Unit = {
-    delegate.deployVerticle(name, instances);
-  }
+  def deployModule(name: String, config: JsonObject, instances: Int):Unit = internal.deployModule(name, config, instances)
 
-  def deployVerticle(name: String, config: JsonObject):Unit = {
-    delegate.deployVerticle(name, config);
-  }
+  def deployModule(name: String, config: JsonObject, instances: Int, handler: (String) => Unit):Unit = 
+      internal.deployModule(name, config, instances, new FunctionHandler1(handler))
 
-  def deployVerticle(name: String, config: JsonObject, instances: Int):Unit = {
-    delegate.deployVerticle(name, config, instances);
-  }
+  def deployVerticle(name: String):Unit = internal.deployVerticle(name)
 
-  def deployVerticle(name: String, config: JsonObject, instances: Int, handler: (String) => Unit):Unit = {
-    delegate.deployVerticle(name, config, instances, new FunctionHandler1(handler));
-  }
+  def deployVerticle(name: String, instances: Int):Unit = internal.deployVerticle(name, instances)
 
-  def deployWorkerVerticle(name: String):Unit = {
-    delegate.deployWorkerVerticle(name);
-  }
+  def deployVerticle(name: String, config: JsonObject):Unit = internal.deployVerticle(name, config)
 
-  def deployWorkerVerticle(name: String, config: JsonObject):Unit = {
-    delegate.deployWorkerVerticle(name, config);
-  }
+  def deployVerticle(name: String, config: JsonObject, instances: Int):Unit =
+    internal.deployVerticle(name, config, instances)
 
-  def deployWorkerVerticle(name: String, instances: Int):Unit = {
-    delegate.deployWorkerVerticle(name, instances);
-  }
+  def deployVerticle(name: String, config: JsonObject, instances: Int, handler: (String) => Unit):Unit =
+    internal.deployVerticle(name, config, instances, new FunctionHandler1(handler))
 
-  def deployWorkerVerticle(name: String, config: JsonObject, instances: Int):Unit = {
-    delegate.deployWorkerVerticle(name, config, instances);
-  }
+  def deployWorkerVerticle(name: String):Unit = internal.deployWorkerVerticle(name)
 
-  def deployWorkerVerticle(name: String, config: JsonObject, instances: Int, handler: (String) => Unit):Unit = {
-    delegate.deployWorkerVerticle(name, config, instances, new FunctionHandler1(handler));
-  }
+  def deployWorkerVerticle(name: String, config: JsonObject):Unit =
+    internal.deployWorkerVerticle(name, config)
 
-  def config():JsonObject = delegate.getConfig()
+  def deployWorkerVerticle(name: String, instances: Int):Unit =
+    internal.deployWorkerVerticle(name, instances)
+
+  def deployWorkerVerticle(name: String, config: JsonObject, instances: Int):Unit =
+    internal.deployWorkerVerticle(name, config, instances)
+
+  def deployWorkerVerticle(name: String, config: JsonObject, instances: Int, handler: (String) => Unit):Unit =
+    internal.deployWorkerVerticle(name, config, instances, new FunctionHandler1(handler))
+
+  def config():JsonObject = internal.getConfig
 
   def env():java.util.Map[String, String] = { 
-    var map: java.util.Map[String, String] = delegate.getEnv()
-    map // TODO return a scala Map
+    var map: java.util.Map[String, String] = internal.getEnv
+    map // TODO return an immutable scala Map
   }
 
-  def exit():Unit = delegate.exit()
+  def exit():Unit = internal.exit
 
-  def logger():Logger = delegate.getLogger()
+  def logger():Logger = internal.getLogger
 
-  def undeployModule(deploymentID: String):Unit = {
-    delegate.undeployModule(deploymentID)
-  }
+  def undeployModule(deploymentID: String):Unit = internal.undeployModule(deploymentID)
 
-  def undeployModule(deploymentID: String, handler: () => Unit):Unit = {
-    delegate.undeployModule(deploymentID, new FunctionHandler0(handler))
-  }
+  def undeployModule(deploymentID: String, handler: () => Unit):Unit =
+    internal.undeployModule(deploymentID, new FunctionHandler0(handler))
 
-  def undeployVerticle(deploymentID: String):Unit = {
-    delegate.undeployVerticle(deploymentID)
-  }
+  def undeployVerticle(deploymentID: String):Unit = internal.undeployVerticle(deploymentID)
 
-  def undeployVerticle(deploymentID: String, handler: () => Unit):Unit = {
-    delegate.undeployVerticle(deploymentID, new FunctionHandler0(handler))
-  }
+  def undeployVerticle(deploymentID: String, handler: () => Unit):Unit =
+    internal.undeployVerticle(deploymentID, new FunctionHandler0(handler))
 
 }
