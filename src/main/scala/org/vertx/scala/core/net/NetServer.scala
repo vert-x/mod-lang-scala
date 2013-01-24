@@ -14,20 +14,28 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.core
+package org.vertx.scala.core.net
 
 import collection.JavaConversions._
-import org.vertx.java.core.net.NetSocket
+import org.vertx.java.core.net.{NetSocket => JNetSocket}
 import org.vertx.java.core.net.{NetServer => JNetServer}
+import org.vertx.scala.handlers._
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.handlers.FunctionHandler1
+import org.vertx.scala.core.SocketConfigurer
+
+
+object NetServer {
+  def apply(actual: JNetServer) =
+    new NetServer(actual)
+}
 
 class NetServer(internal: JNetServer) extends SocketConfigurer {
 
   def close():Unit = internal.close
 
   def close(handler: () => Unit):Unit = 
-    internal.close(new FunctionHandler0(handler))
+    internal.close(FunctionHandler0(handler))
 
   def listen(port: Int):NetServer.this.type = {
     internal.listen(port)
@@ -39,8 +47,9 @@ class NetServer(internal: JNetServer) extends SocketConfigurer {
     this
   }
 
-  def connectHandler(handler: (NetSocket) => Unit):NetServer.this.type = {
-    internal.connectHandler(new FunctionHandler1(handler))
+  // FIXME could be scala impl of NetSocket?
+  def connectHandler(socket: (JNetSocket) => Unit):NetServer.this.type = {
+    internal.connectHandler(FunctionHandler1(socket))
     this
   }
 

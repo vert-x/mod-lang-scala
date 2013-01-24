@@ -31,3 +31,4 @@ class FunctionAsyncResultHandler1[T](delegate: (AsyncResult[T]) => Unit) extends
   }
 
 }
+

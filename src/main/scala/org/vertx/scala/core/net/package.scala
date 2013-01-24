@@ -14,19 +14,8 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.handlers
+package org.vertx.scala.core
 
-import org.vertx.java.core.Handler
-
-object FunctionHandler1 {
-  def apply[T](actual: (T) => Unit) =
-    new FunctionHandler1(actual)
-}
-
-class FunctionHandler1[T](val delegate: (T) => Unit) extends Handler[T] {
-
-  def handle(message: T) {
-    delegate(message)
-  }
+package object net {
 
 }

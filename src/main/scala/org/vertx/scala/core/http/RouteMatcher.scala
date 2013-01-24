@@ -1,9 +1,10 @@
-package org.vertx.scala.core
+package org.vertx.scala.core.http
 
 import org.vertx.java.core.http.{RouteMatcher => JRouteMatcher}
 import org.vertx.java.core.http.HttpServerRequest
 import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.java.core.Handler
+import org.vertx.java.core.http.{RouteMatcher => JRouteMatcher}
 
 class RouteMatcher(delegate: (HttpServerRequest) => Unit) extends Handler[HttpServerRequest] {
 

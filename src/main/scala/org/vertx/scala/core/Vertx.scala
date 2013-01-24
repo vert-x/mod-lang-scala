@@ -17,11 +17,15 @@
 package org.vertx.scala.core
 
 import org.vertx.java.core.{Vertx => JVertx}
-import scala.actors.Actor
-import org.vertx.scala.handlers.ActorHandler0
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.java.deploy.impl.VertxLocator
+import scala.actors.Actor
+import org.vertx.scala.core.net.NetClient
+import org.vertx.scala.core.net.NetServer
+import org.vertx.scala.core.http.HttpClient
+import org.vertx.scala.core.http.HttpServer
+
 
 object Vertx {
   def apply(actual: JVertx) =
@@ -37,25 +41,23 @@ class Vertx(internal: JVertx) {
 
   def cancelTimer(id: Long):Boolean = internal.cancelTimer(id)
 
-  def createHttpClient():HttpClient = new HttpClient(internal.createHttpClient)
+  def createHttpClient():HttpClient = HttpClient(internal.createHttpClient)
 
-  def createHttpServer():HttpServer = new HttpServer(internal.createHttpServer)
+  def createHttpServer():HttpServer = HttpServer(internal.createHttpServer)
 
-  def createNetClient():NetClient = new NetClient(internal.createNetClient)
+  def createNetClient():NetClient = NetClient(internal.createNetClient)
 
-  def createNetServer():NetServer = new NetServer(internal.createNetServer)
+  def createNetServer():NetServer = NetServer(internal.createNetServer)
 
   def createSockJSServer(httpServer: HttpServer):SockJSServer = new SockJSServer(internal.createSockJSServer(httpServer.actual))
 
-  def fileSystem():FileSystem = new FileSystem(internal.fileSystem)
+  def fileSystem():FileSystem = FileSystem(internal.fileSystem)
 
   def eventLoop():Boolean = internal.isEventLoop
 
   def worker():Boolean = internal.isWorker
 
   def runOnLoop(handler: () => Unit):Unit = internal.runOnLoop(new FunctionHandler0(handler))
-
-  def runOnLoop(handler: () => Actor, async: Boolean):Unit = internal.runOnLoop(new ActorHandler0(handler))
 
   def periodic(delay: Long, handler: (java.lang.Long) => Unit):Unit = internal.setPeriodic(delay, new FunctionHandler1(handler))
 

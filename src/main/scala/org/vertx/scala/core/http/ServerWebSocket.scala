@@ -1,5 +1,7 @@
-package org.vertx.scala.core
+package org.vertx.scala.core.http
 
+import org.vertx.java.core.buffer.{Buffer => JBuffer}
+import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
 import org.vertx.java.core.buffer.{Buffer => JBuffer}
 import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
 import org.vertx.scala.handlers.FunctionHandler0

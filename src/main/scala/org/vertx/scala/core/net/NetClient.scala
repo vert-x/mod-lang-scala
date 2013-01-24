@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.core
+package org.vertx.scala.core.net
 
 import collection.JavaConversions._
 import org.vertx.java.core.net.{NetClient => JNetClient}
 import org.vertx.java.core.net.{NetSocket => JNetSocket}
 import org.vertx.scala.handlers.FunctionHandler1
+import org.vertx.scala.core.ClientConfigurer
+
+object NetClient {
+  def apply(actual: JNetClient) =
+    new NetClient(actual)
+}
 
 class NetClient(internal: JNetClient) extends ClientConfigurer {
 

@@ -25,6 +25,11 @@ import org.vertx.java.core.file.FileSystemProps
 import org.vertx.scala.handlers.FunctionAsyncResultHandler0
 import org.vertx.scala.handlers.FunctionAsyncResultHandler1
 
+object FileSystem {
+  def apply(actual: JFileSystem) =
+    new FileSystem(actual)
+}
+
 class FileSystem(internal: JFileSystem) {
 
   def chmod(path: String, perms: String, handler: () => Unit):Unit =

@@ -26,19 +26,8 @@ object FunctionHandler0 {
 class FunctionHandler0(delegate: () => Unit) extends Handler[Void] {
 
   def handle(message: Void) {
-    delegate
-  }
-
-  override def hashCode():Int = {
-    delegate.hashCode() * 23
-  }
-
-  override def equals(obj: Any):Boolean = {
-    delegate.equals(obj)
-  }
-
-  override def toString():String = {
-    delegate.toString()
+    delegate()
   }
 
 }
+

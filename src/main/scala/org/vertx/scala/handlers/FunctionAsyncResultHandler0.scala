@@ -27,7 +27,8 @@ object FunctionAsyncResultHandler0 {
 class FunctionAsyncResultHandler0(delegate: () => Unit) extends AsyncResultHandler[Void] {
 
   def handle(message: AsyncResult[Void]):Unit = {
-    delegate
+    delegate()
   }
 
 }
+

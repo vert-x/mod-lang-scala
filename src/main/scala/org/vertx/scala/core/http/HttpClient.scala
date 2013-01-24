@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.core
+package org.vertx.scala.core.http
 
 import collection.JavaConversions._
 import org.vertx.java.core.http.{HttpClient => JHttpClient}
-import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.java.core.http.HttpClientResponse
 import org.vertx.java.core.http.{WebSocket => JWebSocket}
 import org.vertx.java.core.http.{WebSocketVersion => JWebSocketVersion}
+import org.vertx.java.core.http.{HttpClient => JHttpClient}
+import org.vertx.java.core.http.{WebSocket => JWebSocket}
+import org.vertx.java.core.http.{WebSocketVersion => JWebSocketVersion}
+import org.vertx.scala.core.ClientConfigurer
+import org.vertx.scala.handlers.FunctionHandler1
+
+object HttpClient {
+  def apply(actual: JHttpClient) =
+    new HttpClient(actual)
+}
 
 class HttpClient(internal: JHttpClient) extends ClientConfigurer {
 

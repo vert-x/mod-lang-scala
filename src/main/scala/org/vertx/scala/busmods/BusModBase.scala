@@ -42,22 +42,13 @@ trait BusModBase extends Verticle {
     sendOK(message, null)
   }
 
-//  def sendStatus(status: String, message: Message[JsonObject]):Unit = {
-//    sendStatus(status, message, null)
-//  }
-
-  implicit def sendStatus(status: String, message: Message[JsonObject], json: JsonObject = new JsonObject()):Unit = {
-//    var reply: JsonObject = json
-//    if (json == null) {
-//      reply = new JsonObject()
-//    }
-//    reply.putString("status", status)
-//    message.reply(reply)
-    message.reply(json)
+  def sendStatus(status: String, message: Message[JsonObject], reply: JsonObject = new JsonObject()):Unit = {
+    reply.putString("status", status)
+    message.reply(reply)
   }
 
-  def sendOK(message: Message[JsonObject], json: JsonObject):Unit = {
-    sendStatus("ok", message, json)
+  def sendOK(message: Message[JsonObject], reply: JsonObject = new JsonObject()):Unit = {
+    sendStatus("ok", message, reply)
   }
 
   def sendError(message: Message[JsonObject], error: String):Unit = {

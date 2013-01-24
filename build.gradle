@@ -16,6 +16,7 @@
 
 apply plugin: 'java'
 apply plugin: 'scala'
+apply plugin: 'eclipse'
 apply from: 'gradle/maven.gradle'
 apply from: 'gradle/setup.gradle'
 
@@ -25,10 +26,10 @@ sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
 repositories {
-  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-  maven { url 'http://repo.springsource.org/release' }
-  mavenCentral()
   mavenLocal()
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+//  maven { url 'http://repo.springsource.org/release' }
+  mavenCentral()
 }
 
 configurations {
@@ -42,23 +43,27 @@ sourceSets {
 }
 
 dependencies {
-  provided "org.vert-x:vertx-core:$vertxVersion"
-  provided "org.vert-x:vertx-platform:$vertxVersion"
-
   scalaTools "org.scala-lang:scala-compiler:$scalaVersion"
-  scalaTools "org.scala-lang:scala-library:$scalaVersion"
 
+  compile "org.vert-x:vertx-core:$vertxVersion"
+  compile "org.vert-x:vertx-platform:$vertxVersion"
   compile "org.scala-lang:scala-library:$scalaVersion"
 
   testCompile "junit:junit:$junitVersion"
-  testCompile "org.mozilla:rhino:$rhinoVersion"
 
   testCompile "org.vert-x:vertx-junit-annotations:$junitAnnoVersion"
   testCompile "org.vert-x:vertx-lang-java:$vertxVersion"
   testCompile "org.vert-x:vertx-lang-rhino:$vertxVersion"
+  testCompile "org.mozilla:rhino:$rhinoVersion"
   testCompile("org.vert-x:vertx-testframework:$vertxVersion") {
     transitive = false // don't need all of the other language deps
   }
+}
+
+compileScala {
+//  scalaCompileOptions.useCompileDaemon = true
+  // optionally specify host and port of the daemon:
+//  scalaCompileOptions.daemonServer = "localhost:4243"
 }
 
 javadoc.classpath += configurations.provided

@@ -19,11 +19,12 @@ package org.vertx.scala.deploy.impl.scala
 import org.vertx.java.core.impl.VertxInternal
 import org.vertx.java.deploy.impl.VerticleManager
 import org.vertx.java.deploy.{Verticle => JVerticle}
-import org.vertx.java.deploy.VerticleFactory
+import org.vertx.java.deploy.impl.VerticleFactory
 import org.vertx.java.deploy.impl.VertxLocator
 import org.vertx.scala.core.Vertx
 import org.vertx.scala.deploy.Container
 import org.vertx.scala.deploy.Verticle
+
 
 class ScalaVerticleFactory extends VerticleFactory {
 
