@@ -17,14 +17,13 @@
 package org.vertx.scala
 
 import org.vertx.java.core.{Vertx => JVertx}
+import org.vertx.java.deploy.impl.VertxLocator
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.handlers.FunctionHandler1
-import org.vertx.java.deploy.impl.VertxLocator
 import org.vertx.scala.net.NetClient
 import org.vertx.scala.net.NetServer
 import org.vertx.scala.http.HttpClient
 import org.vertx.scala.sockjs.SockJSServer
-import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.scala.http.HttpServer
 
 

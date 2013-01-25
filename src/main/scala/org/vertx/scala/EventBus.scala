@@ -17,15 +17,16 @@
 package org.vertx.scala
 
 import org.vertx.java.core.eventbus.{EventBus => JEventBus}
-import org.vertx.java.core.buffer.{Buffer => VertxBuffer}
+import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.json.JsonArray
 import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.eventbus.Message
+import org.vertx.scala.JSON._
 import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.scala.handlers.FunctionAsyncResultHandler0
 import org.vertx.scala.handlers.FunctionAsyncResultHandler0
-import org.vertx.java.core.buffer.{Buffer => VertxBuffer}
-import org.vertx.java.core.eventbus.{EventBus => JEventBus}
+import scala.util.parsing.json.JSONObject
+import scala.util.parsing.json.JSONArray
 
 object EventBus {
   def apply(actual: JEventBus) =
@@ -34,25 +35,25 @@ object EventBus {
 
 class EventBus(internal: JEventBus) {
 
-  def publish(address: String, payload: java.lang.Boolean):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: Boolean):Unit = internal.publish(address, payload)
 
-  def publish(address: String, payload: VertxBuffer):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: Buffer):Unit = internal.publish(address, payload)
 
   def publish(address: String, payload: java.lang.Byte):Unit = internal.publish(address, payload)
 
   def publish(address: String, payload: Array[Byte]):Unit = internal.publish(address, payload)
 
-  def publish(address: String, payload: java.lang.Character):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: Character):Unit = internal.publish(address, payload)
 
   def publish(address: String, payload: java.lang.Double):Unit = internal.publish(address, payload)
 
   def publish(address: String, payload: java.lang.Float):Unit = internal.publish(address, payload)
 
-  def publish(address: String, payload: java.lang.Integer):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: Integer):Unit = internal.publish(address, payload)
 
-  def publish(address: String, payload: JsonArray):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: JSONArray):Unit = internal.publish(address, payload)
 
-  def publish(address: String, payload: JsonObject):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: JSONObject):Unit = internal.publish(address, payload)
 
   def publish(address: String, payload: java.lang.Long):Unit = internal.publish(address, payload)
 
@@ -60,91 +61,91 @@ class EventBus(internal: JEventBus) {
 
   def publish(address: String, payload: java.lang.String):Unit = internal.publish(address, payload)
 
-  def send(address: String, payload: java.lang.Boolean):Unit = internal.send(address, payload)
+//  def send(address: String, payload: Boolean):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: Buffer):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: java.lang.Byte):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: Array[Byte]):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: Character):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: java.lang.Double):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: java.lang.Float):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: Integer):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: JSONArray):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: JSONObject):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: java.lang.Long):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: java.lang.Short):Unit = internal.send(address, payload)
+//
+//  def send(address: String, payload: java.lang.String):Unit = internal.send(address, payload)
 
-  def send(address: String, payload: VertxBuffer):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: java.lang.Byte):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: Array[Byte]):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: java.lang.Character):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: java.lang.Double):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: java.lang.Float):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: java.lang.Integer):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: JsonArray):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: JsonObject):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: java.lang.Long):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: java.lang.Short):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: java.lang.String):Unit = internal.send(address, payload)
-
-  def send(address: String, payload: java.lang.Boolean, handler: (Message[java.lang.Boolean]) => Unit):Unit = {
+  def send(address: String, payload: java.lang.Boolean, handler: (Message[java.lang.Boolean]) => Unit = {msg: Message[java.lang.Boolean] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: VertxBuffer, handler: (Message[VertxBuffer]) => Unit):Unit = {
+  def send(address: String, payload: Buffer, handler: (Message[Buffer]) => Unit = {msg: Message[Buffer] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Byte, handler: (Message[java.lang.Byte]) => Unit):Unit = {
+  def send(address: String, payload: java.lang.Byte, handler: (Message[java.lang.Byte]) => Unit = {msg: Message[java.lang.Byte] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: Array[Byte], handler: (Message[Array[Byte]]) => Unit):Unit = {
+  def send(address: String, payload: Array[Byte], handler: (Message[Array[Byte]]) => Unit = {msg: Message[Array[Byte]] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Character, handler: (Message[java.lang.Character]) => Unit):Unit = {
+  def send(address: String, payload: java.lang.Character, handler: (Message[java.lang.Character]) => Unit = {msg: Message[java.lang.Character] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Double, handler: (Message[java.lang.Double]) => Unit):Unit = {
+  def send(address: String, payload: java.lang.Double, handler: (Message[java.lang.Double]) => Unit = {msg: Message[java.lang.Double] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Float, handler: (Message[java.lang.Float]) => Unit):Unit = {
+  def send(address: String, payload: java.lang.Float, handler: (Message[java.lang.Float]) => Unit = {msg: Message[java.lang.Float] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Integer, handler: (Message[java.lang.Integer]) => Unit):Unit = {
+  def send(address: String, payload: java.lang.Integer, handler: (Message[java.lang.Integer]) => Unit = {msg: Message[java.lang.Integer] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: JsonArray, handler: (Message[JsonArray]) => Unit):Unit = {
+  def send(address: String, payload: JSONArray, handler: (Message[JsonArray]) => Unit = {msg: Message[JsonArray] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: JsonObject, handler: (Message[JsonObject]) => Unit):Unit = {
+  def send(address: String, payload: JSONObject, handler: (Message[JsonObject]) => Unit = {msg: Message[JsonObject] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Long, handler: (Message[java.lang.Long]) => Unit):Unit = {
+  def send(address: String, payload: java.lang.Long, handler: (Message[java.lang.Long]) => Unit = {msg: Message[java.lang.Long] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Short, handler: (Message[java.lang.Short]) => Unit):Unit = {
+  def send(address: String, payload: java.lang.Short, handler: (Message[java.lang.Short]) => Unit = {msg: Message[java.lang.Short] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.String, handler: (Message[java.lang.String]) => Unit):Unit = {
+  def send(address: String, payload: String, handler: (Message[String]) => Unit = {msg: Message[String] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def registerHandler(address: String, handler: (Message[Any]) => Unit):FunctionHandler1[Message[Any]] = {
-    val func = FunctionHandler1(handler)
-    internal.registerHandler(address, func)
-    func // return the actual function so it can be unregistered later
-  }
+//  def registerHandler(address: String, handler: (Message[Any]) => Unit):FunctionHandler1[Message[Any]] = {
+//    val func = FunctionHandler1(handler)
+//    internal.registerHandler(address, func)
+//    func // return the actual function so it can be unregistered later
+//  }
 
-  def registerHandler(address: String, handler: (Message[Any]) => Unit, resultHandler: () => Unit):FunctionHandler1[Message[Any]] = {
+  def registerHandler(address: String, handler: (Message[Any]) => Unit, resultHandler: () => Unit = {() => }):FunctionHandler1[Message[Any]] = {
     val func = FunctionHandler1(handler)
     internal.registerHandler(address, func, FunctionAsyncResultHandler0(resultHandler))
     func // return the actual function so it can be unregistered later
@@ -156,11 +157,11 @@ class EventBus(internal: JEventBus) {
     func // return the actual function so it can be unregistered later
   }
 
-  def unregisterHandler(address: String, func: FunctionHandler1[Message[Any]]):Unit = {
-    internal.unregisterHandler(address, func)
-  }
+//  def unregisterHandler(address: String, func: FunctionHandler1[Message[Any]]):Unit = {
+//    internal.unregisterHandler(address, func)
+//  }
 
-  def unregisterHandler(address: String, func: FunctionHandler1[Message[Any]], resultHandler: () => Unit):Unit = {
+  def unregisterHandler(address: String, func: FunctionHandler1[Message[Any]], resultHandler: () => Unit = {() => }):Unit = {
     internal.unregisterHandler(address, func, FunctionAsyncResultHandler0(resultHandler))
   }
 

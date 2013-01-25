@@ -9,12 +9,28 @@ import org.vertx.scala.http.HttpClientResponse
 import org.vertx.scala.http.ServerWebSocket
 import org.vertx.scala.net.NetSocket
 import org.vertx.scala.sockjs.SockJSSocket
+import org.vertx.scala.JSON._
+import scala.util.parsing.json.JSON
+import scala.util.parsing.json.JSONObject
+import scala.util.parsing.json.JSON.Parser
 
 
 class SimpleCompiledVerticle extends Verticle {
 
   @throws(classOf[Exception])
   def start():Unit = {
+
+    def config:JSONObject = null
+
+    container.deployModule("foo")
+    container.deployModule("foo", config)
+    container.deployModule("foo", config, 1)
+    container.deployModule("foo", instances = 1)
+    container.deployModule("foo", config, 1, {id: String => })
+
+    vertx.fileSystem.chmod("file", "", "", {() => })
+
+    vertx.fileSystem.chmod("file", "", handler = {() => })
 
     vertx
       .createNetServer
