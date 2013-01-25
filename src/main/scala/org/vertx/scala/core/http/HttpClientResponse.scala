@@ -1,13 +1,11 @@
 package org.vertx.scala.core.http
 
 import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
-import scala.collection.JavaConverters.asScalaBufferConverter
-import scala.collection.JavaConverters.asScalaIteratorConverter
-import scala.collection.JavaConverters.mapAsScalaMapConverter
+import scala.collection.JavaConverters._
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.scala.handlers.FunctionHandler0
-import org.vertx.scala.core.streams.WriteStream
+import org.vertx.scala.core.streams.ReadStream
 
 
 object HttpClientResponse {
@@ -15,7 +13,7 @@ object HttpClientResponse {
     new HttpClientResponse(internal)
 }
 
-class HttpClientResponse(val internal: JHttpClientResponse) extends WriteStream {
+class HttpClientResponse(val internal: JHttpClientResponse) extends ReadStream {
 
   def cookies():List[String] = {
     asScalaBufferConverter(internal.cookies()).asScala.toList
@@ -33,27 +31,33 @@ class HttpClientResponse(val internal: JHttpClientResponse) extends WriteStream 
     mapAsScalaMapConverter(internal.trailers()).asScala.toMap
   }
 
-  def bodyHandler(handler: (Buffer) => Unit):HttpClientResponse = {
+  def bodyHandler(handler: (Buffer) => Unit):HttpClientResponse.this.type = {
     internal.bodyHandler(new FunctionHandler1(handler))
     this
   }
 
-  def dataHandler(handler: (Buffer) => Unit):HttpClientResponse = {
+  def dataHandler(handler: (Buffer) => Unit):HttpClientResponse.this.type = {
     internal.dataHandler(new FunctionHandler1(handler))
     this
   }
 
-  def endHandler(handler: () => Unit):HttpClientResponse = {
+  def endHandler(handler: () => Unit):HttpClientResponse.this.type = {
     internal.endHandler(new FunctionHandler0(handler))
     this
   }
 
-  def exceptionHandler(handler: (Exception) => Unit):HttpClientResponse = {
+  def exceptionHandler(handler: (Exception) => Unit):HttpClientResponse.this.type = {
     internal.exceptionHandler(new FunctionHandler1(handler))
     this
   }
 
-  def pause():Unit = internal.pause()
+  def pause():HttpClientResponse.this.type = {
+    internal.pause()
+    this
+  }
 
-  def resume():Unit = internal.resume()
+  def resume():HttpClientResponse.this.type = {
+    internal.resume()
+    this
+  }
 }

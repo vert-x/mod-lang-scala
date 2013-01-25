@@ -1,6 +1,9 @@
 package org.vertx.scala.core.streams
 
 import org.vertx.java.core.buffer.Buffer
+import org.vertx.java.core.streams.{WriteStream => JWriteStream}
+import org.vertx.scala.handlers.FunctionHandler0
+import org.vertx.scala.handlers.FunctionHandler1
 
 trait WriteStream {
 

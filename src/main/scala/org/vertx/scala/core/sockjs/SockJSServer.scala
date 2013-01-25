@@ -20,10 +20,7 @@ import org.vertx.java.core.json.JsonArray
 import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.sockjs.{SockJSServer => JSockJSServer}
 import org.vertx.java.core.sockjs.{SockJSServer => JSockJSServer}
-import org.vertx.scala.core.http.SockJSSocket
-iimport org.vertx.scala.core.sockjs.SockJSSocketHandler1
-import org.vertx.scala.core.sockjs.SockJSSocket
-mport org.vertx.scala.core.http.SockJSSocketHandler1
+
 
 class SockJSServer(internal: JSockJSServer) {
 

@@ -62,12 +62,14 @@ class SimpleCompiledVerticle extends Verticle {
           //
           })
         })
-      .listen(9090)
 
     val config = new JsonObject()
+    config.putString("prefix", "/foo")
     vertx.createSockJSServer(http).installApp(config, { sock: SockJSSocket =>
-      
+      //
     })
+
+    http.listen(9090)
 
     println("compiled verticle started after hello world!")
   }
