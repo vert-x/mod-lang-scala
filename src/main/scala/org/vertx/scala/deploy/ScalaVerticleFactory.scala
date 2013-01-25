@@ -62,10 +62,6 @@ class ScalaVerticleFactory extends VerticleFactory {
       verticle = rawClass.newInstance().asInstanceOf[Verticle]
     }
 
-    // verticle.container = new JContainer()
-    verticle.container = Container(new JContainer(manager))
-    verticle.vertx = Vertx.find
-
     ScalaVerticle(verticle)
   }
 
