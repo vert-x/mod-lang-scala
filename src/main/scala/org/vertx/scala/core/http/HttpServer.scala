@@ -16,7 +16,7 @@
 
 package org.vertx.scala.core.http
 
-import org.vertx.java.core.http.{HttpServer => VertxHttpServer}
+import org.vertx.java.core.http.{HttpServer => JHttpServer}
 import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
 import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
 import org.vertx.java.core.Handler
@@ -24,13 +24,15 @@ import org.vertx.java.core.http.{HttpServer => VertxHttpServer}
 import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
 import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
 import org.vertx.scala.core.SocketConfigurer
+import org.vertx.scala.handlers.FunctionHandler0
+import org.vertx.scala.handlers.FunctionHandler1
 
 object HttpServer {
-  def apply(actual: VertxHttpServer) =
+  def apply(actual: JHttpServer) =
     new HttpServer(actual)
 }
 
-class HttpServer(val actual: VertxHttpServer) extends SocketConfigurer {
+class HttpServer(val actual: JHttpServer) extends SocketConfigurer {
 
   def close():Unit = actual.close
 
@@ -46,25 +48,23 @@ class HttpServer(val actual: VertxHttpServer) extends SocketConfigurer {
     this
   }
 
-  def requestHandler():Handler[JHttpServerRequest] =
+  def requestHandler():Handler[JHttpServerRequest] = {
     actual.requestHandler
+  }
 
-  def requestHandler(handler: (JHttpServerRequest) => Unit):HttpServer.this.type = {
-    actual.requestHandler(FunctionHandler1(handler))
+  def requestHandler(handler: (HttpServerRequest) => Unit):HttpServer.this.type = {
+    actual.requestHandler(HttpServerRequestHandler1(handler))
     this
   }
 
-  def websocketHandler():Handler[JServerWebSocket] =
-    actual.websocketHandler
+  def websocketHandler():Handler[JServerWebSocket] = actual.websocketHandler
 
-  def websocketHandler(handler: (JServerWebSocket) => Unit):HttpServer.this.type = {
-    actual.websocketHandler(FunctionHandler1(handler))
+  def websocketHandler(handler: (ServerWebSocket) => Unit):HttpServer.this.type = {
+    actual.websocketHandler(ServerWebSocketHandler1(handler))
     this
   }
 
-  def acceptBacklog():Int = {
-    actual.getAcceptBacklog()
-  }
+  def acceptBacklog():Int = actual.getAcceptBacklog()
 
   def acceptBacklog(backlog: Int):HttpServer.this.type = {
     actual.setAcceptBacklog(backlog)

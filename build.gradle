@@ -44,10 +44,12 @@ sourceSets {
 
 dependencies {
   scalaTools "org.scala-lang:scala-compiler:$scalaVersion"
+  scalaTools "org.scala-lang:scala-library:$scalaVersion"
 
   compile "org.vert-x:vertx-core:$vertxVersion"
   compile "org.vert-x:vertx-platform:$vertxVersion"
   compile "org.scala-lang:scala-library:$scalaVersion"
+  compile "org.scala-lang:scala-compiler:$scalaVersion"
 
   testCompile "junit:junit:$junitVersion"
 

@@ -24,11 +24,15 @@ import org.vertx.java.deploy.impl.VertxLocator
 import org.vertx.scala.core.Vertx
 import org.vertx.scala.deploy.Container
 import org.vertx.scala.deploy.Verticle
+import org.vertx.java.deploy.impl.ModuleClassLoader
+import scala.reflect.internal.util.BatchSourceFile
+import scala.reflect.io.PlainFile
+import scala.tools.nsc.interpreter.IMain
+import scala.tools.nsc.interpreter.AbstractFileClassLoader
+import scala.tools.nsc.Settings
 
 
 class ScalaVerticleFactory extends VerticleFactory {
-
-  protected val LANGUAGE: String = "scala"
 
   protected val PREFIX: String = "scala:"
 
@@ -36,28 +40,41 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   private var manager: VerticleManager = null
 
-  def init(amanager: VerticleManager): Unit = {
+  private var mcl: ModuleClassLoader = null
+
+  def init(amanager: VerticleManager, amcl: ModuleClassLoader): Unit = {
     manager = amanager
+    mcl = amcl
   }
 
-  def getLanguage(): String = LANGUAGE
-
-  def isFactoryFor(main: String): Boolean = main.startsWith(PREFIX) || main.endsWith(SUFFIX)
-
   @throws(classOf[Exception])
-  def createVerticle(main: String, parent: ClassLoader): JVerticle = {
+  def createVerticle(main: String): JVerticle = {
 
+    var verticle: Verticle = null
     if (main.endsWith(SUFFIX)) {
-      throw new RuntimeException("scala scripts are not yet supported")
+      val abstractFileClassLoader: AbstractFileClassLoader = compileScalaScript(main)
+      // TODO parse non-relative URLs
+      val fqn = main.substring(main.lastIndexOf('/') + 1, main.lastIndexOf('.'))
+      verticle = abstractFileClassLoader.loadClass(fqn).newInstance().asInstanceOf[Verticle]
     }
-
-    val className = if (main.startsWith(PREFIX)) main.replaceFirst(PREFIX, "") else main
-    val rawClass = Class.forName(className, true, parent)
-    val verticle = rawClass.newInstance().asInstanceOf[Verticle]
+    else {
+      val className = if (main.startsWith(PREFIX)) main.replaceFirst(PREFIX, "") else main
+      val rawClass = mcl.loadClass(className)
+      verticle = rawClass.newInstance().asInstanceOf[Verticle]
+    }
 
     new ScalaVerticle(verticle)
   }
 
   def reportException(t: Throwable): Unit = manager.getLogger().error("oops!", t)
+
+  def compileScalaScript(filePath: String):AbstractFileClassLoader = {
+    val settings = new Settings()
+    settings.usejavacp.value = true
+
+    val interpreter = new IMain(settings)
+    interpreter.compileSources(new BatchSourceFile(PlainFile.fromPath(filePath)))
+    interpreter.classLoader
+  }
 
 }

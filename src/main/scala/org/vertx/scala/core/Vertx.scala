@@ -20,7 +20,6 @@ import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.java.deploy.impl.VertxLocator
-import scala.actors.Actor
 import org.vertx.scala.core.net.NetClient
 import org.vertx.scala.core.net.NetServer
 import org.vertx.scala.core.http.HttpClient

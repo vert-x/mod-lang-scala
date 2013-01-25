@@ -18,10 +18,7 @@ package org.vertx.scala.core.http
 
 import collection.JavaConversions._
 import org.vertx.java.core.http.{HttpClient => JHttpClient}
-import org.vertx.java.core.http.HttpClientResponse
-import org.vertx.java.core.http.{WebSocket => JWebSocket}
-import org.vertx.java.core.http.{WebSocketVersion => JWebSocketVersion}
-import org.vertx.java.core.http.{HttpClient => JHttpClient}
+import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
 import org.vertx.java.core.http.{WebSocket => JWebSocket}
 import org.vertx.java.core.http.{WebSocketVersion => JWebSocketVersion}
 import org.vertx.scala.core.ClientConfigurer
@@ -32,84 +29,85 @@ object HttpClient {
     new HttpClient(actual)
 }
 
+
 class HttpClient(internal: JHttpClient) extends ClientConfigurer {
 
-  def connect(uri: String, handler: (HttpClientResponse) => Unit): Unit = {
-    internal.connect(uri, FunctionHandler1(handler))
+  def connect(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
+    internal.connect(uri, HttpClientResponseHandler1(handler))
   }
 
-  def connectWebsocket(uri: String, wsConnect: (JWebSocket) => Unit): Unit = {
-    internal.connectWebsocket(uri, FunctionHandler1(wsConnect))
+  def connectWebsocket(uri: String, wsConnect: (WebSocket) => Unit):Unit = {
+    internal.connectWebsocket(uri, WebSocketHandler1(wsConnect))
   }
 
-  def connectWebsocket(uri: String, wsVersion: JWebSocketVersion, wsConnect: (JWebSocket) => Unit): Unit = {
-    internal.connectWebsocket(uri, wsVersion, FunctionHandler1(wsConnect))
+  def connectWebsocket(uri: String, wsVersion: JWebSocketVersion, wsConnect: (WebSocket) => Unit):Unit = {
+    internal.connectWebsocket(uri, wsVersion, WebSocketHandler1(wsConnect))
   }
 
-  def delete(uri: String, handler: (HttpClientResponse) => Unit): Unit = {
-    internal.delete(uri, FunctionHandler1(handler))
+  def delete(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
+    internal.delete(uri, HttpClientResponseHandler1(handler))
   }
 
-  def exceptionHandler(handler: (Exception) => Unit): Unit = {
+  def exceptionHandler(handler: (Exception) => Unit):Unit = {
     internal.exceptionHandler(FunctionHandler1(handler))
   }
 
-  def get(uri: String, handler: (HttpClientResponse) => Unit): Unit = {
-    internal.get(uri, FunctionHandler1(handler))
+  def get(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
+    internal.get(uri, HttpClientResponseHandler1(handler))
   }
 
-  def getNow(uri: String, headers: Map[String,_], handler: (HttpClientResponse) => Unit): Unit = {
-    internal.getNow(uri, headers, FunctionHandler1(handler))
+  def getNow(uri: String, headers: Map[String,_], handler: (HttpClientResponse) => Unit):Unit = {
+    internal.getNow(uri, headers, HttpClientResponseHandler1(handler))
   }
 
-  def getNow(uri: String, handler: (HttpClientResponse) => Unit): Unit = {
-    internal.getNow(uri, FunctionHandler1(handler))
+  def getNow(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
+    internal.getNow(uri, HttpClientResponseHandler1(handler))
   }
 
-  def head(uri: String, handler: (HttpClientResponse) => Unit): Unit = {
-    internal.head(uri, FunctionHandler1(handler))
+  def head(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
+    internal.head(uri, HttpClientResponseHandler1(handler))
   }
 
-  def options(uri: String, handler: (HttpClientResponse) => Unit): Unit = {
-    internal.options(uri, FunctionHandler1(handler))
+  def options(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
+    internal.options(uri, HttpClientResponseHandler1(handler))
   }
 
-  def patch(uri: String, handler: (HttpClientResponse) => Unit): Unit = {
-    internal.patch(uri, FunctionHandler1(handler))
+  def patch(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
+    internal.patch(uri, HttpClientResponseHandler1(handler))
   }
 
-  def post(uri: String, handler: (HttpClientResponse) => Unit): Unit = {
-    internal.post(uri, FunctionHandler1(handler))
+  def post(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
+    internal.post(uri, HttpClientResponseHandler1(handler))
   }
 
-  def put(uri: String, handler: (HttpClientResponse) => Unit): Unit = {
-    internal.put(uri, FunctionHandler1(handler))
+  def put(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
+    internal.put(uri, HttpClientResponseHandler1(handler))
   }
 
-  def trace(uri: String, handler: (HttpClientResponse) => Unit): Unit = {
-    internal.trace(uri, FunctionHandler1(handler))
+  def trace(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
+    internal.trace(uri, HttpClientResponseHandler1(handler))
   }
 
-  def request(method: String, uri: String, handler: (HttpClientResponse) => Unit): Unit = {
-    internal.request(method, uri, FunctionHandler1(handler))
+  def request(method: String, uri: String, handler: (HttpClientResponse) => Unit):Unit = {
+    internal.request(method, uri, HttpClientResponseHandler1(handler))
   }
 
-  def close(): Unit = internal.close()
+  def close():Unit = internal.close()
 
-  def bossThreads(): Int = internal.getBossThreads()
+  def bossThreads():Int = internal.getBossThreads()
 
-  def connectTimeout(): Long = internal.getConnectTimeout()
+  def connectTimeout():Long = internal.getConnectTimeout()
 
-  def keyStorePassword(): String = internal.getKeyStorePassword()
+  def keyStorePassword():String = internal.getKeyStorePassword()
 
-  def keyStorePath(): String = internal.getKeyStorePath()
+  def keyStorePath():String = internal.getKeyStorePath()
 
-  def keyStorePassword(keyStorePassword: String): HttpClient.this.type = {
+  def keyStorePassword(keyStorePassword: String):HttpClient.this.type = {
     internal.setKeyStorePassword(keyStorePassword)
     this
   }
 
-  def keyStorePath(keyStorePath: String): HttpClient.this.type = {
+  def keyStorePath(keyStorePath: String):HttpClient.this.type = {
     internal.setKeyStorePath(keyStorePath)
     this
   }
@@ -123,30 +121,30 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
     this
   }
 
-  def sendBufferSize(): Int = internal.getSendBufferSize()
+  def sendBufferSize():Int = internal.getSendBufferSize()
 
-  def sendBufferSize(sendBufferSize: Int): HttpClient.this.type = {
+  def sendBufferSize(sendBufferSize: Int):HttpClient.this.type = {
     internal.setSendBufferSize(sendBufferSize)
     this
   }
 
-  def trafficClass(): Int = internal.getTrafficClass()
+  def trafficClass():Int = internal.getTrafficClass()
 
-  def trafficClass(trafficClass: Int): HttpClient.this.type = {
+  def trafficClass(trafficClass: Int):HttpClient.this.type = {
     internal.setTrafficClass(trafficClass)
     this
   }
 
-  def trustStorePassword(): String = internal.getTrustStorePassword()
+  def trustStorePassword():String = internal.getTrustStorePassword()
 
-  def trustStorePassword(password: String): HttpClient.this.type = {
+  def trustStorePassword(password: String):HttpClient.this.type = {
     internal.setTrustStorePassword(password)
     this
   }
 
-  def trustStorePath(): String = internal.getTrustStorePath()
+  def trustStorePath():String = internal.getTrustStorePath()
 
-  def trustStorePath(path: String): HttpClient.this.type = {
+  def trustStorePath(path: String):HttpClient.this.type = {
     internal.setTrustStorePath(path)
     this
   }

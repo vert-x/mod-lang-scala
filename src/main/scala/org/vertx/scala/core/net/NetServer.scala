@@ -48,8 +48,8 @@ class NetServer(internal: JNetServer) extends SocketConfigurer {
   }
 
   // FIXME could be scala impl of NetSocket?
-  def connectHandler(socket: (JNetSocket) => Unit):NetServer.this.type = {
-    internal.connectHandler(FunctionHandler1(socket))
+  def connectHandler(socket: (NetSocket) => Unit):NetServer.this.type = {
+    internal.connectHandler(ConnectHandler1(socket))
     this
   }
 

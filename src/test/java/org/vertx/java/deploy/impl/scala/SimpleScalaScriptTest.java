@@ -25,10 +25,10 @@ import org.vertx.java.test.junit.VertxJUnit4ClassRunner;
 
 @RunWith(VertxJUnit4ClassRunner.class)
 @VertxConfiguration
-public class SimpleCompiledScalaTest extends VertxTestBase {
+public class SimpleScalaScriptTest extends VertxTestBase {
 
   @Test
-  @TestVerticle(main="scala:org.vertx.test.SimpleCompiledVerticle")
+  @TestVerticle(main="SimpleVerticle.scala")
   public void testSimple() {
     //
   }

@@ -16,10 +16,16 @@
 
 package org.vertx.scala.core
 
+import java.util.{Set => JSet}
+import java.util.concurrent.{ConcurrentMap => JConcurrentMap}
 import scala.collection.JavaConversions._
-import scala.collection.mutable.ConcurrentMap
+import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.mapAsScalaConcurrentMapConverter
+import scala.collection.concurrent.Map
 import scala.collection.mutable.Set
+import scala.collection.mutable.ConcurrentMap
 import org.vertx.java.core.shareddata.{SharedData => JSharedData}
+
 
 object SharedData {
   def apply(actual: JSharedData) =
@@ -28,14 +34,14 @@ object SharedData {
 
 class SharedData(internal: JSharedData) {
 
-  def map[K,V](name: String):ConcurrentMap[K,V] = {
-    val map: java.util.concurrent.ConcurrentMap[K,V] = internal.getMap(name)
-    map
+  def map[K,V](name: String):Map[K,V] = {
+    val jmap:JConcurrentMap[K,V] = internal.getMap(name)
+    jmap
   }
 
   def set[T](name: String):Set[T] = {
-    val set: java.util.Set[T] = internal.getSet(name)
-    set
+    val jset: JSet[T] = internal.getSet(name)
+    jset
   }
 
   def removeMap[T](name: Any):Boolean = {
