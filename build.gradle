@@ -63,8 +63,9 @@ dependencies {
 }
 
 compileScala {
+  sourceCompatibility = project.sourceCompatibility
+  targetCompatibility = project.targetCompatibility
 //  scalaCompileOptions.useCompileDaemon = true
-  // optionally specify host and port of the daemon:
 //  scalaCompileOptions.daemonServer = "localhost:4243"
 }
 
@@ -73,6 +74,7 @@ javadoc.classpath += configurations.provided
 test {
   // Some vert.x properties
   systemProperty 'vertx.test.timeout', 15
+  systemProperty 'vertx.langs.scala', 'org.vertx.scala.deploy.ScalaVerticleFactory'
   systemProperty 'vertx.mods', "$projectDir/build/tmp/mod-test"
   systemProperty 'vertx.version', "$project.version"
 

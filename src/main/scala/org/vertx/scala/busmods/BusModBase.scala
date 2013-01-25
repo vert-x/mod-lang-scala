@@ -21,7 +21,7 @@ import org.vertx.java.core.logging.Logger
 import org.vertx.java.core.eventbus.Message
 import org.vertx.java.core.json.JsonArray
 import org.vertx.scala.deploy.Verticle
-import org.vertx.scala.core.EventBus
+import org.vertx.scala.EventBus
 
 
 trait BusModBase extends Verticle {

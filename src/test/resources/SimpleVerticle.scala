@@ -4,7 +4,7 @@ import org.vertx.scala.deploy.Verticle
 import org.vertx.java.core.eventbus.Message
 import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.scala.core.net.NetSocket
+import org.vertx.scala.net.NetSocket
 import org.vertx.scala.core.http.HttpServerRequest
 import org.vertx.scala.core.http.ServerWebSocket
 

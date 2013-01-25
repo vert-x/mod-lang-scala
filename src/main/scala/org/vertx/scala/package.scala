@@ -14,23 +14,8 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.deploy
+package org.vertx
 
-import org.vertx.scala.Vertx
-import scala.reflect.BeanProperty
-
-trait Verticle {
-
-  var vertx: Vertx = null
-
-  var container: Container = null
-
-  @throws(classOf[Exception])
-  def start(): Unit
-
-  @throws(classOf[Exception])
-  def stop(): Unit = {
-    // NO-OP
-  }
+package object scala {
 
 }

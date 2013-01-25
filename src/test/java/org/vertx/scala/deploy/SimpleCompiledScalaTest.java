@@ -14,23 +14,24 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.deploy
+package org.vertx.scala.deploy;
 
-import org.vertx.scala.Vertx
-import scala.reflect.BeanProperty
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.vertx.java.test.TestVerticle;
+import org.vertx.java.test.VertxConfiguration;
+import org.vertx.java.test.VertxTestBase;
+import org.vertx.java.test.junit.VertxJUnit4ClassRunner;
 
-trait Verticle {
+@RunWith(VertxJUnit4ClassRunner.class)
+@VertxConfiguration
+public class SimpleCompiledScalaTest extends VertxTestBase {
 
-  var vertx: Vertx = null
-
-  var container: Container = null
-
-  @throws(classOf[Exception])
-  def start(): Unit
-
-  @throws(classOf[Exception])
-  def stop(): Unit = {
-    // NO-OP
+  @Test
+  @TestVerticle(main="scala:org.vertx.test.SimpleCompiledVerticle")
+  public void testSimple() {
+    //
+    lightSleep(30000L);
   }
 
 }
