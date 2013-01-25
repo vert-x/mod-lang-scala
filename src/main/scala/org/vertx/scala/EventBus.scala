@@ -61,32 +61,6 @@ class EventBus(internal: JEventBus) {
 
   def publish(address: String, payload: java.lang.String):Unit = internal.publish(address, payload)
 
-//  def send(address: String, payload: Boolean):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: Buffer):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: java.lang.Byte):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: Array[Byte]):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: Character):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: java.lang.Double):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: java.lang.Float):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: Integer):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: JSONArray):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: JSONObject):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: java.lang.Long):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: java.lang.Short):Unit = internal.send(address, payload)
-//
-//  def send(address: String, payload: java.lang.String):Unit = internal.send(address, payload)
-
   def send(address: String, payload: java.lang.Boolean, handler: (Message[java.lang.Boolean]) => Unit = {msg: Message[java.lang.Boolean] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
@@ -139,12 +113,6 @@ class EventBus(internal: JEventBus) {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-//  def registerHandler(address: String, handler: (Message[Any]) => Unit):FunctionHandler1[Message[Any]] = {
-//    val func = FunctionHandler1(handler)
-//    internal.registerHandler(address, func)
-//    func // return the actual function so it can be unregistered later
-//  }
-
   def registerHandler(address: String, handler: (Message[Any]) => Unit, resultHandler: () => Unit = {() => }):FunctionHandler1[Message[Any]] = {
     val func = FunctionHandler1(handler)
     internal.registerHandler(address, func, FunctionAsyncResultHandler0(resultHandler))
@@ -156,10 +124,6 @@ class EventBus(internal: JEventBus) {
     internal.registerLocalHandler(address, func)
     func // return the actual function so it can be unregistered later
   }
-
-//  def unregisterHandler(address: String, func: FunctionHandler1[Message[Any]]):Unit = {
-//    internal.unregisterHandler(address, func)
-//  }
 
   def unregisterHandler(address: String, func: FunctionHandler1[Message[Any]], resultHandler: () => Unit = {() => }):Unit = {
     internal.unregisterHandler(address, func, FunctionAsyncResultHandler0(resultHandler))
