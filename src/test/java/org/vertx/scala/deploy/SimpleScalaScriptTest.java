@@ -28,7 +28,7 @@ import org.vertx.java.test.junit.VertxJUnit4ClassRunner;
 public class SimpleScalaScriptTest extends VertxTestBase {
 
   @Test
-  @TestVerticle(main="SimpleVerticle.scala")
+  @TestVerticle(main="SimpleScriptVerticle.scala", urls="src/test/resources")
   public void testSimple() {
     //
   }

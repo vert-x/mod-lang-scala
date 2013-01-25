@@ -15,17 +15,20 @@
  */
 
 package org.vertx.scala.deploy
-import org.vertx.java.deploy.impl.VerticleManager
+
 import org.vertx.java.deploy.{Verticle => JVerticle}
+import org.vertx.java.deploy.{Container => JContainer}
+import org.vertx.java.deploy.impl.VerticleManager
 import org.vertx.java.deploy.impl.VerticleFactory
 import org.vertx.java.deploy.impl.ModuleClassLoader
 import scala.reflect.internal.util.BatchSourceFile
+import scala.reflect.internal.util.ScriptSourceFile
+import scala.reflect.io.Path.string2path
 import scala.reflect.io.PlainFile
 import scala.tools.nsc.interpreter.IMain
 import scala.tools.nsc.interpreter.AbstractFileClassLoader
 import scala.tools.nsc.Settings
-import org.vertx.java.deploy.{Verticle => JVerticle}
-import scala.reflect.io.Path.string2path
+import org.vertx.scala.Vertx
 
 
 class ScalaVerticleFactory extends VerticleFactory {
@@ -59,17 +62,28 @@ class ScalaVerticleFactory extends VerticleFactory {
       verticle = rawClass.newInstance().asInstanceOf[Verticle]
     }
 
-    new ScalaVerticle(verticle)
+    // verticle.container = new JContainer()
+    verticle.container = Container(new JContainer(manager))
+    verticle.vertx = Vertx.find
+
+    ScalaVerticle(verticle)
   }
 
-  def reportException(t: Throwable): Unit = manager.getLogger().error("oops!", t)
+  def reportException(t: Throwable): Unit = {
+    manager.getLogger().error("oops!", t)
+  }
 
   def compileScalaScript(filePath: String):AbstractFileClassLoader = {
     val settings = new Settings()
+    settings.embeddedDefaults(mcl)
     settings.usejavacp.value = true
+    // settings.verbose.value = true
+
+    val resolved = mcl.findResource(filePath).toExternalForm()
 
     val interpreter = new IMain(settings)
-    interpreter.compileSources(new BatchSourceFile(PlainFile.fromPath(filePath)))
+    interpreter.setContextClassLoader()
+    interpreter.compileSources(new BatchSourceFile(PlainFile.fromPath(resolved.replaceFirst("file:", ""))))
     interpreter.classLoader
   }
 

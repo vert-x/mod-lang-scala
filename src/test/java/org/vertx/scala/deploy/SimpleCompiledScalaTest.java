@@ -31,7 +31,7 @@ public class SimpleCompiledScalaTest extends VertxTestBase {
   @TestVerticle(main="scala:org.vertx.test.SimpleCompiledVerticle")
   public void testSimple() {
     //
-    lightSleep(30000L);
+    lightSleep(5000L);
   }
 
 }

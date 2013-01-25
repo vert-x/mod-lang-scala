@@ -21,6 +21,11 @@ import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.java.deploy.{Verticle => JVerticle}
 import org.vertx.java.deploy.{Container => JContainer}
 
+object ScalaVerticle {
+  def apply(delegate: => Verticle) = 
+    new ScalaVerticle(delegate)
+}
+
 final class ScalaVerticle(delegate: => Verticle) extends JVerticle {
 
   override def setContainer(container: JContainer) {

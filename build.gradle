@@ -63,8 +63,9 @@ dependencies {
 }
 
 compileScala {
-  sourceCompatibility = project.sourceCompatibility
-  targetCompatibility = project.targetCompatibility
+//  scalaCompileOptions.additionalParameters = ['-target=jvm-1.7']
+//  scalaCompileOptions.sourceCompatibility = project.sourceCompatibility
+  scalaCompileOptions.targetCompatibility = project.targetCompatibility
 //  scalaCompileOptions.useCompileDaemon = true
 //  scalaCompileOptions.daemonServer = "localhost:4243"
 }

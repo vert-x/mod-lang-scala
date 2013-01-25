@@ -17,13 +17,13 @@
 package org.vertx.scala.deploy
 
 import org.vertx.scala.Vertx
-import scala.reflect.BeanProperty
+
 
 trait Verticle {
 
-  var vertx: Vertx = null
+  implicit var vertx: Vertx = null
 
-  var container: Container = null
+  implicit var container: Container = null
 
   @throws(classOf[Exception])
   def start(): Unit

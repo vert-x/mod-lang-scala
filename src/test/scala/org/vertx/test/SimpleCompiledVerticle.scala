@@ -1,14 +1,15 @@
 package org.vertx.test
 
-import org.vertx.scala.deploy.Verticle
+import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.eventbus.Message
+import org.vertx.scala.deploy.Verticle
 import org.vertx.scala.http.HttpServerRequest
-import org.vertx.scala.net.NetSocket
-import org.vertx.scala.http.ServerWebSocket
 import org.vertx.scala.http.HttpClientResponse
-import org.vertx.java.core.json.JsonObject
+import org.vertx.scala.http.ServerWebSocket
+import org.vertx.scala.net.NetSocket
 import org.vertx.scala.sockjs.SockJSSocket
+
 
 class SimpleCompiledVerticle extends Verticle {
 
