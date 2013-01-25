@@ -53,9 +53,9 @@ class Vertx(internal: JVertx) {
 
   def fileSystem():FileSystem = FileSystem(internal.fileSystem)
 
-  def eventLoop():Boolean = internal.isEventLoop
+  def isEventLoop():Boolean = internal.isEventLoop
 
-  def worker():Boolean = internal.isWorker
+  def isWorker():Boolean = internal.isWorker
 
   def runOnLoop(handler: () => Unit):Unit = internal.runOnLoop(FunctionHandler0(handler))
 
