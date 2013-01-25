@@ -4,13 +4,15 @@ import org.vertx.java.core.http.{WebSocket => JWebSocket}
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.java.core.buffer.Buffer
+import org.vertx.scala.core.streams.WriteStream
+import org.vertx.scala.core.streams.ReadStream
 
 object WebSocket {
   def apply(jsocket: JWebSocket) =
     new WebSocket(jsocket)
 }
 
-class WebSocket(internal: JWebSocket) {
+class WebSocket(internal: JWebSocket) extends ReadStream with WriteStream {
 
   def binaryHandlerID():String = internal.binaryHandlerID
 

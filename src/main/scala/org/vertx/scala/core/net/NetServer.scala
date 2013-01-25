@@ -22,7 +22,6 @@ import org.vertx.java.core.net.{NetServer => JNetServer}
 import org.vertx.scala.handlers._
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.handlers.FunctionHandler1
-import org.vertx.scala.core.SocketConfigurer
 
 
 object NetServer {

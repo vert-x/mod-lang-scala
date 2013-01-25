@@ -6,6 +6,7 @@ import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.scala.handlers.FunctionHandler0
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
+import org.vertx.scala.core.streams.WriteStream
 
 
 object HttpServerResponse {
@@ -13,14 +14,15 @@ object HttpServerResponse {
     new HttpServerResponse(internal)
 }
 
-class HttpServerResponse(internal: JHttpServerResponse) {
+class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
 
   def close():Unit = {
     internal.close()
   }
 
-  def closeHandler(handler: () => Unit):Unit = {
+  def closeHandler(handler: () => Unit):HttpServerResponse = {
     internal.closeHandler(FunctionHandler0(handler))
+    this
   }
 
   def end():Unit = {
@@ -43,35 +45,44 @@ class HttpServerResponse(internal: JHttpServerResponse) {
     mapAsScalaMapConverter(internal.headers()).asScala.toMap
   }
 
-  def putHeader(name: String, value: Any):Unit = {
+  def putHeader(name: String, value: Any):HttpServerResponse = {
     internal.putHeader(name, value)
+    this
   }
 
-  def putTrailer(name: String, value: Any):Unit = {
+  def putTrailer(name: String, value: Any):HttpServerResponse = {
     internal.putTrailer(name, value)
+    this
   }
 
-  def sendFile(name: String):Unit = {
+  def sendFile(name: String):HttpServerResponse = {
     internal.sendFile(name)
+    this
   }
 
-  def setChunked(value: Boolean):Unit = {
+  def setChunked(value: Boolean):HttpServerResponse = {
     internal.setChunked(value)
+    this
   }
 
   def statusCode():String = statusCode
 
-  def statusCode(code: Int):Unit = {
+  def statusCode(code: Int):HttpServerResponse = {
     internal.statusCode = code
+    this
   }
 
   def statusMessage():String = internal.statusMessage
 
-  def statusMessage(message: String):Unit = {
+  def statusMessage(message: String):HttpServerResponse = {
     internal.statusMessage = message
+    this
   }
 
-  def setWriteQueueMaxSize(maxSize: Int) = internal.setWriteQueueMaxSize(maxSize)
+  def setWriteQueueMaxSize(maxSize: Int):HttpServerResponse = {
+    internal.setWriteQueueMaxSize(maxSize)
+    this
+  }
 
   def trailers():Map[String, Object] = {
     mapAsScalaMapConverter(internal.trailers()).asScala.toMap

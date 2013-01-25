@@ -10,7 +10,7 @@ object ServerWebSocketHandler1 {
 
 class ServerWebSocketHandler1(delegate: (ServerWebSocket) => Unit) extends Handler[JServerWebSocket] {
 
-  implicit def convertJavaToScalaNetSocket(jsocket: JServerWebSocket):ServerWebSocket = {
+  implicit def convertJavaToScalaWebSocket(jsocket: JServerWebSocket):ServerWebSocket = {
     ServerWebSocket(jsocket)
   }
 

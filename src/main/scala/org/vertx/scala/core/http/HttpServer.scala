@@ -23,7 +23,7 @@ import org.vertx.java.core.Handler
 import org.vertx.java.core.http.{HttpServer => VertxHttpServer}
 import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
 import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
-import org.vertx.scala.core.SocketConfigurer
+import org.vertx.scala.core.net.SocketConfigurer
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.handlers.FunctionHandler1
 

@@ -7,6 +7,7 @@ import scala.collection.JavaConverters.mapAsScalaMapConverter
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.scala.handlers.FunctionHandler0
+import org.vertx.scala.core.streams.WriteStream
 
 
 object HttpClientResponse {
@@ -14,7 +15,7 @@ object HttpClientResponse {
     new HttpClientResponse(internal)
 }
 
-class HttpClientResponse(val internal: JHttpClientResponse) {
+class HttpClientResponse(val internal: JHttpClientResponse) extends WriteStream {
 
   def cookies():List[String] = {
     asScalaBufferConverter(internal.cookies()).asScala.toList
@@ -32,20 +33,24 @@ class HttpClientResponse(val internal: JHttpClientResponse) {
     mapAsScalaMapConverter(internal.trailers()).asScala.toMap
   }
 
-  def bodyHandler(handler: (Buffer) => Unit):Unit = {
+  def bodyHandler(handler: (Buffer) => Unit):HttpClientResponse = {
     internal.bodyHandler(new FunctionHandler1(handler))
+    this
   }
 
-  def dataHandler(handler: (Buffer) => Unit):Unit = {
+  def dataHandler(handler: (Buffer) => Unit):HttpClientResponse = {
     internal.dataHandler(new FunctionHandler1(handler))
+    this
   }
 
-  def endHandler(handler: () => Unit):Unit = {
+  def endHandler(handler: () => Unit):HttpClientResponse = {
     internal.endHandler(new FunctionHandler0(handler))
+    this
   }
 
-  def exceptionHandler(handler: (Exception) => Unit):Unit = {
+  def exceptionHandler(handler: (Exception) => Unit):HttpClientResponse = {
     internal.exceptionHandler(new FunctionHandler1(handler))
+    this
   }
 
   def pause():Unit = internal.pause()

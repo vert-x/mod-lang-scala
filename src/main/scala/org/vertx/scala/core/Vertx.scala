@@ -24,6 +24,7 @@ import org.vertx.scala.core.net.NetClient
 import org.vertx.scala.core.net.NetServer
 import org.vertx.scala.core.http.HttpClient
 import org.vertx.scala.core.http.HttpServer
+import org.vertx.scala.core.sockjs.SockJSServer
 
 
 object Vertx {

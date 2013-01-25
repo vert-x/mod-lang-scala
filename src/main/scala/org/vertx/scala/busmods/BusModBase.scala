@@ -16,12 +16,13 @@
 
 package org.vertx.scala.busmods
 
-import org.vertx.scala.deploy.Verticle
-import org.vertx.scala.core.EventBus
 import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.logging.Logger
 import org.vertx.java.core.eventbus.Message
 import org.vertx.java.core.json.JsonArray
+import org.vertx.scala.deploy.Verticle
+import org.vertx.scala.core.EventBus
+
 
 trait BusModBase extends Verticle {
 
@@ -107,6 +108,7 @@ trait BusModBase extends Verticle {
     }
   }
 
+  // FIXME There's got to be a better way of doing this
   def getOptionalLongConfig(fieldName: String, defaultValue: Long):Long = {
     var l = config.getLong(fieldName)
     if (l == null) {

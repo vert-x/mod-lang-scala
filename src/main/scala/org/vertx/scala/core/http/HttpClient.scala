@@ -21,7 +21,7 @@ import org.vertx.java.core.http.{HttpClient => JHttpClient}
 import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
 import org.vertx.java.core.http.{WebSocket => JWebSocket}
 import org.vertx.java.core.http.{WebSocketVersion => JWebSocketVersion}
-import org.vertx.scala.core.ClientConfigurer
+import org.vertx.scala.core.net.ClientConfigurer
 import org.vertx.scala.handlers.FunctionHandler1
 
 object HttpClient {

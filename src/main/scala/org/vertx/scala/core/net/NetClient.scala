@@ -20,7 +20,7 @@ import collection.JavaConversions._
 import org.vertx.java.core.net.{NetClient => JNetClient}
 import org.vertx.java.core.net.{NetSocket => JNetSocket}
 import org.vertx.scala.handlers.FunctionHandler1
-import org.vertx.scala.core.ClientConfigurer
+
 
 object NetClient {
   def apply(actual: JNetClient) =

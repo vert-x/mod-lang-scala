@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.core
+package org.vertx.scala.core.sockjs
 
 import org.vertx.java.core.json.JsonArray
 import org.vertx.java.core.json.JsonObject
-import org.vertx.java.core.sockjs.SockJSSocket
 import org.vertx.java.core.sockjs.{SockJSServer => JSockJSServer}
-
-import org.vertx.scala.handlers.FunctionHandler1
+import org.vertx.java.core.sockjs.{SockJSServer => JSockJSServer}
+import org.vertx.scala.core.http.SockJSSocket
+iimport org.vertx.scala.core.sockjs.SockJSSocketHandler1
+import org.vertx.scala.core.sockjs.SockJSSocket
+mport org.vertx.scala.core.http.SockJSSocketHandler1
 
 class SockJSServer(internal: JSockJSServer) {
 
@@ -37,8 +39,8 @@ class SockJSServer(internal: JSockJSServer) {
     internal.bridge(sjsConfig, inboundPermitted, outboundPermitted, authTimeout, authAddress)
   }
 
-  def meg(config: JsonObject, handler: (SockJSSocket) => Unit): Unit = {
-    internal.installApp(config, new FunctionHandler1(handler))
+  def installApp(config: JsonObject, handler: (SockJSSocket) => Unit): Unit = {
+    internal.installApp(config, new SockJSSocketHandler1(handler))
   }
 
 }

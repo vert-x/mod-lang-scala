@@ -1,4 +1,4 @@
-package org.vertx.scala.core
+package org.vertx.scala.core.net
 
 trait SocketConfigurer {
 

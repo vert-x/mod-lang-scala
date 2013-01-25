@@ -6,6 +6,9 @@ import org.vertx.java.core.eventbus.Message
 import org.vertx.scala.core.http.HttpServerRequest
 import org.vertx.scala.core.net.NetSocket
 import org.vertx.scala.core.http.ServerWebSocket
+import org.vertx.scala.core.http.HttpClientResponse
+import org.vertx.java.core.json.JsonObject
+import org.vertx.scala.core.sockjs.SockJSSocket
 
 class SimpleCompiledVerticle extends Verticle {
 
@@ -32,8 +35,9 @@ class SimpleCompiledVerticle extends Verticle {
     }).listen(7080)
 
     vertx.createHttpServer.requestHandler({ req: HttpServerRequest => 
-      val file : String = if (req.path == "/") "/index.html" else req.uri
-      req.response.sendFile("webroot/" + file)
+//      val file : String = if (req.path == "/") "/index.html" else req.uri
+//      req.response.sendFile("webroot/" + file)
+      req.response.end("hello scala!")
     }).listen(8080)
 
     // This looks weird, I'm probably doing something wrong.
@@ -47,7 +51,7 @@ class SimpleCompiledVerticle extends Verticle {
 
     vertx.sharedData.map("one")
 
-    vertx
+    def http = vertx
       .createHttpServer
       .websocketHandler({s: ServerWebSocket => 
         s.writeTextFrame("foo")
@@ -60,6 +64,10 @@ class SimpleCompiledVerticle extends Verticle {
         })
       .listen(9090)
 
+    val config = new JsonObject()
+    vertx.createSockJSServer(http).installApp(config, { sock: SockJSSocket =>
+      
+    })
 
     println("compiled verticle started after hello world!")
   }
