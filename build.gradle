@@ -43,8 +43,8 @@ sourceSets {
 }
 
 dependencies {
-  scalaTools "org.scala-lang:scala-compiler:$scalaVersion"
-  scalaTools "org.scala-lang:scala-library:$scalaVersion"
+//  scalaTools "org.scala-lang:scala-compiler:$scalaVersion"
+//  scalaTools "org.scala-lang:scala-library:$scalaVersion"
 
   compile "org.vert-x:vertx-core:$vertxVersion"
   compile "org.vert-x:vertx-platform:$vertxVersion"
@@ -60,14 +60,19 @@ dependencies {
   testCompile("org.vert-x:vertx-testframework:$vertxVersion") {
     transitive = false // don't need all of the other language deps
   }
+  testCompile("org.vert-x:vertx-testsuite:$vertxVersion") {
+    transitive = false // don't need all of the other language deps
+  }
 }
 
 compileScala {
-//  scalaCompileOptions.additionalParameters = ['-target=jvm-1.7']
-//  scalaCompileOptions.sourceCompatibility = project.sourceCompatibility
-  scalaCompileOptions.targetCompatibility = project.targetCompatibility
-//  scalaCompileOptions.useCompileDaemon = true
-//  scalaCompileOptions.daemonServer = "localhost:4243"
+  scalaCompileOptions.additionalParameters = ['-feature']
+//  scalaCompileOptions.targetCompatibility = project.targetCompatibility
+}
+
+compileTestScala {
+  scalaCompileOptions.additionalParameters = ['-feature']
+//  scalaCompileOptions.targetCompatibility = project.targetCompatibility
 }
 
 javadoc.classpath += configurations.provided
