@@ -31,7 +31,16 @@ object Vertx {
   def apply(actual: JVertx) =
     new Vertx(actual)
 
-  def find() =
+  def newVertx() =
+    new Vertx(JVertx.newVertx())
+
+  def newVertx(port: Int, hostname: String) =
+    new Vertx(JVertx.newVertx(port, hostname))
+
+  def newVertx(hostname: String) =
+    new Vertx(JVertx.newVertx(hostname))
+
+  def locate() =
     new Vertx(VertxLocator.vertx)
 }
 
