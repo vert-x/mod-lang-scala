@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.vertx.scala.deploy
 
+import scala.language.implicitConversions
 import org.vertx.scala.Vertx
 import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.java.deploy.{Verticle => JVerticle}
@@ -26,22 +27,27 @@ object ScalaVerticle {
     new ScalaVerticle(delegate)
 }
 
-final class ScalaVerticle(delegate: => Verticle) extends JVerticle {
+final private[deploy] class ScalaVerticle(delegate: => Verticle) extends JVerticle {
 
-  override def setContainer(container: JContainer) {
-    super.setContainer(container)
-    delegate.container = Container(container)
+  override def setContainer(jcontainer: JContainer) {
+    delegate.container = Container(jcontainer)
+    super.setContainer(jcontainer)
   }
 
-  override def setVertx(vertx: JVertx) {
-    super.setVertx(vertx)
-    delegate.vertx = Vertx(vertx)
+  override def setVertx(jvertx: JVertx) {
+    delegate.vertx = Vertx(jvertx)
+    super.setVertx(jvertx)
   }
 
   @throws(classOf[Exception])
-  override def start(): Unit = delegate.start
+  override def start(): Unit = {
+    delegate.start
+  }
 
   @throws(classOf[Exception])
-  override def stop(): Unit = delegate.stop
+  override def stop(): Unit = {
+    super.stop
+    delegate.stop
+  }
 
 }

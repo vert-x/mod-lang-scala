@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
@@ -33,27 +33,27 @@ object FileSystem {
 
 class FileSystem(internal: JFileSystem) {
 
-  def chmod(path: String, perms: String, handler: () => Unit):Unit =
-    internal.chmod(path, perms, FunctionAsyncResultHandler0(handler))
+//  def chmod(path: String, perms: String, handler: () => Unit):Unit =
+//    internal.chmod(path, perms, FunctionAsyncResultHandler0(handler))
 
   def chmod(path: String, perms: String, dirPerms: String = null, handler: () => Unit):Unit =
     internal.chmod(path, perms, dirPerms, FunctionAsyncResultHandler0(handler))
 
-  def chmodSync(path: String, perms: String):Unit =
-    internal.chmodSync(path, perms)
+//  def chmodSync(path: String, perms: String):Unit =
+//    internal.chmodSync(path, perms)
 
-  def chmodSync(path: String, perms: String, dirPerms: String):Unit =
+  def chmodSync(path: String, perms: String, dirPerms: String = null):Unit =
     internal.chmodSync(path, perms, dirPerms)
 
-  def copy(from: String, to: String, handler: () => Unit):Unit =
-    internal.copy(from, to, FunctionAsyncResultHandler0(handler))
+//  def copy(from: String, to: String, handler: () => Unit):Unit =
+//    internal.copy(from, to, FunctionAsyncResultHandler0(handler))
 
-  def copy(from: String, to: String, recursive: Boolean, handler: () => Unit):Unit =
+  def copy(from: String, to: String, recursive: Boolean = false, handler: () => Unit):Unit =
     internal.copy(from, to, recursive, FunctionAsyncResultHandler0(handler))
 
-  def copySync(from: String, to: String):Unit = internal.copySync(from, to)
+//  def copySync(from: String, to: String):Unit = internal.copySync(from, to)
 
-  def copySync(from: String, to: String, recursive: Boolean):Unit =
+  def copySync(from: String, to: String, recursive: Boolean = false):Unit =
     internal.copySync(from, to, recursive)
 
   def copySync(path: String, perms: String, handler: () => Unit):Unit =
@@ -62,17 +62,17 @@ class FileSystem(internal: JFileSystem) {
   def createFile(path: String, handler: () => Unit):Unit =
     internal.createFile(path, FunctionAsyncResultHandler0(handler))
 
-  def createFileSync(path: String):Unit =
-    internal.createFileSync(path)
+//  def createFileSync(path: String):Unit =
+//    internal.createFileSync(path)
 
-  def createFileSync(path: String, perms: String):Unit =
+  def createFileSync(path: String, perms: String = null):Unit =
     internal.createFileSync(path, perms)
 
-  def delete(path: String, recursive: Boolean, handler: () => Unit):Unit =
+  def delete(path: String, recursive: Boolean = false, handler: () => Unit):Unit =
     internal.delete(path, recursive, FunctionAsyncResultHandler0(handler))
 
-  def delete(path: String, handler: () => Unit):Unit =
-    internal.delete(path, FunctionAsyncResultHandler0(handler))
+//  def delete(path: String, handler: () => Unit):Unit =
+//    internal.delete(path, FunctionAsyncResultHandler0(handler))
 
   def deleteSync(path: String):Unit =
     internal.deleteSync(path)

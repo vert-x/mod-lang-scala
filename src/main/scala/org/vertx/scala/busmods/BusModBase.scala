@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@ import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.logging.Logger
 import org.vertx.java.core.eventbus.Message
 import org.vertx.java.core.json.JsonArray
-import org.vertx.scala.deploy.Verticle
 import org.vertx.scala.EventBus
 import org.vertx.scala.JSON._
-import scala.util.parsing.json.JSONObject
-import scala.util.parsing.json.JSONArray
+import org.vertx.scala.deploy.Verticle
+
 
 /**
  * If you're reading this code and wondering why it converts between JSON types, 
@@ -43,36 +42,39 @@ trait BusModBase extends Verticle {
   var logger: Logger = null
 
   @throws(classOf[Exception])
-  def start(): Unit = {
+  final def start(): Unit = {
     eb = vertx.eventBus
     config = container.config()
     logger = container.logger()
+    startMod()
   }
 
-  def sendOK(message: Message[JSONObject]):Unit = {
+  def startMod(): Unit
+
+  def sendOK(message: Message[JsonObject]):Unit = {
     sendOK(message, null)
   }
 
-  def sendStatus(status: String, message: Message[JSONObject], reply: JSONObject = new JsonObject()):Unit = {
+  def sendStatus(status: String, message: Message[JsonObject], reply: JsonObject = null):Unit = {
     reply.putString("status", status)
     message.reply(reply)
   }
 
-  def sendOK(message: Message[JSONObject], reply: JSONObject = new JsonObject()):Unit = {
+  def sendOK(message: Message[JsonObject], reply: JsonObject = null):Unit = {
     sendStatus("ok", message, reply)
   }
 
-  def sendError(message: Message[JSONObject], error: String):Unit = {
+  def sendError(message: Message[JsonObject], error: String):Unit = {
     sendError(message, error, null)
   }
 
-  def sendError(message: Message[JSONObject], error: String, e: Exception):Unit = {
+  def sendError(message: Message[JsonObject], error: String, e: Exception):Unit = {
     logger.error(error, e)
     var json = new JsonObject().putString("status", "error").putString("message", error)
     message.reply(json)
   }
 
-  def getMandatoryString(fieldName: String, message: Message[JSONObject]):String = {
+  def getMandatoryString(fieldName: String, message: Message[JsonObject]):String = {
     var obj = message.body.getString(fieldName)
     if (obj == null) {
       sendError(message, fieldName + " must be specified")
@@ -80,7 +82,7 @@ trait BusModBase extends Verticle {
     obj
   }
 
-  def getMandatoryObject(fieldName: String, message: Message[JSONObject]):JSONObject = {
+  def getMandatoryObject(fieldName: String, message: Message[JsonObject]):JsonObject = {
     var obj = message.body.getObject(fieldName)
     if (obj == null) {
       sendError(message, fieldName + " must be specified")
@@ -93,7 +95,7 @@ trait BusModBase extends Verticle {
     if (b == null) defaultValue else b
   }
 
-  def getOptionalStringConfig(fieldName: String, defaultValue: String ):String = {
+  def getOptionalStringConfig(fieldName: String, defaultValue: String):String = {
     var b = config.getString(fieldName)
     if (b == null) defaultValue else b
   }
@@ -109,7 +111,7 @@ trait BusModBase extends Verticle {
     if (l == null) defaultValue else l
   }
 
-  def getOptionalObjectConfig(fieldName: String, defaultValue: JSONObject):JSONObject = {
+  def getOptionalObjectConfig(fieldName: String, defaultValue: JsonObject):JsonObject = {
     var o = config.getObject(fieldName)
     if (o == null) defaultValue else o
   }

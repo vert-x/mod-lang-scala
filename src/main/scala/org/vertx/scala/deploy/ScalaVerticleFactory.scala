@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,52 +35,41 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   protected val PREFIX: String = "scala:"
 
-  protected val SUFFIX: String = ".scala"
+  private val settings = new Settings()
 
   private var manager: VerticleManager = null
 
   private var mcl: ModuleClassLoader = null
 
-  def init(amanager: VerticleManager, amcl: ModuleClassLoader): Unit = {
+  private var interpreter: IMain = null
+
+  override def init(amanager: VerticleManager, amcl: ModuleClassLoader): Unit = {
     manager = amanager
     mcl = amcl
-  }
-
-  @throws(classOf[Exception])
-  def createVerticle(main: String): JVerticle = {
-
-    var verticle: Verticle = null
-    if (main.endsWith(SUFFIX)) {
-      val abstractFileClassLoader: AbstractFileClassLoader = compileScalaScript(main)
-      // TODO parse non-relative URLs
-      val fqn = main.substring(main.lastIndexOf('/') + 1, main.lastIndexOf('.'))
-      verticle = abstractFileClassLoader.loadClass(fqn).newInstance().asInstanceOf[Verticle]
-    }
-    else {
-      val className = if (main.startsWith(PREFIX)) main.replaceFirst(PREFIX, "") else main
-      val rawClass = mcl.loadClass(className)
-      verticle = rawClass.newInstance().asInstanceOf[Verticle]
-    }
-
-    ScalaVerticle(verticle)
-  }
-
-  def reportException(t: Throwable): Unit = {
-    manager.getLogger().error("oops!", t)
-  }
-
-  def compileScalaScript(filePath: String):AbstractFileClassLoader = {
-    val settings = new Settings()
     settings.embeddedDefaults(mcl)
     settings.usejavacp.value = true
     // settings.verbose.value = true
-
-    val resolved = mcl.findResource(filePath).toExternalForm()
-
-    val interpreter = new IMain(settings)
+    interpreter = new IMain(settings)
     interpreter.setContextClassLoader()
+  }
+
+  @throws(classOf[Exception])
+  override def createVerticle(main: String): JVerticle = {
+    val rawClass = if (main.startsWith(PREFIX)) mcl.loadClass(main.replaceFirst(PREFIX, "")) else loadScript(main)
+    val verticle = rawClass.newInstance().asInstanceOf[Verticle]
+    ScalaVerticle(verticle)
+  }
+
+  override def reportException(t: Throwable): Unit = {
+    manager.getLogger().error("oops!", t)
+  }
+
+  @throws(classOf[Exception])
+  private def loadScript(main: String):Class[_] = {
+    val resolved = mcl.findResource(main).toExternalForm()
     interpreter.compileSources(new BatchSourceFile(PlainFile.fromPath(resolved.replaceFirst("file:", ""))))
-    interpreter.classLoader
+    val className = main.replaceFirst(".scala$", "").replaceAll("/", ".")
+    interpreter.classLoader.loadClass(className)
   }
 
 }

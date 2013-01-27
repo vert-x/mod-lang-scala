@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 package org.vertx.scala
 
+import scala.language.implicitConversions
+import scala.util.parsing.json.JSONObject
+import scala.util.parsing.json.JSONArray
 import org.vertx.java.core.eventbus.{EventBus => JEventBus}
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.json.JsonArray
@@ -25,12 +28,16 @@ import org.vertx.scala.JSON._
 import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.scala.handlers.FunctionAsyncResultHandler0
 import org.vertx.scala.handlers.FunctionAsyncResultHandler0
-import scala.util.parsing.json.JSONObject
-import scala.util.parsing.json.JSONArray
+
 
 object EventBus {
   def apply(actual: JEventBus) =
     new EventBus(actual)
+
+  implicit def scalaToJavaDouble(num: Double):java.lang.Double = {
+    new java.lang.Double(num)
+  }
+
 }
 
 class EventBus(internal: JEventBus) {
@@ -45,71 +52,71 @@ class EventBus(internal: JEventBus) {
 
   def publish(address: String, payload: Character):Unit = internal.publish(address, payload)
 
-  def publish(address: String, payload: java.lang.Double):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: Double):Unit = internal.publish(address, payload)
 
-  def publish(address: String, payload: java.lang.Float):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: Float):Unit = internal.publish(address, new java.lang.Float(payload))
 
-  def publish(address: String, payload: Integer):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: Int):Unit = internal.publish(address, new java.lang.Integer(payload))
 
   def publish(address: String, payload: JSONArray):Unit = internal.publish(address, payload)
 
   def publish(address: String, payload: JSONObject):Unit = internal.publish(address, payload)
 
-  def publish(address: String, payload: java.lang.Long):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: Long):Unit = internal.publish(address, new java.lang.Long(payload))
 
-  def publish(address: String, payload: java.lang.Short):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: Short):Unit = internal.publish(address, new java.lang.Short(payload))
 
-  def publish(address: String, payload: java.lang.String):Unit = internal.publish(address, payload)
+  def publish(address: String, payload: String):Unit = internal.publish(address, payload)
 
-  def send(address: String, payload: java.lang.Boolean, handler: (Message[java.lang.Boolean]) => Unit = {msg: Message[java.lang.Boolean] => }):Unit = {
+  def sendBoolean(address: String, payload: Boolean, handler: (Message[java.lang.Boolean]) => Unit = {msg: Message[java.lang.Boolean] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: Buffer, handler: (Message[Buffer]) => Unit = {msg: Message[Buffer] => }):Unit = {
+  def sendBuffer(address: String, payload: Buffer, handler: (Message[Buffer]) => Unit = {msg: Message[Buffer] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Byte, handler: (Message[java.lang.Byte]) => Unit = {msg: Message[java.lang.Byte] => }):Unit = {
+  def sendByte(address: String, payload: Byte, handler: (Message[java.lang.Byte]) => Unit = {msg: Message[java.lang.Byte] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: Array[Byte], handler: (Message[Array[Byte]]) => Unit = {msg: Message[Array[Byte]] => }):Unit = {
+  def sendByteArray(address: String, payload: Array[Byte], handler: (Message[Array[Byte]]) => Unit = {msg: Message[Array[Byte]] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Character, handler: (Message[java.lang.Character]) => Unit = {msg: Message[java.lang.Character] => }):Unit = {
+  def sendChar(address: String, payload: Character, handler: (Message[Character]) => Unit = {msg: Message[Character] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Double, handler: (Message[java.lang.Double]) => Unit = {msg: Message[java.lang.Double] => }):Unit = {
+  def sendDouble(address: String, payload: Double, handler: (Message[java.lang.Double]) => Unit = {msg: Message[java.lang.Double] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Float, handler: (Message[java.lang.Float]) => Unit = {msg: Message[java.lang.Float] => }):Unit = {
+  def sendFloat(address: String, payload: Float, handler: (Message[java.lang.Float]) => Unit = {msg: Message[java.lang.Float] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Integer, handler: (Message[java.lang.Integer]) => Unit = {msg: Message[java.lang.Integer] => }):Unit = {
+  def sendInt(address: String, payload: Int, handler: (Message[java.lang.Integer]) => Unit = {msg: Message[java.lang.Integer] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: JSONArray, handler: (Message[JsonArray]) => Unit = {msg: Message[JsonArray] => }):Unit = {
+  def sendJsonArray(address: String, payload: JSONArray, handler: (Message[JsonArray]) => Unit = {msg: Message[JsonArray] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: JSONObject, handler: (Message[JsonObject]) => Unit = {msg: Message[JsonObject] => }):Unit = {
+  def sendJsonObject(address: String, payload: JSONObject, handler: (Message[JsonObject]) => Unit = {msg: Message[JsonObject] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Long, handler: (Message[java.lang.Long]) => Unit = {msg: Message[java.lang.Long] => }):Unit = {
+  def sendLong(address: String, payload: Long, handler: (Message[java.lang.Long]) => Unit = {msg: Message[java.lang.Long] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: java.lang.Short, handler: (Message[java.lang.Short]) => Unit = {msg: Message[java.lang.Short] => }):Unit = {
+  def sendShort(address: String, payload: Short, handler: (Message[java.lang.Short]) => Unit = {msg: Message[java.lang.Short] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def send(address: String, payload: String, handler: (Message[String]) => Unit = {msg: Message[String] => }):Unit = {
+  def sendString(address: String, payload: String, handler: (Message[String]) => Unit = {msg: Message[String] => }):Unit = {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 

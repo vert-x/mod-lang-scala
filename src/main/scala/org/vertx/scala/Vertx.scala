@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.vertx.scala
 
+import scala.language.implicitConversions
 import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.java.deploy.impl.VertxLocator
 import org.vertx.scala.handlers.FunctionHandler0
@@ -44,9 +45,13 @@ object Vertx {
     new Vertx(VertxLocator.vertx)
 }
 
-class Vertx(internal: JVertx) {
+class Vertx(val internal: JVertx) {
 
-  val eventBus:EventBus = new EventBus(internal.eventBus)
+  implicit def convertJavaToScalaVertx(jvertx: JVertx):Vertx = Vertx(jvertx)
+
+  implicit def convertScalaToJavaVertx(vertx: Vertx):JVertx = vertx.internal
+
+  val eventBus:EventBus = EventBus(internal.eventBus)
 
   def cancelTimer(id: Long):Boolean = internal.cancelTimer(id)
 
