@@ -120,19 +120,19 @@ class EventBus(internal: JEventBus) {
     internal.send(address, payload, FunctionHandler1(handler))
   }
 
-  def registerHandler(address: String, handler: (Message[Any]) => Unit, resultHandler: () => Unit = {() => }):FunctionHandler1[Message[Any]] = {
+  def registerHandler[T](address: String, handler: (Message[T]) => Unit, resultHandler: () => Unit = {() => }):FunctionHandler1[Message[T]] = {
     val func = FunctionHandler1(handler)
     internal.registerHandler(address, func, FunctionAsyncResultHandler0(resultHandler))
     func // return the actual function so it can be unregistered later
   }
 
-  def registerLocalHandler(address: String, handler: (Message[Any]) => Unit):FunctionHandler1[Message[Any]] = {
+  def registerLocalHandler[T](address: String, handler: (Message[T]) => Unit):FunctionHandler1[Message[T]] = {
     val func = FunctionHandler1(handler)
     internal.registerLocalHandler(address, func)
     func // return the actual function so it can be unregistered later
   }
 
-  def unregisterHandler(address: String, func: FunctionHandler1[Message[Any]], resultHandler: () => Unit = {() => }):Unit = {
+  def unregisterHandler(address: String, func: FunctionHandler1[Message[_]], resultHandler: () => Unit = {() => }):Unit = {
     internal.unregisterHandler(address, func, FunctionAsyncResultHandler0(resultHandler))
   }
 

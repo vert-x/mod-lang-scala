@@ -46,7 +46,7 @@ class SimpleScriptVerticle extends Verticle {
     vertx.runOnLoop( closure )
     vertx.runOnLoop( () => { println("world") } )
 
-    vertx.eventBus.send("test.echo", "echo!", (msg: Message[String]) => {
+    vertx.eventBus.sendString("test.echo", "echo!", (msg: Message[String]) => {
       printf("echo received: %s%n", msg.body)
     })
 

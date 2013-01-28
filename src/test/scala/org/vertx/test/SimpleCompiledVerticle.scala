@@ -20,13 +20,13 @@ class SimpleCompiledVerticle extends Verticle {
   @throws(classOf[Exception])
   def start():Unit = {
 
-    def config:JSONObject = null
+    def sconfig:JSONObject = null
 
     container.deployModule("foo")
-    container.deployModule("foo", config)
-    container.deployModule("foo", config, 1)
+    container.deployModule("foo", sconfig)
+    container.deployModule("foo", sconfig, 1)
     container.deployModule("foo", instances = 1)
-    container.deployModule("foo", config, 1, {id: String => })
+    container.deployModule("foo", sconfig, 1, {id: String => })
 
     vertx.fileSystem.chmod("file", "", "", {() => })
 
@@ -62,7 +62,7 @@ class SimpleCompiledVerticle extends Verticle {
     vertx.runOnLoop( closure )
     vertx.runOnLoop( () => { println("world") } )
 
-    vertx.eventBus.send("test.echo", "echo!", (msg: Message[String]) => {
+    vertx.eventBus.sendString("test.echo", "echo!", (msg: Message[String]) => {
       printf("echo received: %s%n", msg.body)
     })
 

@@ -67,7 +67,7 @@ dependencies {
 
 compileScala {
   scalaCompileOptions.additionalParameters = ['-feature']
-//  scalaCompileOptions.targetCompatibility = project.targetCompatibility
+//  scalaCompileOptions.targetCompatibility = '1.7'
 }
 
 compileTestScala {
@@ -81,7 +81,7 @@ test {
   // Some vert.x properties
   systemProperty 'vertx.test.timeout', 15
   systemProperty 'vertx.langs.scala', 'org.vertx.scala.deploy.ScalaVerticleFactory'
-  systemProperty 'vertx.mods', "$projectDir/build/tmp/mod-test"
+  systemProperty 'vertx.mods', "$projectDir/build/resources/test"
   systemProperty 'vertx.version', "$project.version"
 
   // Show output

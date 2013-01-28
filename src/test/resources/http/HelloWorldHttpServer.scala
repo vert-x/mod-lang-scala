@@ -18,20 +18,15 @@ class HelloWorldHttpServer extends Verticle {
   @throws(classOf[Exception])
   override def start(): Unit = {
     http = vertx.createHttpServer.requestHandler({ req: HttpServerRequest =>
-      println("path: " + req.path)
-      req.response.end("Hello World")
+      req.response.end("Hello World (direct write)")
     }).listen(8080)
   }
 
   @throws(classOf[Exception])
   override def stop(): Unit = {
     def latch = new CountDownLatch(1)
-    def func = () => {
-      latch.countDown()
-    }
-    http.close(func)
+    http.close(() => latch.countDown())
     latch.await(5000L, TimeUnit.MILLISECONDS)
   }
-
 
 }
