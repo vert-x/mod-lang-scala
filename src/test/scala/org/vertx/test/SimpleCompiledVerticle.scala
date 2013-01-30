@@ -60,7 +60,8 @@ class SimpleCompiledVerticle extends Verticle {
     // This looks weird, I'm probably doing something wrong.
     val closure = () => { Thread.sleep(2000L); print("hello ") }
     vertx.runOnLoop( closure )
-    vertx.runOnLoop( () => { println("world") } )
+
+    vertx.runOnLoop { () => println("world") }
 
     vertx.eventBus.sendString("test.echo", "echo!") { msg =>
       printf("echo received: %s%n", msg.body)
