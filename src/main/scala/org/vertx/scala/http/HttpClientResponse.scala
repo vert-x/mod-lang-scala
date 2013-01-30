@@ -16,11 +16,10 @@
 
 package org.vertx.scala.http
 
-import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
 import scala.collection.JavaConverters._
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.scala.handlers.FunctionHandler1
-import org.vertx.scala.handlers.FunctionHandler0
+import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
+import org.vertx.scala.FunctionConverters._
 import org.vertx.scala.streams.ReadStream
 
 /**
@@ -50,23 +49,23 @@ class HttpClientResponse(val internal: JHttpClientResponse) extends ReadStream {
     mapAsScalaMapConverter(internal.trailers()).asScala.toMap
   }
 
-  def bodyHandler(handler: (Buffer) => Unit):HttpClientResponse.this.type = {
-    internal.bodyHandler(new FunctionHandler1(handler))
+  def bodyHandler(handler: Buffer => Unit):HttpClientResponse.this.type = {
+    internal.bodyHandler(handler)
     this
   }
 
-  def dataHandler(handler: (Buffer) => Unit):HttpClientResponse.this.type = {
-    internal.dataHandler(new FunctionHandler1(handler))
+  def dataHandler(handler: Buffer => Unit):HttpClientResponse.this.type = {
+    internal.dataHandler(handler)
     this
   }
 
   def endHandler(handler: () => Unit):HttpClientResponse.this.type = {
-    internal.endHandler(new FunctionHandler0(handler))
+    internal.endHandler(handler)
     this
   }
 
-  def exceptionHandler(handler: (Exception) => Unit):HttpClientResponse.this.type = {
-    internal.exceptionHandler(new FunctionHandler1(handler))
+  def exceptionHandler(handler: Exception => Unit):HttpClientResponse.this.type = {
+    internal.exceptionHandler(handler)
     this
   }
 

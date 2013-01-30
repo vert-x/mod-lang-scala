@@ -24,13 +24,34 @@ import org.vertx.java.core.net.{NetSocket => JNetSocket}
  * @author swilliams
  * 
  */
-trait ClientConfigurer extends ConnectionConfigurer {
+trait ConnectionConfigurer {
 
-  def close():Unit
+  def keyStorePassword():String
 
-  def bossThreads():Int
+  def keyStorePassword(keyStorePassword: String):ConnectionConfigurer.this.type
 
-  def connectTimeout():Long
+  def keyStorePath():String
+
+  def keyStorePath(keyStorePath: String):ConnectionConfigurer.this.type
+
+  def receiveBufferSize():Int
+
+  def receiveBufferSize(receiveBufferSize: Int):ConnectionConfigurer.this.type
+
+  def sendBufferSize():Int
+
+  def sendBufferSize(sendBufferSize: Int):ConnectionConfigurer.this.type
+
+  def trafficClass():Int
+
+  def trafficClass(trafficClass: Int):ConnectionConfigurer.this.type
+
+  def trustStorePassword():String
+
+  def trustStorePassword(password: String):ConnectionConfigurer.this.type
+
+  def trustStorePath():String
+
+  def trustStorePath(path: String):ConnectionConfigurer.this.type
 
 }
-

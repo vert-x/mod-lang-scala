@@ -18,16 +18,15 @@ package org.vertx.scala.deploy
 
 import java.io.File
 import java.net.URL
-import org.vertx.java.deploy.{Container => JContainer}
-import org.vertx.java.deploy.impl.Deployment
-import org.vertx.java.deploy.impl.VertxLocator
-import org.vertx.java.core.logging.Logger
-import org.vertx.scala.JSON._
-import org.vertx.scala.handlers.FunctionHandler0
-import org.vertx.scala.handlers.FunctionHandler1
 import scala.util.parsing.json.JSONObject
 import scala.collection.JavaConverters._
 import org.vertx.java.core.json.JsonObject
+import org.vertx.java.core.logging.Logger
+import org.vertx.java.deploy.{Container => JContainer}
+import org.vertx.java.deploy.impl.Deployment
+import org.vertx.java.deploy.impl.VertxLocator
+import org.vertx.scala.JSON._
+import org.vertx.scala.FunctionConverters._
 
 /**
  * @author swilliams
@@ -44,20 +43,15 @@ object Container {
 
 class Container(internal: JContainer) {
 
-  def deployModule(name: String, config: JSONObject = null, instances: Int = 1, handler: (String) => Unit = {msg: String => }):Unit = 
-      internal.deployModule(name, config, instances, new FunctionHandler1(handler))
+  def deployModule(name: String, config: JSONObject = null, instances: Int = 1)(handler: String => Unit = {msg: String => }):Unit = internal.deployModule(name, config, instances, handler)
 
-  def deployVerticle(name: String, config: JSONObject = null, instances: Int = 1, handler: (String) => Unit = {msg: String => }):Unit =
-    internal.deployVerticle(name, config, instances, new FunctionHandler1(handler))
+  def deployVerticle(name: String, config: JSONObject = null, instances: Int = 1)(handler: String => Unit = {msg: String => }):Unit = internal.deployVerticle(name, config, instances, handler)
 
-  def deployWorkerVerticle(name: String, config: JSONObject = null, instances: Int = 1, handler: (String) => Unit = {msg: String => }):Unit =
-    internal.deployWorkerVerticle(name, config, instances, new FunctionHandler1(handler))
+  def deployWorkerVerticle(name: String, config: JSONObject = null, instances: Int = 1)(handler: String => Unit = {msg: String => }):Unit = internal.deployWorkerVerticle(name, config, instances, handler)
 
   def config():JSONObject = internal.getConfig
 
-  def env():Map[String, String] = { 
-    mapAsScalaMapConverter(internal.getEnv()).asScala.toMap
-  }
+  def env():Map[String, String] = mapAsScalaMapConverter(internal.getEnv()).asScala.toMap
 
   def exit():Unit = internal.exit
 
@@ -65,12 +59,10 @@ class Container(internal: JContainer) {
 
   def undeployModule(deploymentID: String):Unit = internal.undeployModule(deploymentID)
 
-  def undeployModule(deploymentID: String, handler: () => Unit):Unit =
-    internal.undeployModule(deploymentID, new FunctionHandler0(handler))
+  def undeployModule(deploymentID: String, handler: () => Unit):Unit = internal.undeployModule(deploymentID, handler)
 
   def undeployVerticle(deploymentID: String):Unit = internal.undeployVerticle(deploymentID)
 
-  def undeployVerticle(deploymentID: String, handler: () => Unit):Unit =
-    internal.undeployVerticle(deploymentID, new FunctionHandler0(handler))
+  def undeployVerticle(deploymentID: String, handler: () => Unit):Unit = internal.undeployVerticle(deploymentID, handler)
 
 }

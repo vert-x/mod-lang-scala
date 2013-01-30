@@ -15,22 +15,22 @@
  */
 package eventbus
 
-import org.vertx.scala.busmods.BusModBase
+import org.vertx.scala.mods.ModuleBase
 import org.vertx.java.core.eventbus.Message
 
 /**
  * @author swilliams
  *
  */
-class EchoBus extends BusModBase {
+class EchoBus extends ModuleBase {
 
   def startMod(): Unit = {
-    eb.registerHandler("test.echo", { msg: Message[String] =>
+    eb.registerHandler("test.echo") { msg: Message[String] =>
       msg.reply(msg.body)
-    })
-    eb.registerHandler("test.echo.local", { msg: Message[String] =>
+    }
+    eb.registerHandler("test.echo.local") { msg: Message[String] =>
       msg.reply(msg.body)
-    })
+    }
   }
 
   override def stop(): Unit = {

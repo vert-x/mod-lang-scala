@@ -18,8 +18,7 @@ package org.vertx.scala.streams
 
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.streams.{WriteStream => JWriteStream}
-import org.vertx.scala.handlers.FunctionHandler0
-import org.vertx.scala.handlers.FunctionHandler1
+
 
 /**
  * @author swilliams

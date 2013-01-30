@@ -20,8 +20,8 @@ import collection.JavaConversions._
 import org.vertx.java.core.net.{NetSocket => JNetSocket}
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.net.{NetSocket => JNetSocket}
-import org.vertx.scala.handlers.FunctionHandler1
-import org.vertx.scala.handlers.FunctionHandler0
+import org.vertx.scala.FunctionConverters._
+
 
 /**
  * @author swilliams
@@ -34,16 +34,16 @@ object NetSocket {
 
 class NetSocket (internal: JNetSocket) {
 
-  def dataHandler(buffer: (Buffer) => Unit):Unit = {
-    internal.dataHandler(FunctionHandler1(buffer))
+  def dataHandler(buffer: Buffer => Unit):Unit = {
+    internal.dataHandler(buffer)
   }
 
   def drainHandler(handler: () => Unit):Unit = {
-    internal.drainHandler(FunctionHandler0(handler))
+    internal.drainHandler(handler)
   }
 
   def endHandler(handler: () => Unit):Unit = {
-    internal.endHandler(FunctionHandler0(handler))
+    internal.endHandler(handler)
   }
 
   def sendFile(filename: String):Unit = {
@@ -56,7 +56,7 @@ class NetSocket (internal: JNetSocket) {
   }
 
   def write(data: Buffer, handler: () => Unit):NetSocket = {
-    internal.write(data, FunctionHandler0(handler))
+    internal.write(data, handler)
     this
   }
 
@@ -66,7 +66,7 @@ class NetSocket (internal: JNetSocket) {
   }
 
   def write(data: String, handler: () => Unit):NetSocket = {
-    internal.write(data, FunctionHandler0(handler))
+    internal.write(data, handler)
     this
   }
 

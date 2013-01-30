@@ -19,9 +19,8 @@ package org.vertx.scala.net
 import collection.JavaConversions._
 import org.vertx.java.core.net.{NetClient => JNetClient}
 import org.vertx.java.core.net.{NetSocket => JNetSocket}
-import org.vertx.scala.handlers.FunctionHandler1
-import org.vertx.java.core.net.{NetClient => JNetClient}
-import org.vertx.java.core.net.{NetSocket => JNetSocket}
+import org.vertx.scala.FunctionConverters._
+
 
 /**
  * @author swilliams
@@ -35,15 +34,15 @@ object NetClient {
 class NetClient(internal: JNetClient) extends ClientConfigurer {
 
   def connect(port: Int, host: String, handler: (JNetSocket) => Unit): Unit = {
-    internal.connect(port, host, FunctionHandler1(handler))
+    internal.connect(port, host, handler)
   }
 
   def connect(port: Int, handler: (JNetSocket) => Unit): Unit = {
-    internal.connect(port, FunctionHandler1(handler))
+    internal.connect(port, handler)
   }
 
   def exceptionHandler(handler: (Exception) => Unit): Unit = {
-    internal.exceptionHandler(FunctionHandler1(handler))
+    internal.exceptionHandler(handler)
   }
 
   def close(): Unit = internal.close()

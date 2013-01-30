@@ -14,30 +14,26 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.net
+package org.vertx.scala.sockjs
 
 import scala.language.implicitConversions
-import org.vertx.java.core.net.{NetSocket => JNetSocket}
 import org.vertx.java.core.Handler
-import org.vertx.java.core.net.{NetSocket => JNetSocket}
+import org.vertx.java.core.sockjs.{SockJSSocket => JSockJSSocket}
+import org.vertx.java.core.sockjs.{SockJSSocket => JSockJSSocket}
 
 /**
  * @author swilliams
  * 
  */
-object ConnectHandler1 {
-  def apply(socket: (NetSocket) => Unit) =
-    new ConnectHandler1(socket)
+object SockJSSocketHandler {
+  def apply(delegate: SockJSSocket => Unit) = 
+    new SockJSSocketHandler(delegate)
 }
 
-class ConnectHandler1(delegate: (NetSocket) => Unit) extends Handler[JNetSocket] {
+class SockJSSocketHandler(delegate: SockJSSocket => Unit) extends Handler[JSockJSSocket] {
 
-  implicit def convertJavaToScalaNetSocket(jsocket: JNetSocket):NetSocket = {
-    NetSocket(jsocket)
-  }
-
-  def handle(jsocket: JNetSocket) {
-    delegate(jsocket)
+  def handle(jsocket: JSockJSSocket) {
+    delegate(SockJSSocket(jsocket))
   }
 
 }

@@ -22,7 +22,8 @@ import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
 import org.vertx.java.core.http.{WebSocket => JWebSocket}
 import org.vertx.java.core.http.{WebSocketVersion => JWebSocketVersion}
 import org.vertx.scala.net.ClientConfigurer
-import org.vertx.scala.handlers.FunctionHandler1
+import org.vertx.scala.FunctionConverters._
+
 
 /**
  * @author swilliams
@@ -36,8 +37,8 @@ object HttpClient {
 
 class HttpClient(internal: JHttpClient) extends ClientConfigurer {
 
-  def connect(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
-    internal.connect(uri, HttpClientResponseHandler1(handler))
+  def connect(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.connect(uri, HttpClientResponseHandler(handler))
   }
 
   def connectWebsocket(uri: String, wsConnect: (WebSocket) => Unit):Unit = {
@@ -48,52 +49,52 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
     internal.connectWebsocket(uri, wsVersion, WebSocketHandler1(wsConnect))
   }
 
-  def delete(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
-    internal.delete(uri, HttpClientResponseHandler1(handler))
+  def delete(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.delete(uri, HttpClientResponseHandler(handler))
   }
 
   def exceptionHandler(handler: (Exception) => Unit):Unit = {
-    internal.exceptionHandler(FunctionHandler1(handler))
+    internal.exceptionHandler(handler)
   }
 
-  def get(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
-    internal.get(uri, HttpClientResponseHandler1(handler))
+  def get(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.get(uri, HttpClientResponseHandler(handler))
   }
 
-  def getNow(uri: String, headers: Map[String,_], handler: (HttpClientResponse) => Unit):Unit = {
-    internal.getNow(uri, headers, HttpClientResponseHandler1(handler))
+  def getNow(uri: String, headers: Map[String,_], handler: HttpClientResponse => Unit):Unit = {
+    internal.getNow(uri, headers, HttpClientResponseHandler(handler))
   }
 
-  def getNow(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
-    internal.getNow(uri, HttpClientResponseHandler1(handler))
+  def getNow(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.getNow(uri, HttpClientResponseHandler(handler))
   }
 
-  def head(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
-    internal.head(uri, HttpClientResponseHandler1(handler))
+  def head(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.head(uri, HttpClientResponseHandler(handler))
   }
 
-  def options(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
-    internal.options(uri, HttpClientResponseHandler1(handler))
+  def options(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.options(uri, HttpClientResponseHandler(handler))
   }
 
-  def patch(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
-    internal.patch(uri, HttpClientResponseHandler1(handler))
+  def patch(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.patch(uri, HttpClientResponseHandler(handler))
   }
 
-  def post(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
-    internal.post(uri, HttpClientResponseHandler1(handler))
+  def post(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.post(uri, HttpClientResponseHandler(handler))
   }
 
-  def put(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
-    internal.put(uri, HttpClientResponseHandler1(handler))
+  def put(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.put(uri, HttpClientResponseHandler(handler))
   }
 
-  def trace(uri: String, handler: (HttpClientResponse) => Unit):Unit = {
-    internal.trace(uri, HttpClientResponseHandler1(handler))
+  def trace(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.trace(uri, HttpClientResponseHandler(handler))
   }
 
-  def request(method: String, uri: String, handler: (HttpClientResponse) => Unit):Unit = {
-    internal.request(method, uri, HttpClientResponseHandler1(handler))
+  def request(method: String, uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.request(method, uri, HttpClientResponseHandler(handler))
   }
 
   def close():Unit = internal.close()

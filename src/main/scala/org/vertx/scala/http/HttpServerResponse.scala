@@ -20,8 +20,7 @@ import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import org.vertx.java.core.http.{HttpServerResponse => JHttpServerResponse}
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.scala.handlers.FunctionHandler1
-import org.vertx.scala.handlers.FunctionHandler0
+import org.vertx.scala.FunctionConverters._
 import org.vertx.scala.streams.WriteStream
 
 /**
@@ -40,17 +39,17 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
   }
 
   def closeHandler(handler: () => Unit): HttpServerResponse.this.type = {
-    internal.closeHandler(FunctionHandler0(handler))
+    internal.closeHandler(handler)
     this
   }
 
   def drainHandler(handler: () => Unit): HttpServerResponse.this.type = {
-    internal.drainHandler(FunctionHandler0(handler))
+    internal.drainHandler(handler)
     this
   }
 
   def exceptionHandler(handler: (Exception) => Unit): HttpServerResponse.this.type = {
-    internal.exceptionHandler(FunctionHandler1(handler))
+    internal.exceptionHandler(handler)
     this
   }
 
@@ -123,7 +122,7 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
   }
 
   def write(data: Buffer, handler: () => Unit): HttpServerResponse.this.type = {
-    internal.write(data, FunctionHandler0(handler))
+    internal.write(data, handler)
     this
   }
 
@@ -133,7 +132,7 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
   }
 
   def writeBuffer(data: String, handler: () => Unit): HttpServerResponse.this.type = {
-    internal.write(data, FunctionHandler0(handler))
+    internal.write(data, handler)
     this
   }
 
@@ -143,7 +142,7 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
   }
 
   def writeBuffer(data: String, encoding: String, handler: () => Unit): HttpServerResponse.this.type = {
-    internal.write(data, encoding, FunctionHandler0(handler))
+    internal.write(data, encoding, handler)
     this
   }
 

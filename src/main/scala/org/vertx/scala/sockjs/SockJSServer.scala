@@ -45,7 +45,7 @@ class SockJSServer(internal: JSockJSServer) {
   }
 
   def installApp(config: JsonObject, handler: (SockJSSocket) => Unit): Unit = {
-    internal.installApp(config, new SockJSSocketHandler1(handler))
+    internal.installApp(config, SockJSSocketHandler(handler))
   }
 
 }

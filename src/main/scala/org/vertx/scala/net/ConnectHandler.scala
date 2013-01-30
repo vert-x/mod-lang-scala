@@ -14,9 +14,23 @@
  * limitations under the License.
  */
 
-package org.vertx.scala
+package org.vertx.scala.net
 
-package object handlers {
+import scala.language.implicitConversions
+import org.vertx.java.core.net.{NetSocket => JNetSocket}
+import org.vertx.java.core.Handler
 
+/**
+ * @author swilliams
+ * 
+ */
+object ConnectHandler {
+  def apply(socket: (NetSocket) => Unit) =
+    new ConnectHandler(socket)
 }
 
+class ConnectHandler(delegate: (NetSocket) => Unit) extends Handler[JNetSocket] {
+
+  override def handle(jsocket: JNetSocket) = delegate(NetSocket(jsocket))
+
+}

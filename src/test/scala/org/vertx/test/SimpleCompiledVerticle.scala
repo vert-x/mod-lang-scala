@@ -22,11 +22,11 @@ class SimpleCompiledVerticle extends Verticle {
 
     def sconfig:JSONObject = null
 
-    container.deployModule("foo")
-    container.deployModule("foo", sconfig)
-    container.deployModule("foo", sconfig, 1)
-    container.deployModule("foo", instances = 1)
-    container.deployModule("foo", sconfig, 1, {id: String => })
+    container.deployModule("foo") { _ => }
+    container.deployModule("foo", sconfig) { _ => }
+    container.deployModule("foo", sconfig, 1) { _ => }
+    container.deployModule("foo", instances = 1) { _ => }
+    container.deployModule("foo", sconfig, instances = 1) { _ => }
 
     vertx.fileSystem.chmod("file", "", "", {() => })
 
@@ -62,9 +62,9 @@ class SimpleCompiledVerticle extends Verticle {
     vertx.runOnLoop( closure )
     vertx.runOnLoop( () => { println("world") } )
 
-    vertx.eventBus.sendString("test.echo", "echo!", (msg: Message[String]) => {
+    vertx.eventBus.sendString("test.echo", "echo!") { msg =>
       printf("echo received: %s%n", msg.body)
-    })
+    }
 
     vertx.sharedData.map("one")
 

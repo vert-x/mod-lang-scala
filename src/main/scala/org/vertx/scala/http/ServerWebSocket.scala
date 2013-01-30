@@ -18,8 +18,7 @@ package org.vertx.scala.http
 
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
-import org.vertx.scala.handlers.FunctionHandler0
-import org.vertx.scala.handlers.FunctionHandler1
+import org.vertx.scala.FunctionConverters._
 
 /**
  * @author swilliams

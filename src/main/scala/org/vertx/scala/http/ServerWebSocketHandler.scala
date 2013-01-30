@@ -14,23 +14,29 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.handlers
+package org.vertx.scala.http
 
+import scala.language.implicitConversions
+import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
 import org.vertx.java.core.Handler
 
 /**
  * @author swilliams
  * 
  */
-object FunctionHandler1 {
-  def apply[T](actual: (T) => Unit) =
-    new FunctionHandler1(actual)
+object ServerWebSocketHandler1 {
+  def apply(socket: (ServerWebSocket) => Unit) =
+    new ServerWebSocketHandler1(socket)
 }
 
-class FunctionHandler1[T](val delegate: (T) => Unit) extends Handler[T] {
+class ServerWebSocketHandler1(delegate: (ServerWebSocket) => Unit) extends Handler[JServerWebSocket] {
 
-  def handle(message: T) {
-    delegate(message)
+  implicit def convertJavaToScalaWebSocket(jsocket: JServerWebSocket):ServerWebSocket = {
+    ServerWebSocket(jsocket)
+  }
+
+  def handle(jsocket: JServerWebSocket) {
+    delegate(jsocket)
   }
 
 }

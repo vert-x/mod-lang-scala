@@ -17,6 +17,8 @@
 package org.vertx.scala.deploy
 
 import org.vertx.scala.Vertx
+import org.vertx.scala.FunctionConverters._
+
 
 /**
  * @author swilliams

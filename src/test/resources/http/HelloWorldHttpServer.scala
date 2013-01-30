@@ -5,8 +5,6 @@ import org.vertx.scala.Vertx
 import org.vertx.scala.http.HttpServer
 import org.vertx.scala.http.HttpServerRequest
 import org.vertx.java.core.Handler
-import org.vertx.scala.handlers.FunctionHandler1
-import org.vertx.scala.handlers.FunctionHandler0
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 

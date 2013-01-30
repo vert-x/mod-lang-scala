@@ -21,6 +21,7 @@ import org.vertx.java.core.logging.Logger
 import org.vertx.java.core.eventbus.Message
 import org.vertx.java.core.json.JsonArray
 import org.vertx.scala.EventBus
+import org.vertx.scala.FunctionConverters._
 import org.vertx.scala.JSON._
 import org.vertx.scala.deploy.Verticle
 
@@ -34,7 +35,7 @@ import org.vertx.scala.deploy.Verticle
  * Scala native types rather than go for raw performance.
  * 
  */
-trait BusModBase extends Verticle {
+trait ModuleBase extends Verticle {
 
   var eb: EventBus = null
 

@@ -24,19 +24,14 @@ import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
  * @author swilliams
  * 
  */
-object HttpServerRequestHandler1 {
-  def apply(request: (HttpServerRequest) => Unit) =
-    new HttpServerRequestHandler1(request)
+object HttpServerRequestHandler {
+  def apply(request: HttpServerRequest => Unit) = new HttpServerRequestHandler(request)
 }
 
-class HttpServerRequestHandler1(delegate: (HttpServerRequest) => Unit) extends Handler[JHttpServerRequest] {
-
-  implicit def convertJavaToScalaNetSocket(jreq: JHttpServerRequest):HttpServerRequest = {
-    HttpServerRequest(jreq)
-  }
+class HttpServerRequestHandler(delegate: HttpServerRequest => Unit) extends Handler[JHttpServerRequest] {
 
   def handle(jreq: JHttpServerRequest) {
-    delegate(jreq)
+    delegate(HttpServerRequest(jreq))
   }
 
 }

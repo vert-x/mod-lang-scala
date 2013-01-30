@@ -19,9 +19,9 @@ package org.vertx.scala.http
 import scala.collection.JavaConverters._
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
-import org.vertx.scala.handlers.FunctionHandler1
-import org.vertx.scala.handlers.FunctionHandler0
+import org.vertx.scala.FunctionConverters._
 import org.vertx.scala.streams.ReadStream
+
 
 /**
  * @author swilliams
@@ -53,22 +53,22 @@ class HttpServerRequest(val internal: JHttpServerRequest) extends ReadStream {
   def uri():String = internal.uri
 
   def bodyHandler(handler: (Buffer) => Unit):HttpServerRequest.this.type = {
-    internal.bodyHandler(new FunctionHandler1(handler))
+    internal.bodyHandler(handler)
     this
   }
 
   def dataHandler(handler: (Buffer) => Unit):HttpServerRequest.this.type = {
-    internal.dataHandler(new FunctionHandler1(handler))
+    internal.dataHandler(handler)
     this
   }
 
   def endHandler(handler: () => Unit):HttpServerRequest.this.type = {
-    internal.endHandler(new FunctionHandler0(handler))
+    internal.endHandler(handler)
     this
   }
 
   def exceptionHandler(handler: (Exception) => Unit):HttpServerRequest.this.type = {
-    internal.exceptionHandler(new FunctionHandler1(handler))
+    internal.exceptionHandler(handler)
     this
   }
 

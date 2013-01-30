@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.handlers
+package org.vertx.scala.http
+
+import scala.language.implicitConversions
+import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
 
 import org.vertx.java.core.Handler
 
@@ -22,16 +25,16 @@ import org.vertx.java.core.Handler
  * @author swilliams
  * 
  */
-object FunctionHandler0 {
-  def apply(actual: () => Unit) =
-    new FunctionHandler0(actual)
+object HttpClientResponseHandler {
+  def apply(response: HttpClientResponse => Unit) = 
+    new HttpClientResponseHandler(response)
 }
 
-class FunctionHandler0(delegate: () => Unit) extends Handler[Void] {
 
-  def handle(message: Void) {
-    delegate()
+class HttpClientResponseHandler(response: HttpClientResponse => Unit) extends Handler[JHttpClientResponse]  {
+
+  def handle(jres: JHttpClientResponse) {
+    response(HttpClientResponse(jres))
   }
 
 }
-

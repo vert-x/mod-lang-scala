@@ -19,13 +19,12 @@ package org.vertx.scala
 import scala.language.implicitConversions
 import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.java.deploy.impl.VertxLocator
-import org.vertx.scala.handlers.FunctionHandler0
-import org.vertx.scala.handlers.FunctionHandler1
+import org.vertx.scala.FunctionConverters._
 import org.vertx.scala.net.NetClient
 import org.vertx.scala.net.NetServer
 import org.vertx.scala.http.HttpClient
-import org.vertx.scala.sockjs.SockJSServer
 import org.vertx.scala.http.HttpServer
+import org.vertx.scala.sockjs.SockJSServer
 
 
 /**
@@ -75,11 +74,11 @@ class Vertx(val internal: JVertx) {
 
   def isWorker():Boolean = internal.isWorker
 
-  def runOnLoop(handler: () => Unit):Unit = internal.runOnLoop(FunctionHandler0(handler))
+  def runOnLoop(handler: () => Unit):Unit = internal.runOnLoop(handler)
 
-  def periodic(delay: Long, handler: (java.lang.Long) => Unit):Unit = internal.setPeriodic(delay, FunctionHandler1(handler))
+  def periodic(delay: Long)(handler: (java.lang.Long) => Unit):Unit = internal.setPeriodic(delay, handler)
 
-  def timer(delay: Long, handler: (java.lang.Long) => Unit):Unit = internal.setTimer(delay, FunctionHandler1(handler))
+  def timer(delay: Long)(handler: (java.lang.Long) => Unit):Unit = internal.setTimer(delay, handler)
 
   def sharedData():SharedData = SharedData(internal.sharedData)
 

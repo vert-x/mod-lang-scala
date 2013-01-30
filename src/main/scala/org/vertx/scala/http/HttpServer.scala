@@ -16,16 +16,13 @@
 
 package org.vertx.scala.http
 
+import org.vertx.java.core.Handler
 import org.vertx.java.core.http.{HttpServer => JHttpServer}
 import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
 import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
-import org.vertx.java.core.Handler
-import org.vertx.java.core.http.{HttpServer => VertxHttpServer}
-import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
-import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
+import org.vertx.scala.FunctionConverters._
 import org.vertx.scala.net.SocketConfigurer
-import org.vertx.scala.handlers.FunctionHandler0
-import org.vertx.scala.handlers.FunctionHandler1
+
 
 /**
  * @author swilliams
@@ -40,7 +37,7 @@ class HttpServer(val actual: JHttpServer) extends SocketConfigurer {
 
   def close():Unit = actual.close
 
-  def close(handler: () => Unit):Unit = actual.close(FunctionHandler0(handler))
+  def close(handler: () => Unit):Unit = actual.close(handler)
 
   def listen(port: Int):HttpServer.this.type = {
     actual.listen(port)
@@ -56,14 +53,14 @@ class HttpServer(val actual: JHttpServer) extends SocketConfigurer {
     actual.requestHandler
   }
 
-  def requestHandler(handler: (HttpServerRequest) => Unit):HttpServer.this.type = {
-    actual.requestHandler(HttpServerRequestHandler1(handler))
+  def requestHandler(handler: HttpServerRequest => Unit):HttpServer.this.type = {
+    actual.requestHandler(HttpServerRequestHandler(handler))
     this
   }
 
   def websocketHandler():Handler[JServerWebSocket] = actual.websocketHandler
 
-  def websocketHandler(handler: (ServerWebSocket) => Unit):HttpServer.this.type = {
+  def websocketHandler(handler: ServerWebSocket => Unit):HttpServer.this.type = {
     actual.websocketHandler(ServerWebSocketHandler1(handler))
     this
   }

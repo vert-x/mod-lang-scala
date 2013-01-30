@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-apply plugin: 'java'
 apply plugin: 'scala'
-apply plugin: 'eclipse'
+apply plugin: 'groovy'
+apply plugin: 'java'
+//apply plugin: 'eclipse'
+
 apply from: 'gradle/maven.gradle'
 apply from: 'gradle/setup.gradle'
 
@@ -46,6 +48,8 @@ dependencies {
 //  scalaTools "org.scala-lang:scala-compiler:$scalaVersion"
 //  scalaTools "org.scala-lang:scala-library:$scalaVersion"
 
+  groovy "org.codehaus.groovy:groovy-all:$groovyVersion"
+
   compile "org.vert-x:vertx-core:$vertxVersion"
   compile "org.vert-x:vertx-platform:$vertxVersion"
   compile "org.scala-lang:scala-library:$scalaVersion"
@@ -55,8 +59,8 @@ dependencies {
 
   testCompile "org.vert-x:vertx-junit-annotations:$junitAnnoVersion"
   testCompile "org.vert-x:vertx-lang-java:$vertxVersion"
-  testCompile "org.vert-x:vertx-lang-rhino:$vertxVersion"
-  testCompile "org.mozilla:rhino:$rhinoVersion"
+//  testCompile "org.vert-x:vertx-lang-rhino:$vertxVersion"
+//  testCompile "org.mozilla:rhino:$rhinoVersion"
   testCompile("org.vert-x:vertx-testframework:$vertxVersion") {
     transitive = false // don't need all of the other language deps
   }
