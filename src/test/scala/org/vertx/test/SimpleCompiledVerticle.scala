@@ -58,7 +58,7 @@ class SimpleCompiledVerticle extends Verticle {
     }.listen(8080)
 
     // This looks weird, I'm probably doing something wrong.
-    val closure = () => { Thread.sleep(2000L); print("hello ") }
+    def closure() { Thread.sleep(2000L); print("hello ") }
     vertx.runOnLoop( closure )
 
     vertx.runOnLoop { () => println("world") }
