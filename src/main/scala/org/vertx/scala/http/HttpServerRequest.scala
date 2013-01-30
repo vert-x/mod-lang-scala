@@ -23,6 +23,10 @@ import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.streams.ReadStream
 
+/**
+ * @author swilliams
+ * 
+ */
 object HttpServerRequest {
   def apply(internal: JHttpServerRequest) = 
     new HttpServerRequest(internal)

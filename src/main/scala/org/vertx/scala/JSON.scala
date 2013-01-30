@@ -25,11 +25,10 @@ import scala.util.parsing.json.JSONArray
 import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.json.JsonArray
 
-//object JSON {
-//  def apply() = 
-//    new JSON()
-//}
-
+/**
+ * @author swilliams
+ * 
+ */
 object JSON {
 
   implicit def convertJsonObjectToScala(json: JsonObject): JSONObject = {

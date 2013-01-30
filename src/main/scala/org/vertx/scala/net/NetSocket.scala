@@ -23,7 +23,10 @@ import org.vertx.java.core.net.{NetSocket => JNetSocket}
 import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.scala.handlers.FunctionHandler0
 
-
+/**
+ * @author swilliams
+ * 
+ */
 object NetSocket {
   def apply(socket: JNetSocket) =
     new NetSocket(socket)

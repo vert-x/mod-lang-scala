@@ -20,6 +20,10 @@ import scala.language.implicitConversions
 import org.vertx.java.core.Handler
 import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
 
+/**
+ * @author swilliams
+ * 
+ */
 object HttpServerRequestHandler1 {
   def apply(request: (HttpServerRequest) => Unit) =
     new HttpServerRequestHandler1(request)

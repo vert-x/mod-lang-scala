@@ -16,6 +16,10 @@
 
 package org.vertx.scala.net
 
+/**
+ * @author swilliams
+ * 
+ */
 trait SocketConfigurer {
 
   def listen(port: Int):SocketConfigurer.this.type

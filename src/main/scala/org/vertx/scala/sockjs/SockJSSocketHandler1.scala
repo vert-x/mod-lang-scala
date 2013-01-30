@@ -21,7 +21,10 @@ import org.vertx.java.core.Handler
 import org.vertx.java.core.sockjs.{SockJSSocket => JSockJSSocket}
 import org.vertx.java.core.sockjs.{SockJSSocket => JSockJSSocket}
 
-
+/**
+ * @author swilliams
+ * 
+ */
 object SockJSSocketHandler1 {
   def apply(delegate: (SockJSSocket) => Unit) = 
     new SockJSSocketHandler1(delegate)

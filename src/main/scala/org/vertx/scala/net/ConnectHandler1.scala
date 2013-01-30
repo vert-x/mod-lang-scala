@@ -21,6 +21,10 @@ import org.vertx.java.core.net.{NetSocket => JNetSocket}
 import org.vertx.java.core.Handler
 import org.vertx.java.core.net.{NetSocket => JNetSocket}
 
+/**
+ * @author swilliams
+ * 
+ */
 object ConnectHandler1 {
   def apply(socket: (NetSocket) => Unit) =
     new ConnectHandler1(socket)

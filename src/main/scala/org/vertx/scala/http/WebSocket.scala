@@ -23,6 +23,10 @@ import org.vertx.java.core.buffer.Buffer
 import org.vertx.scala.streams.WriteStream
 import org.vertx.scala.streams.ReadStream
 
+/**
+ * @author swilliams
+ * 
+ */
 object WebSocket {
   def apply(jsocket: JWebSocket) =
     new WebSocket(jsocket)

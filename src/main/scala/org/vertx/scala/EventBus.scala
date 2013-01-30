@@ -29,7 +29,10 @@ import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.scala.handlers.FunctionAsyncResultHandler0
 import org.vertx.scala.handlers.FunctionAsyncResultHandler0
 
-
+/**
+ * @author swilliams
+ * 
+ */
 object EventBus {
   def apply(actual: JEventBus) =
     new EventBus(actual)

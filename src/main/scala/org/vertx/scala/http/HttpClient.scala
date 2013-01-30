@@ -24,6 +24,10 @@ import org.vertx.java.core.http.{WebSocketVersion => JWebSocketVersion}
 import org.vertx.scala.net.ClientConfigurer
 import org.vertx.scala.handlers.FunctionHandler1
 
+/**
+ * @author swilliams
+ * 
+ */
 object HttpClient {
   def apply(actual: JHttpClient) =
     new HttpClient(actual)

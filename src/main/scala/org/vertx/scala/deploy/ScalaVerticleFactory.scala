@@ -30,7 +30,10 @@ import scala.tools.nsc.interpreter.AbstractFileClassLoader
 import scala.tools.nsc.Settings
 import org.vertx.scala.Vertx
 
-
+/**
+ * @author swilliams
+ * 
+ */
 class ScalaVerticleFactory extends VerticleFactory {
 
   protected val PREFIX: String = "scala:"
@@ -62,6 +65,10 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   override def reportException(t: Throwable): Unit = {
     manager.getLogger().error("oops!", t)
+  }
+
+  def close(): Unit = {
+    if (mcl != null) mcl.close()
   }
 
   @throws(classOf[Exception])

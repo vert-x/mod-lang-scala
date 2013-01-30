@@ -22,7 +22,10 @@ import org.vertx.scala.handlers._
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.java.core.net.{NetServer => JNetServer}
 
-
+/**
+ * @author swilliams
+ * 
+ */
 object NetServer {
   def apply(actual: JNetServer) =
     new NetServer(actual)

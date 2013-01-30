@@ -16,6 +16,10 @@
 
 package org.vertx.scala.net
 
+/**
+ * @author swilliams
+ * 
+ */
 trait ClientConfigurer {
 
   def close():Unit

@@ -21,6 +21,10 @@ import org.vertx.java.core.streams.{WriteStream => JWriteStream}
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.handlers.FunctionHandler1
 
+/**
+ * @author swilliams
+ * 
+ */
 trait WriteStream {
 
   def drainHandler(handler: () => Unit):WriteStream.this.type

@@ -20,6 +20,10 @@ import scala.language.implicitConversions
 import org.vertx.java.core.Handler
 import org.vertx.java.core.http.{WebSocket => JWebSocket}
 
+/**
+ * @author swilliams
+ * 
+ */
 object WebSocketHandler1 {
   def apply(delegate: (WebSocket) => Unit) = 
     new WebSocketHandler1(delegate)

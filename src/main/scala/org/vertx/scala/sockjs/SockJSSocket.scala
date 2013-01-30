@@ -23,7 +23,10 @@ import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.scala.streams.ReadStream
 import org.vertx.scala.streams.WriteStream
 
-
+/**
+ * @author swilliams
+ * 
+ */
 object SockJSSocket {
   def apply(internal: JSockJSSocket) = 
     new SockJSSocket(internal)

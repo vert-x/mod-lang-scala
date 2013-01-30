@@ -27,7 +27,10 @@ import java.util.{Set => JSet}
 import java.util.concurrent.{ConcurrentMap => JConcurrentMap}
 import org.vertx.java.core.shareddata.{SharedData => JSharedData}
 
-
+/**
+ * @author swilliams
+ * 
+ */
 object SharedData {
   def apply(actual: JSharedData) =
     new SharedData(actual)

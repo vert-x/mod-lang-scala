@@ -21,7 +21,10 @@ import org.vertx.java.core.streams.{ReadStream => JReadStream}
 import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.scala.handlers.FunctionHandler0
 
-// TODO can we place the actual code here to reduce duplication?
+/**
+ * @author swilliams
+ * 
+ */
 trait ReadStream {
 
   def dataHandler(handler: (Buffer) => Unit):ReadStream.this.type

@@ -22,6 +22,10 @@ import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.java.deploy.{Verticle => JVerticle}
 import org.vertx.java.deploy.{Container => JContainer}
 
+/**
+ * @author swilliams
+ * 
+ */
 object ScalaVerticle {
   def apply(delegate: => Verticle) = 
     new ScalaVerticle(delegate)

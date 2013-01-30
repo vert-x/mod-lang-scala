@@ -28,6 +28,10 @@ import org.vertx.scala.sockjs.SockJSServer
 import org.vertx.scala.http.HttpServer
 
 
+/**
+ * @author swilliams
+ * 
+ */
 object Vertx {
   def apply(actual: JVertx) =
     new Vertx(actual)

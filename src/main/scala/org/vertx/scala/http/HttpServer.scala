@@ -27,6 +27,10 @@ import org.vertx.scala.net.SocketConfigurer
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.handlers.FunctionHandler1
 
+/**
+ * @author swilliams
+ * 
+ */
 object HttpServer {
   def apply(actual: JHttpServer) =
     new HttpServer(actual)

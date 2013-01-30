@@ -24,7 +24,10 @@ import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.streams.WriteStream
 
-
+/**
+ * @author swilliams
+ * 
+ */
 object HttpServerResponse {
   def apply(internal: JHttpServerResponse) = 
     new HttpServerResponse(internal)

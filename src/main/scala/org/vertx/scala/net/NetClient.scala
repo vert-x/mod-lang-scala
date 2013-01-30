@@ -23,7 +23,10 @@ import org.vertx.scala.handlers.FunctionHandler1
 import org.vertx.java.core.net.{NetClient => JNetClient}
 import org.vertx.java.core.net.{NetSocket => JNetSocket}
 
-
+/**
+ * @author swilliams
+ * 
+ */
 object NetClient {
   def apply(actual: JNetClient) =
     new NetClient(actual)

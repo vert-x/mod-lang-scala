@@ -26,6 +26,10 @@ import org.vertx.scala.handlers.FunctionAsyncResultHandler0
 import org.vertx.scala.handlers.FunctionAsyncResultHandler1
 import org.vertx.java.core.file.{FileSystem => JFileSystem}
 
+/**
+ * @author swilliams
+ * 
+ */
 object FileSystem {
   def apply(actual: JFileSystem) =
     new FileSystem(actual)

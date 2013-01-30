@@ -18,7 +18,10 @@ package org.vertx.scala.deploy
 
 import org.vertx.scala.Vertx
 
-
+/**
+ * @author swilliams
+ * 
+ */
 trait Verticle {
 
   var vertx: Vertx = null

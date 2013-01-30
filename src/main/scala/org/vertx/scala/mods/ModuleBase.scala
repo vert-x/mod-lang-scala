@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.busmods
+package org.vertx.scala.mods
 
 import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.logging.Logger
@@ -26,6 +26,7 @@ import org.vertx.scala.deploy.Verticle
 
 
 /**
+ * @author swilliams
  * If you're reading this code and wondering why it converts between JSON types, 
  * then yes you're right, it's certainly an overhead.
  * 

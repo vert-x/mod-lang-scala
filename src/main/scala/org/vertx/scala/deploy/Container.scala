@@ -29,7 +29,10 @@ import scala.util.parsing.json.JSONObject
 import scala.collection.JavaConverters._
 import org.vertx.java.core.json.JsonObject
 
-
+/**
+ * @author swilliams
+ * 
+ */
 object Container {
 
   def apply(actual: JContainer) =

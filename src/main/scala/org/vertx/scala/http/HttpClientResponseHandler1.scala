@@ -21,6 +21,10 @@ import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
 
 import org.vertx.java.core.Handler
 
+/**
+ * @author swilliams
+ * 
+ */
 object HttpClientResponseHandler1 {
   def apply(response: (HttpClientResponse) => Unit) = 
     new HttpClientResponseHandler1(response)

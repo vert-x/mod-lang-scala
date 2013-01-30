@@ -18,6 +18,10 @@ package org.vertx.scala.handlers
 
 import org.vertx.java.core.Handler
 
+/**
+ * @author swilliams
+ * 
+ */
 object FunctionHandler0 {
   def apply(actual: () => Unit) =
     new FunctionHandler0(actual)

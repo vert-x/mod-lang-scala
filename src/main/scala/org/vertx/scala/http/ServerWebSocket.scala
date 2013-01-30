@@ -21,7 +21,10 @@ import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
 import org.vertx.scala.handlers.FunctionHandler0
 import org.vertx.scala.handlers.FunctionHandler1
 
-
+/**
+ * @author swilliams
+ * 
+ */
 object ServerWebSocket {
   def apply(socket: JServerWebSocket) =
     new ServerWebSocket(socket)

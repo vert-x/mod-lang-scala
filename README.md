@@ -1,7 +1,9 @@
-# ProjectName
+# mod-lang-scala
 
-A project summary goes here
+Scala language implementation for vert.x 2.0
 
-## A_set_of_build_instructions
+TBC
 
-Put your build instructions here.
+
+
+

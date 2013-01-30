@@ -21,6 +21,10 @@ import org.vertx.java.core.http.{RouteMatcher => JRouteMatcher}
 import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
 import org.vertx.scala.handlers.FunctionHandler1
 
+/**
+ * @author swilliams
+ * 
+ */
 class RouteMatcher extends Handler[HttpServerRequest] {
 
   private val internal = new JRouteMatcher()

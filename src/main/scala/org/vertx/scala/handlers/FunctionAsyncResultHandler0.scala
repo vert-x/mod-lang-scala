@@ -19,6 +19,10 @@ package org.vertx.scala.handlers
 import org.vertx.java.core.AsyncResult
 import org.vertx.java.core.AsyncResultHandler
 
+/**
+ * @author swilliams
+ * 
+ */
 object FunctionAsyncResultHandler0 {
   def apply(actual: () => Unit) =
     new FunctionAsyncResultHandler0(actual)

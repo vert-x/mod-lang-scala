@@ -21,6 +21,10 @@ import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.sockjs.{SockJSServer => JSockJSServer}
 import org.vertx.java.core.sockjs.{SockJSServer => JSockJSServer}
 
+/**
+ * @author swilliams
+ * 
+ */
 object SockJSServer {
   def apply(internal: JSockJSServer) = 
     new SockJSServer(internal)
