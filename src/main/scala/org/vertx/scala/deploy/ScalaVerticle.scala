@@ -44,14 +44,9 @@ final private[deploy] class ScalaVerticle(delegate: => Verticle) extends JVertic
   }
 
   @throws(classOf[Exception])
-  override def start(): Unit = {
-    delegate.start
-  }
+  override def start(): Unit = delegate.start
 
   @throws(classOf[Exception])
-  override def stop(): Unit = {
-    super.stop
-    delegate.stop
-  }
+  override def stop(): Unit = delegate.stop
 
 }

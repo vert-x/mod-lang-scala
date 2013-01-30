@@ -60,7 +60,7 @@ class ScalaVerticleFactory extends VerticleFactory {
   override def createVerticle(main: String): JVerticle = {
     val rawClass = if (main.startsWith(PREFIX)) mcl.loadClass(main.replaceFirst(PREFIX, "")) else loadScript(main)
     val verticle = rawClass.newInstance().asInstanceOf[Verticle]
-    ScalaVerticle(verticle)
+    ScalaVerticle(verticle) // this is required, to get the Scala flavoured Container
   }
 
   override def reportException(t: Throwable): Unit = {

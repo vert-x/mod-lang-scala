@@ -34,28 +34,28 @@ class SimpleCompiledVerticle extends Verticle {
 
     vertx
       .createNetServer
-      .connectHandler({socket: NetSocket => 
+      .connectHandler{socket => 
         // socket
-        socket.dataHandler({buffer: Buffer =>
+        socket.dataHandler {buffer =>
           //
-        })
-        socket.drainHandler({() =>
+        }
+        socket.drainHandler {() =>
           //
-        })
-        socket.endHandler({() =>
+        }
+        socket.endHandler {() =>
           //
-        })
-        socket.drainHandler({() =>
+        }
+        socket.drainHandler {() =>
           //
-        })
+        }
 
-    }).listen(7080)
+    }.listen(7080)
 
-    vertx.createHttpServer.requestHandler({ req: HttpServerRequest => 
+    vertx.createHttpServer.requestHandler { req => 
 //      val file : String = if (req.path == "/") "/index.html" else req.uri
 //      req.response.sendFile("webroot/" + file)
       req.response.end("hello scala!")
-    }).listen(8080)
+    }.listen(8080)
 
     // This looks weird, I'm probably doing something wrong.
     val closure = () => { Thread.sleep(2000L); print("hello ") }
@@ -70,21 +70,21 @@ class SimpleCompiledVerticle extends Verticle {
 
     def http = vertx
       .createHttpServer
-      .websocketHandler({s: ServerWebSocket => 
+      .websocketHandler {s => 
         s.writeTextFrame("foo")
-        s.drainHandler({() =>
+        s.drainHandler {() =>
           //
-          })
-        s.dataHandler({data: Buffer => 
+          }
+        s.dataHandler {data => 
           //
-          })
-        })
+          }
+        }
 
     val config = new JsonObject()
     config.putString("prefix", "/foo")
-    vertx.createSockJSServer(http).installApp(config, { sock: SockJSSocket =>
+    vertx.createSockJSServer(http).installApp(config) { sock =>
       //
-    })
+    }
 
     http.listen(9090)
 

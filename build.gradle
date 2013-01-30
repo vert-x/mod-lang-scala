@@ -15,9 +15,8 @@
  */
 
 apply plugin: 'scala'
-apply plugin: 'groovy'
 apply plugin: 'java'
-//apply plugin: 'eclipse'
+apply plugin: 'eclipse'
 
 apply from: 'gradle/maven.gradle'
 apply from: 'gradle/setup.gradle'
@@ -30,7 +29,6 @@ targetCompatibility = '1.7'
 repositories {
   mavenLocal()
   maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-//  maven { url 'http://repo.springsource.org/release' }
   mavenCentral()
 }
 
@@ -45,10 +43,6 @@ sourceSets {
 }
 
 dependencies {
-//  scalaTools "org.scala-lang:scala-compiler:$scalaVersion"
-//  scalaTools "org.scala-lang:scala-library:$scalaVersion"
-
-  groovy "org.codehaus.groovy:groovy-all:$groovyVersion"
 
   compile "org.vert-x:vertx-core:$vertxVersion"
   compile "org.vert-x:vertx-platform:$vertxVersion"
@@ -76,7 +70,7 @@ compileScala {
 
 compileTestScala {
   scalaCompileOptions.additionalParameters = ['-feature']
-//  scalaCompileOptions.targetCompatibility = project.targetCompatibility
+//  scalaCompileOptions.targetCompatibility = '1.7'
 }
 
 javadoc.classpath += configurations.provided

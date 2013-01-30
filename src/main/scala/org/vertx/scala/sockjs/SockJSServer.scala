@@ -44,7 +44,7 @@ class SockJSServer(internal: JSockJSServer) {
     internal.bridge(sjsConfig, inboundPermitted, outboundPermitted, authTimeout, authAddress)
   }
 
-  def installApp(config: JsonObject, handler: (SockJSSocket) => Unit): Unit = {
+  def installApp(config: JsonObject)(handler: (SockJSSocket) => Unit): Unit = {
     internal.installApp(config, SockJSSocketHandler(handler))
   }
 
