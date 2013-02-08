@@ -22,9 +22,7 @@ import scala.util.parsing.json.JSONObject
 import scala.collection.JavaConverters._
 import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.logging.Logger
-import org.vertx.java.deploy.{Container => JContainer}
-import org.vertx.java.deploy.impl.Deployment
-import org.vertx.java.deploy.impl.VertxLocator
+import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.scala.JSON._
 import org.vertx.scala.FunctionConverters._
 
@@ -36,9 +34,6 @@ object Container {
 
   def apply(actual: JContainer) =
     new Container(actual)
-
-  def find() =
-    new Container(VertxLocator.container)
 }
 
 class Container(internal: JContainer) {

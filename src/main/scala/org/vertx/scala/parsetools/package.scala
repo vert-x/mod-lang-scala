@@ -14,21 +14,8 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.net
+package org.vertx
 
-import org.vertx.scala.FunctionConverters._
-import org.vertx.java.core.Handler
-import org.vertx.java.core.net.{NetSocket => JNetSocket}
-
-/**
- * @author swilliams
- * 
- */
-trait ClientConfigurer extends ConnectionConfigurer {
-
-  def close():Unit
-
-  def connectTimeout():Long
+package object parsetools {
 
 }
-

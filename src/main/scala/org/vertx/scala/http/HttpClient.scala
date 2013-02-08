@@ -99,8 +99,6 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
 
   def close():Unit = internal.close()
 
-  def bossThreads():Int = internal.getBossThreads()
-
   def connectTimeout():Long = internal.getConnectTimeout()
 
   def keyStorePassword():String = internal.getKeyStorePassword()

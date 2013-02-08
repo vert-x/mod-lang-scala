@@ -19,8 +19,8 @@ package org.vertx.scala.deploy
 import scala.language.implicitConversions
 import org.vertx.scala.Vertx
 import org.vertx.java.core.{Vertx => JVertx}
-import org.vertx.java.deploy.{Verticle => JVerticle}
-import org.vertx.java.deploy.{Container => JContainer}
+import org.vertx.java.platform.{Verticle => JVerticle}
+import org.vertx.java.platform.{Container => JContainer}
 
 /**
  * @author swilliams

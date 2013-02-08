@@ -19,8 +19,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.test.TestVerticle;
@@ -29,48 +27,25 @@ import org.vertx.java.test.VertxTestBase;
 import org.vertx.java.test.junit.VertxJUnit4ClassRunner;
 
 
-@RunWith(VertxJUnit4ClassRunner.class)
-@VertxConfiguration
-public class HttpServerTest extends VertxTestBase {
+public class HttpServerTest {
 
   private HttpClient client;
 
   @Before
   public void setup() {
-    this.client = super.getVertx().createHttpClient();
-    lightSleep(1000L);
+
   }
 
   @Test
-  @TestVerticle(main="http/HelloWorldHttpServer.scala", urls={"build/resources/test"})
+  @TestVerticle(main="http/HelloWorldHttpServer.scala", urls={"src/test/resources", "build/resources/test"})
   public void testHelloWorld() {
 
-    CountDownLatchHandler<HttpClientResponse> handler = new CountDownLatchHandler<>(1);
-
-    client.setHost("localhost").setPort(8080).connect("/foo", handler).end();
-
-    boolean await = handler.waitForMillis(5000L);
-    Assert.assertTrue(await);
-
-    HttpClientResponse res = handler.poll();
-    Assert.assertNotNull(res);
-    Assert.assertEquals(200, res.statusCode);
   }
 
   @Test
   @TestVerticle(main="http/SendFileHttpServer.scala", urls={"build/resources/test"})
   public void testSendFile() {
 
-    CountDownLatchHandler<HttpClientResponse> handler = new CountDownLatchHandler<>(1);
-
-    client.setHost("localhost").setPort(8080).connect("/foo", handler).end();
-
-    boolean await = handler.waitForMillis(5000L);
-    Assert.assertTrue(await);
-
-    HttpClientResponse res = handler.poll();
-    Assert.assertNotNull(res);
-    Assert.assertEquals(200, res.statusCode);
   }
 
 }

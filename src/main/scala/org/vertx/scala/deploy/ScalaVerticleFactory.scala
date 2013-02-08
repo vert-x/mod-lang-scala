@@ -16,11 +16,11 @@
 
 package org.vertx.scala.deploy
 
-import org.vertx.java.deploy.{Verticle => JVerticle}
-import org.vertx.java.deploy.{Container => JContainer}
-import org.vertx.java.deploy.impl.VerticleManager
-import org.vertx.java.deploy.impl.VerticleFactory
-import org.vertx.java.deploy.impl.ModuleClassLoader
+import org.vertx.java.core.{Vertx => JVertx}
+import org.vertx.java.platform.{Verticle => JVerticle}
+import org.vertx.java.platform.{Container => JContainer}
+import org.vertx.java.platform.VerticleFactory
+import org.vertx.scala.Vertx
 import scala.reflect.internal.util.BatchSourceFile
 import scala.reflect.internal.util.ScriptSourceFile
 import scala.reflect.io.Path.string2path
@@ -28,7 +28,7 @@ import scala.reflect.io.PlainFile
 import scala.tools.nsc.interpreter.IMain
 import scala.tools.nsc.interpreter.AbstractFileClassLoader
 import scala.tools.nsc.Settings
-import org.vertx.scala.Vertx
+import org.vertx.java.core.logging.Logger
 
 /**
  * @author swilliams
@@ -40,16 +40,19 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   private val settings = new Settings()
 
-  private var manager: VerticleManager = null
+  private var vertx: Vertx = null
 
-  private var mcl: ModuleClassLoader = null
+  private var container: JContainer = null
+
+  private var loader: ClassLoader = null
 
   private var interpreter: IMain = null
 
-  override def init(amanager: VerticleManager, amcl: ModuleClassLoader): Unit = {
-    manager = amanager
-    mcl = amcl
-    settings.embeddedDefaults(mcl)
+  override def init(jvertx: JVertx, jcontainer: JContainer, aloader: ClassLoader): Unit = {
+    this.vertx = new Vertx(jvertx)
+    this.container = jcontainer
+    this.loader = aloader
+    settings.embeddedDefaults(aloader)
     settings.usejavacp.value = true
     // settings.verbose.value = true
     interpreter = new IMain(settings)
@@ -58,22 +61,22 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   @throws(classOf[Exception])
   override def createVerticle(main: String): JVerticle = {
-    val rawClass = if (main.startsWith(PREFIX)) mcl.loadClass(main.replaceFirst(PREFIX, "")) else loadScript(main)
+    val rawClass = if (main.startsWith(PREFIX)) loader.loadClass(main.replaceFirst(PREFIX, "")) else loadScript(main)
     val verticle = rawClass.newInstance().asInstanceOf[Verticle]
     ScalaVerticle(verticle) // this is required, to get the Scala flavoured Container
   }
 
-  override def reportException(t: Throwable): Unit = {
-    manager.getLogger().error("oops!", t)
+  override def reportException(logger: Logger, t: Throwable): Unit = {
+    logger.error("Scala verticle threw exception", t)
   }
 
   def close(): Unit = {
-    if (mcl != null) mcl.close()
+    interpreter.close()
   }
 
   @throws(classOf[Exception])
   private def loadScript(main: String):Class[_] = {
-    val resolved = mcl.findResource(main).toExternalForm()
+    val resolved = loader.getResource(main).toExternalForm()
     interpreter.compileSources(new BatchSourceFile(PlainFile.fromPath(resolved.replaceFirst("file:", ""))))
     val className = main.replaceFirst(".scala$", "").replaceAll("/", ".")
     interpreter.classLoader.loadClass(className)

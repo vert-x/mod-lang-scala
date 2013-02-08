@@ -18,7 +18,6 @@ package org.vertx.scala
 
 import scala.language.implicitConversions
 import org.vertx.java.core.{Vertx => JVertx}
-import org.vertx.java.deploy.impl.VertxLocator
 import org.vertx.scala.FunctionConverters._
 import org.vertx.scala.net.NetClient
 import org.vertx.scala.net.NetServer
@@ -43,9 +42,6 @@ object Vertx {
 
   def newVertx(hostname: String) =
     new Vertx(JVertx.newVertx(hostname))
-
-  def locate() =
-    new Vertx(VertxLocator.vertx)
 }
 
 class Vertx(val internal: JVertx) {
