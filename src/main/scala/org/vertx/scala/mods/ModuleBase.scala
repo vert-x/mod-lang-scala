@@ -20,10 +20,10 @@ import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.logging.Logger
 import org.vertx.java.core.eventbus.Message
 import org.vertx.java.core.json.JsonArray
-import org.vertx.scala.EventBus
-import org.vertx.scala.FunctionConverters._
-import org.vertx.scala.JSON._
-import org.vertx.scala.deploy.Verticle
+import org.vertx.scala.core.EventBus
+import org.vertx.scala.core.FunctionConverters._
+import org.vertx.scala.core.JSON._
+import org.vertx.scala.platform.Verticle
 
 
 /**
