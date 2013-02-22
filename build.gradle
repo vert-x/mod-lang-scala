@@ -16,15 +16,21 @@
 
 apply plugin: 'scala'
 apply plugin: 'java'
-apply plugin: 'eclipse'
+apply from: "gradle/maven.gradle"
+apply from: "gradle/setup.gradle"
 
-apply from: 'gradle/maven.gradle'
-apply from: 'gradle/setup.gradle'
+group = groupname
+archivesBaseName = artifact
 
 defaultTasks = ['assemble']
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
+
+configurations {
+  provided
+  testCompile.extendsFrom provided
+}
 
 repositories {
   mavenLocal()
@@ -32,8 +38,17 @@ repositories {
   mavenCentral()
 }
 
-configurations {
-  provided
+dependencies {
+  compile "org.scala-lang:scala-library:$scalaVersion"
+  compile "org.scala-lang:scala-compiler:$scalaVersion"
+
+  provided "io.vertx:vertx-core:$vertxVersion"
+  provided "io.vertx:vertx-platform:$vertxVersion"
+
+  provided( "io.vertx:vertx-testframework:$vertxVersion" ) {
+    transitive = false
+  }
+  testCompile  "junit:junit:$junitVersion"
 }
 
 sourceSets {
@@ -47,41 +62,51 @@ sourceSets {
   }
 }
 
-dependencies {
-  compile "org.scala-lang:scala-library:$scalaVersion"
-  compile "org.scala-lang:scala-compiler:$scalaVersion"
-
-  provided "io.vertx:vertx-core:$vertxVersion"
-  provided "io.vertx:vertx-platform:$vertxVersion"
-
-  testCompile( "io.vertx:vertx-testframework:$vertxVersion" )
-  testCompile  "junit:junit:$junitVersion"
-
-//  testCompile "org.vert-x:vertx-junit-annotations:$junitAnnoVersion"
-//  testCompile "org.vert-x:vertx-lang-java:$vertxVersion"
-//  testCompile "org.vert-x:vertx-lang-rhino:$vertxVersion"
-//  testCompile "org.mozilla:rhino:$rhinoVersion"
-//  testCompile("org.vert-x:vertx-testframework:$vertxVersion") {
-//    transitive = false // don't need all of the other language deps
-//  }
-//  testCompile("org.vert-x:vertx-testsuite:$vertxVersion") {
-//    transitive = false // don't need all of the other language deps
-//  }
+task copyMod( type:Copy, dependsOn: 'classes' ) {
+  into "build/mod/maven:$groupname:$artifact:$version"
+  from compileJava
+  from 'src/main/conf'
+  from 'src/main/resources'
+  into( 'lib' ) {
+    from configurations.compile
+  }
 }
 
-compileScala {
-  scalaCompileOptions.additionalParameters = ['-feature']
-//  scalaCompileOptions.targetCompatibility = '1.7'
+// Package into build/libs/mod.zip
+task dist( type: Zip) {
+  group = 'vert.x'
+  description = "Assembles a vert.x module"
+  destinationDir = project.file('build/libs')
+  archiveName = "${artifact}-${version}" + ".zip"
+  from copyMod
 }
 
-compileTestScala {
-  scalaCompileOptions.additionalParameters = ['-feature']
-//  scalaCompileOptions.targetCompatibility = '1.7'
+artifacts {
+  archives dist
 }
 
-javadoc.classpath += configurations.provided
+task cleanTestTmpModules(type: Delete) {
+  delete { file("src/test/mod-test").listFiles().find {
+    true
+  } }
+}
+
+clean {
+  dependsOn cleanTestTmpModules
+}
+
+task prepareVertxTest(type: Copy, dependsOn: [cleanTestTmpModules, copyMod]) {
+  from 'build/mod'
+  into 'src/test/mod-test' // Copy the mod into the mods directory
+}
 
 test {
+  dependsOn prepareVertxTest
+
+  // Remove any classpath entries for the classes or resources of the rhino verticle and also remove the
+  // Rhino jar from the classpath
+  // If we don't do this then the system classloader will load them which can cause issues with loading resources
+  // from inside JS verticles
   classpath -= sourceSets.main.output
   classpath -= configurations.compile
 
@@ -89,14 +114,15 @@ test {
 
   // Some vert.x properties
   systemProperty 'vertx.test.timeout', 15
-  systemProperty 'vertx.langs.scala', 'org.vertx.scala.deploy.ScalaVerticleFactory'
-  systemProperty 'vertx.mods', "$projectDir/build/resources/test"
+  systemProperty 'vertx.mods', "$projectDir/src/test/mod-test"  // Set vertx.mods to the mod directory
   systemProperty 'vertx.version', "$project.version"
 
   // Show output
   testLogging.showStandardStreams = true
+
   testLogging { exceptionFormat "full" }
 }
+
 
 task collectDeps(type: Copy) {
   group = 'vert.x'
@@ -110,19 +136,9 @@ task collectDeps(type: Copy) {
   }
 }
 
-task prepareDist(type:Sync, dependsOn: ['build']) {
-  group = 'vert.x'
-  description = 'Prepare distribution'
-  destinationDir file("build/${project.name}-v${project.version}")
-  from jar
-  from configurations.compile
-}
-
-task dist(type:Zip, dependsOn: ['prepareDist']) {
-  group = 'vert.x'
-  description = 'Package distribution'
-  destinationDir file("build/distributions")
-  from "build/${project.name}-v${project.version}"
-  into 'build/distributions'
-}
-
+// TODO scaladoc
+//groovydoc {
+//  excludes = ["**/impl/**"]
+//  destinationDir = file("build/docs/groovy/api")
+//  outputs.dir destinationDir
+//}
