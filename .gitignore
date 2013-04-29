@@ -1,5 +1,6 @@
 .cache
 .classpath
+.DS_Store
 .gradle
 .project
 .settings

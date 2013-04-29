@@ -57,7 +57,7 @@ sourceSets {
   }
   test {
     resources {
-      srcDirs "src/test/scala_scripts", "src/test/resources"
+      srcDirs "src/test/scala_scripts", "src/|/test/resources"
     }
   }
 }
@@ -136,9 +136,16 @@ task collectDeps(type: Copy) {
   }
 }
 
+tasks.withType(ScalaCompile) {
+  scalaCompileOptions.useAnt = false
+  // FIXME remove when Gradle 1.5 is released
+  scalaCompileOptions.additionalParameters = ['-target:jvm-1.7']
+}
+
+
 // TODO scaladoc
-//groovydoc {
-//  excludes = ["**/impl/**"]
-//  destinationDir = file("build/docs/groovy/api")
-//  outputs.dir destinationDir
-//}
+scaladoc {
+  excludes = ["**/impl/**"]
+  destinationDir = file("build/docs/scala/api")
+  outputs.dir destinationDir
+}
