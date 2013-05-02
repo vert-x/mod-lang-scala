@@ -18,6 +18,7 @@ package org.vertx.scala.core
 
 import scala.language.implicitConversions
 import org.vertx.java.core.{Vertx => JVertx}
+import org.vertx.java.core.{VertxFactory => JVertxFactory}
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.net.NetClient
 import org.vertx.scala.core.net.NetServer
@@ -35,13 +36,13 @@ object Vertx {
     new Vertx(actual)
 
   def newVertx() =
-    new Vertx(JVertx.newVertx())
+    new Vertx(JVertxFactory.newVertx())
 
   def newVertx(port: Int, hostname: String) =
-    new Vertx(JVertx.newVertx(port, hostname))
+    new Vertx(JVertxFactory.newVertx(port, hostname))
 
   def newVertx(hostname: String) =
-    new Vertx(JVertx.newVertx(hostname))
+    new Vertx(JVertxFactory.newVertx(hostname))
 }
 
 class Vertx(val internal: JVertx) {
