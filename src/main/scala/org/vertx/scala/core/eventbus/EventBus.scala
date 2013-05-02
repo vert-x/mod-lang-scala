@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.core
+package org.vertx.scala.core.eventbus
 
 import scala.language.implicitConversions
 import scala.util.parsing.json.JSONObject
@@ -22,11 +22,12 @@ import scala.util.parsing.json.JSONArray
 import org.vertx.java.core.Handler
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.eventbus.{EventBus => JEventBus}
-import org.vertx.java.core.eventbus.Message
+import org.vertx.java.core.eventbus.{Message => JMessage}
 import org.vertx.java.core.json.JsonArray
 import org.vertx.java.core.json.JsonObject
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.JSON._
+import org.vertx.scala.core.eventbus.Message
 
 
 /**
@@ -39,6 +40,10 @@ object EventBus {
 
   implicit def scalaToJavaDouble(num: Double):java.lang.Double = {
     new java.lang.Double(num)
+  }
+
+  implicit def scalaToJavaFloat(num: Float):java.lang.Float = {
+    new java.lang.Float(num)
   }
 
 }
@@ -79,7 +84,7 @@ class EventBus(internal: JEventBus) {
     internal.send(address, payload, handler)
   }
 
-  def sendByte(address: String, payload: Byte)(handler: Message[java.lang.Byte] => Unit = {msg => }):Unit = {
+  def sendByte(address: String, payload: java.lang.Byte)(handler: Message[java.lang.Byte] => Unit = {msg => }):Unit = {
     internal.send(address, payload, handler)
   }
 
@@ -95,7 +100,7 @@ class EventBus(internal: JEventBus) {
     internal.send(address, payload, handler)
   }
 
-  def sendFloat(address: String, payload: Float)(handler: Message[java.lang.Float] => Unit = {msg => }):Unit = {
+  def sendFloat(address: String, payload: java.lang.Float)(handler: Message[java.lang.Float] => Unit = {msg => }):Unit = {
     internal.send(address, payload, handler)
   }
 
@@ -111,11 +116,11 @@ class EventBus(internal: JEventBus) {
     internal.send(address, payload, handler)
   }
 
-  def sendLong(address: String, payload: Long)(handler: Message[java.lang.Long] => Unit = {msg => }):Unit = {
+  def sendLong(address: String, payload: java.lang.Long)(handler: Message[java.lang.Long] => Unit = {msg => }):Unit = {
     internal.send(address, payload, handler)
   }
 
-  def sendShort(address: String, payload: Short)(handler: Message[java.lang.Short] => Unit = {msg => }):Unit = {
+  def sendShort(address: String, payload: java.lang.Short)(handler: Message[java.lang.Short] => Unit = {msg => }):Unit = {
     internal.send(address, payload, handler)
   }
 
