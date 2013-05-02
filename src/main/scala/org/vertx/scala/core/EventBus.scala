@@ -16,7 +16,7 @@
 
 package org.vertx.scala.core
 
-import scala.language.implicitConversions
+//mport scala.language.implicitConversions
 import scala.util.parsing.json.JSONObject
 import scala.util.parsing.json.JSONArray
 import org.vertx.java.core.Handler
@@ -80,7 +80,8 @@ class EventBus(internal: JEventBus) {
   }
 
   def sendByte(address: String, payload: Byte)(handler: Message[java.lang.Byte] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    // we call the implicit because there are 2 implicit function that are in conflict.
+    internal.send(address, byte2Byte(payload), handler)
   }
 
   def sendByteArray(address: String, payload: Array[Byte])(handler: Message[Array[Byte]] => Unit = {msg => }):Unit = {
@@ -96,11 +97,13 @@ class EventBus(internal: JEventBus) {
   }
 
   def sendFloat(address: String, payload: Float)(handler: Message[java.lang.Float] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    // we call the implicit because there are 2 implicit function that are in conflict.  
+    internal.send(address, float2Float(payload), handler)
   }
 
   def sendInt(address: String, payload: Int)(handler: Message[java.lang.Integer] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    // we call the implicit because there are 2 implicit function that are in conflict.  
+    internal.send(address, int2Integer(payload), handler)
   }
 
   def sendJsonArray(address: String, payload: JSONArray)(handler: Message[JsonArray] => Unit = {msg => }):Unit = {
@@ -112,11 +115,13 @@ class EventBus(internal: JEventBus) {
   }
 
   def sendLong(address: String, payload: Long)(handler: Message[java.lang.Long] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    // we call the implicit because there are 2 implicit function that are in conflict.
+    internal.send(address, long2Long(payload), handler)
   }
 
   def sendShort(address: String, payload: Short)(handler: Message[java.lang.Short] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    // we call the implicit because there are 2 implicit function that are in conflict.
+    internal.send(address, short2Short(payload), handler)
   }
 
   def sendString(address: String, payload: String)(handler: Message[String] => Unit = {msg: Message[String] => }):Unit = {
