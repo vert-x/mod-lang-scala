@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.platform
+package org.vertx.scala.platform.impl
 
 import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.java.platform.{Verticle => JVerticle}
@@ -22,13 +22,16 @@ import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.java.platform.VerticleFactory
 import org.vertx.scala.core.Vertx
 import scala.reflect.internal.util.BatchSourceFile
-import scala.reflect.internal.util.ScriptSourceFile
 import scala.reflect.io.Path.string2path
 import scala.reflect.io.PlainFile
 import scala.tools.nsc.interpreter.IMain
-import scala.tools.nsc.interpreter.AbstractFileClassLoader
 import scala.tools.nsc.Settings
 import org.vertx.java.core.logging.Logger
+import org.vertx.java.core.{Vertx => JVertx}
+import org.vertx.java.platform.{Container => JContainer}
+import org.vertx.java.platform.{Verticle => JVerticle}
+import org.vertx.scala.platform.Verticle
+import org.vertx.scala.platform.impl.ScalaVerticle
 
 /**
  * @author swilliams

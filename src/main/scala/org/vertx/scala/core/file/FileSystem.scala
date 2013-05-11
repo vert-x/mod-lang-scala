@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.core
+package org.vertx.scala.core.file
 
 import org.vertx.java.core.AsyncResult
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.file.{FileSystem => JFileSystem}
 import org.vertx.java.core.file.{FileProps, AsyncFile, FileSystemProps}
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.file.{FileSystem => JFileSystem}
 
 /**
  * @author swilliams

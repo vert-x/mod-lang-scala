@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.core
+package org.vertx.scala.core.eventbus
 
-//mport scala.language.implicitConversions
+import scala.language.implicitConversions
 import scala.util.parsing.json.JSONObject
 import scala.util.parsing.json.JSONArray
 import org.vertx.java.core.Handler
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.eventbus.{EventBus => JEventBus}
-import org.vertx.java.core.eventbus.Message
+import org.vertx.java.core.eventbus.{Message => JMessage}
 import org.vertx.java.core.json.JsonArray
 import org.vertx.java.core.json.JsonObject
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.JSON._
+//import org.vertx.scala.core.eventbus.Message
 
 
 /**
@@ -34,13 +35,7 @@ import org.vertx.scala.core.JSON._
  * 
  */
 object EventBus {
-  def apply(actual: JEventBus) =
-    new EventBus(actual)
-
-  implicit def scalaToJavaDouble(num: Double):java.lang.Double = {
-    new java.lang.Double(num)
-  }
-
+  def apply(actual: JEventBus) = new EventBus(actual)
 }
 
 class EventBus(internal: JEventBus) {
@@ -72,60 +67,55 @@ class EventBus(internal: JEventBus) {
   def publish(address: String, payload: String):Unit = internal.publish(address, payload)
 
   def sendBoolean(address: String, payload: Boolean)(handler: Message[java.lang.Boolean] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    internal.send(address, boolean2Boolean(payload), handler.asInstanceOf[Handler[JMessage[java.lang.Boolean]]])
   }
 
   def sendBuffer(address: String, payload: Buffer)(handler: Message[Buffer] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    internal.send(address, payload,  handler.asInstanceOf[Handler[JMessage[Buffer]]])
   }
 
-  def sendByte(address: String, payload: Byte)(handler: Message[java.lang.Byte] => Unit = {msg => }):Unit = {
-    // we call the implicit because there are 2 implicit function that are in conflict.
-    internal.send(address, byte2Byte(payload), handler)
+  def sendByte(address: String, payload: java.lang.Byte)(handler: Message[java.lang.Byte] => Unit = {msg => }):Unit = {
+    internal.send(address, payload, handler.asInstanceOf[Handler[JMessage[java.lang.Byte]]])
   }
 
   def sendByteArray(address: String, payload: Array[Byte])(handler: Message[Array[Byte]] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    internal.send(address, payload, handler.asInstanceOf[Handler[JMessage[Array[Byte]]]])
   }
 
   def sendChar(address: String, payload: Character)(handler: Message[Character] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    internal.send(address, payload, handler.asInstanceOf[Handler[JMessage[Character]]])
   }
 
   def sendDouble(address: String, payload: Double)(handler: Message[java.lang.Double] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    internal.send(address, payload, handler.asInstanceOf[Handler[JMessage[java.lang.Double]]])
   }
 
-  def sendFloat(address: String, payload: Float)(handler: Message[java.lang.Float] => Unit = {msg => }):Unit = {
-    // we call the implicit because there are 2 implicit function that are in conflict.  
-    internal.send(address, float2Float(payload), handler)
+  def sendFloat(address: String, payload: java.lang.Float)(handler: Message[java.lang.Float] => Unit = {msg => }):Unit = {
+    internal.send(address, payload, handler.asInstanceOf[Handler[JMessage[java.lang.Float]]])
   }
 
   def sendInt(address: String, payload: Int)(handler: Message[java.lang.Integer] => Unit = {msg => }):Unit = {
-    // we call the implicit because there are 2 implicit function that are in conflict.  
-    internal.send(address, int2Integer(payload), handler)
+    internal.send(address, int2Integer(payload), handler.asInstanceOf[Handler[JMessage[java.lang.Integer]]])
   }
 
   def sendJsonArray(address: String, payload: JSONArray)(handler: Message[JsonArray] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    internal.send(address, payload, handler.asInstanceOf[Handler[JMessage[JsonArray]]])
   }
 
   def sendJsonObject(address: String, payload: JSONObject)(handler: Message[JsonObject] => Unit = {msg => }):Unit = {
-    internal.send(address, payload, handler)
+    internal.send(address, payload, handler.asInstanceOf[Handler[JMessage[JsonObject]]])
   }
 
-  def sendLong(address: String, payload: Long)(handler: Message[java.lang.Long] => Unit = {msg => }):Unit = {
-    // we call the implicit because there are 2 implicit function that are in conflict.
-    internal.send(address, long2Long(payload), handler)
+  def sendLong(address: String, payload: java.lang.Long)(handler: Message[java.lang.Long] => Unit = {msg => }):Unit = {
+    internal.send(address, payload, handler.asInstanceOf[Handler[JMessage[java.lang.Long]]])
   }
 
-  def sendShort(address: String, payload: Short)(handler: Message[java.lang.Short] => Unit = {msg => }):Unit = {
-    // we call the implicit because there are 2 implicit function that are in conflict.
-    internal.send(address, short2Short(payload), handler)
+  def sendShort(address: String, payload: java.lang.Short)(handler: Message[java.lang.Short] => Unit = {msg => }):Unit = {
+    internal.send(address, payload, handler.asInstanceOf[Handler[JMessage[java.lang.Short]]])
   }
 
   def sendString(address: String, payload: String)(handler: Message[String] => Unit = {msg: Message[String] => }):Unit = {
-    internal.send(address, payload, handler)
+    internal.send(address, payload, handler.asInstanceOf[Handler[JMessage[String]]])
   }
 
   def registerHandler[T](address: String)(handler: Message[T] => Unit, resultHandler: () => Unit = {() => }):Handler[Message[T]] = {
@@ -138,7 +128,7 @@ class EventBus(internal: JEventBus) {
     handler // return the actual function so it can be unregistered later
   }
 
-  def unregisterHandler(address: String)(handler: Handler[Message[_]], resultHandler: () => Unit = {() => }):Unit = {
+  def unregisterHandler(address: String)(handler: Handler[JMessage[_]], resultHandler: () => Unit = {() => }):Unit = {
     internal.unregisterHandler(address, handler, resultHandler)
   }
 

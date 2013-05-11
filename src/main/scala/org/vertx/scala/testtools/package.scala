@@ -13,27 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vertx.scala.core.buffer
-
-import org.vertx.java.core.buffer.{Buffer => JBuffer}
+package org.vertx.scala
 
 /**
  * @author swilliams
  *
  */
-
-object Buffer {
-  def apply(actual: JBuffer) =
-    new Buffer(actual)
-
-  implicit def convertScalaToJava(buffer: Buffer) = buffer.toJava
-
-}
-
-class Buffer(actual: JBuffer) {
-
-  def toJava():JBuffer = actual
-
-  // TODO complete Buffer impl ??
+package object testtools {
 
 }

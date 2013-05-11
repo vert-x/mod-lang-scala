@@ -16,6 +16,7 @@
 
 package org.vertx.scala.platform
 
+import scala.language.implicitConversions
 import java.io.File
 import java.net.URL
 import scala.util.parsing.json.JSONObject
@@ -25,32 +26,38 @@ import org.vertx.java.core.logging.Logger
 import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.scala.core.JSON._
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.AsyncResult
 
 /**
  * @author swilliams
  * 
  */
 object Container {
-
   def apply(actual: JContainer) =
     new Container(actual)
 }
 
 class Container(internal: JContainer) {
 
-  def deployModule(name: String, config: JSONObject = null, instances: Int = 1)(handler: String => Unit = {msg: String => }):Unit = internal.deployModule(name, config, instances, handler)
+  def deployModule(name: String, config: JSONObject = null, instances: Int = 1):Unit = internal.deployModule(name, config, instances)
 
-  def deployVerticle(name: String, config: JSONObject = null, instances: Int = 1)(handler: String => Unit = {msg: String => }):Unit = internal.deployVerticle(name, config, instances, handler)
+  def deployModule(name: String, config: JSONObject = null, instances: Int = 1)(handler: AsyncResult[String] => Unit = {ar: AsyncResult[String] => }):Unit = internal.deployModule(name, config, instances, handler)
 
-  def deployWorkerVerticle(name: String, config: JSONObject = null, instances: Int = 1, multithreaded: Boolean = false)(handler: String => Unit = {msg: String => }):Unit = internal.deployWorkerVerticle(name, config, instances, multithreaded, handler)
+  def deployVerticle(name: String, config: JSONObject = null, instances: Int = 1):Unit = internal.deployVerticle(name, config, instances)
+  
+  def deployVerticle(name: String, config: JSONObject = null, instances: Int = 1)(handler: AsyncResult[String] => Unit = {ar: AsyncResult[String] => }):Unit = internal.deployVerticle(name, config, instances, handler)
 
-  def config():JSONObject = internal.getConfig
+  def deployWorkerVerticle(name: String, config: JSONObject = null, instances: Int = 1, multithreaded: Boolean = false):Unit = internal.deployWorkerVerticle(name, config, instances, multithreaded)
 
-  def env():Map[String, String] = mapAsScalaMapConverter(internal.getEnv()).asScala.toMap
+  def deployWorkerVerticle(name: String, config: JSONObject = null, instances: Int = 1, multithreaded: Boolean = false)(handler: AsyncResult[String] => Unit = {ar: AsyncResult[String] => }):Unit = internal.deployWorkerVerticle(name, config, instances, multithreaded, handler)
+
+  def config():JSONObject = internal.config()
+
+  def env():Map[String, String] = mapAsScalaMapConverter(internal.env()).asScala.toMap
 
   def exit():Unit = internal.exit
 
-  def logger():Logger = internal.getLogger
+  def logger():Logger = internal.logger()
 
   def undeployModule(deploymentID: String):Unit = internal.undeployModule(deploymentID)
 

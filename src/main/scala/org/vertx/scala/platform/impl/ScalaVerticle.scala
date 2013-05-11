@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.platform
-
-import scala.language.implicitConversions
+package org.vertx.scala.platform.impl
 import org.vertx.scala.core.Vertx
 import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.java.platform.{Verticle => JVerticle}
 import org.vertx.java.platform.{Container => JContainer}
+import org.vertx.java.core.{Vertx => JVertx}
+import org.vertx.java.platform.{Container => JContainer}
+import org.vertx.java.platform.{Verticle => JVerticle}
+import org.vertx.scala.platform.Verticle
 
 /**
  * @author swilliams

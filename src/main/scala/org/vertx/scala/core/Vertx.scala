@@ -25,6 +25,9 @@ import org.vertx.scala.core.net.NetServer
 import org.vertx.scala.core.http.HttpClient
 import org.vertx.scala.core.http.HttpServer
 import org.vertx.scala.core.sockjs.SockJSServer
+import org.vertx.scala.core.eventbus.EventBus
+import org.vertx.scala.core.file.FileSystem
+
 
 
 /**

@@ -16,9 +16,12 @@
 package org.vertx.scala.core
 
 import scala.language.implicitConversions
+
 import org.vertx.java.core.AsyncResult
 import org.vertx.java.core.AsyncResultHandler
 import org.vertx.java.core.Handler
+import org.vertx.java.core.eventbus.{Message => JMessage}
+import org.vertx.scala.core.eventbus.Message
 
 /**
  * @author swilliams
@@ -40,6 +43,10 @@ trait FunctionConverters {
 
   implicit def convertFunctionToParameterisedAsyncHandler[T](func: AsyncResult[T] => Unit): AsyncResultHandler[T] = new AsyncResultHandler[T]() {
     override def handle(event: AsyncResult[T]) = func(event)
+  }
+
+  implicit def convertFunctionToMessageHandler[T](func: Message[T] => Unit): Handler[Message[T]] = new Handler[Message[T]]() {
+    override def handle(event: JMessage[T]) = func(Message(event))
   }
 
 }

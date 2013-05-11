@@ -45,7 +45,7 @@ class RouteMatcher extends Handler[HttpServerRequest] {
     internal.connectWithRegEx(regex, HttpServerRequestHandler(handler))
   }
 
-  def delete(uri: String, handler: (HttpServerRequest) => Unit):Unit = {
+  def delete(uri: String, handler: HttpServerRequest => Unit):Unit = {
     internal.delete(uri, HttpServerRequestHandler(handler))
   }
 
