@@ -17,7 +17,7 @@
 package org.vertx.scala.core.http
 
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.http.{WebSocket => JWebSocket}
+import org.vertx.java.core.http.{WebSocketBase => JWebSocket}
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.WriteStream
 import org.vertx.scala.core.streams.ReadStream

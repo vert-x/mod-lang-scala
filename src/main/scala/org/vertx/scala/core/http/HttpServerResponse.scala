@@ -132,35 +132,18 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     this
   }
 
-  def write(data: Buffer, handler: () => Unit): HttpServerResponse.this.type = {
-    internal.write(data, handler)
-    this
-  }
 
-  def writeBuffer(data: String): HttpServerResponse.this.type = {
+  def write(data: String): HttpServerResponse.this.type = {
     internal.write(data)
     this
   }
 
-  def writeBuffer(data: String, handler: () => Unit): HttpServerResponse.this.type = {
-    internal.write(data, handler)
-    this
-  }
-
-  def writeBuffer(data: String, encoding: String): HttpServerResponse.this.type = {
+  def write(data: String, encoding: String): HttpServerResponse.this.type = {
     internal.write(data, encoding)
     this
   }
 
-  def writeBuffer(data: String, encoding: String, handler: () => Unit): HttpServerResponse.this.type = {
-    internal.write(data, encoding, handler)
-    this
-  }
 
-  def writeBuffer(data: Buffer): HttpServerResponse.this.type = {
-    internal.writeBuffer(data)
-    this
-  }
 
   def writeQueueFull():Boolean = internal.writeQueueFull()
 
