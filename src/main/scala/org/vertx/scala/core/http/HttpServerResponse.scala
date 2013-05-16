@@ -22,9 +22,11 @@ import org.vertx.java.core.http.{HttpServerResponse => JHttpServerResponse}
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.WriteStream
+import collection.mutable.{ HashMap, MultiMap, Set }
+import org.vertx.java.core.{MultiMap => JMultiMap}
 
 /**
- * @author swilliams
+ * @author swilliams, nfmelendez
  * 
  */
 object HttpServerResponse {
@@ -33,6 +35,14 @@ object HttpServerResponse {
 }
 
 class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
+
+    //Code duplicated in HttpClientResponse.scala
+  def multiMapAsScalaMultiMapConverter (multiMap: JMultiMap) : MultiMap[Any, Any] = {
+    val mm = new HashMap[Any, Set[Any]] with MultiMap[Any, Any]
+    mm.addBinding("1", "a");
+    //TODO: convert jmultimap to scala multimap
+    mm
+  }
 
   def close(): Unit = {
     internal.close()
@@ -48,7 +58,7 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     this
   }
 
-  def exceptionHandler(handler: (Exception) => Unit): HttpServerResponse.this.type = {
+  def exceptionHandler(handler: (Throwable) => Unit): HttpServerResponse.this.type = {
     internal.exceptionHandler(handler)
     this
   }
@@ -69,16 +79,17 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     internal.end(chunk, encoding)
   }
 
-  def headers():Map[String, Object] = {
-    mapAsScalaMapConverter(internal.headers()).asScala.toMap
+  def headers():MultiMap[Any, Any] = {
+    multiMapAsScalaMultiMapConverter(internal.headers())
   }
 
-  def putHeader(name: String, value: Any): HttpServerResponse.this.type = {
+  //TODO: add also methods for Iterable<String>
+  def putHeader(name: String, value: String): HttpServerResponse.this.type = {
     internal.putHeader(name, value)
     this
   }
 
-  def putTrailer(name: String, value: Any): HttpServerResponse.this.type = {
+  def putTrailer(name: String, value: String): HttpServerResponse.this.type = {
     internal.putTrailer(name, value)
     this
   }
@@ -93,17 +104,17 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     this
   }
 
-  def statusCode():Int = internal.statusCode
+  def statusCode():Int = internal.getStatusCode()
 
   def statusCode(code: Int): HttpServerResponse.this.type = {
-    internal.statusCode = code
+    internal.setStatusCode(code)
     this
   }
 
-  def statusMessage():String = internal.statusMessage
+  def statusMessage():String = internal.getStatusMessage()
 
   def statusMessage(message: String): HttpServerResponse = {
-    internal.statusMessage = message
+    internal.setStatusMessage(message)
     this
   }
 
@@ -112,8 +123,8 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     this
   }
 
-  def trailers():Map[String, Object] = {
-    mapAsScalaMapConverter(internal.trailers()).asScala.toMap
+  def trailers():MultiMap[Any, Any] = {
+    multiMapAsScalaMultiMapConverter(internal.trailers())
   }
 
   def write(data: Buffer): HttpServerResponse = {

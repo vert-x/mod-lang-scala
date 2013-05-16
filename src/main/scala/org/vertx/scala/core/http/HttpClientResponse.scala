@@ -21,6 +21,8 @@ import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.ReadStream
+import collection.mutable.{ HashMap, MultiMap, Set }
+import org.vertx.java.core.{MultiMap => JMultiMap}
 
 /**
  * @author swilliams
@@ -31,22 +33,31 @@ object HttpClientResponse {
     new HttpClientResponse(internal)
 }
 
+
 class HttpClientResponse(val internal: JHttpClientResponse) extends ReadStream {
+
+  def multiMapAsScalaMultiMapConverter (multiMap: JMultiMap) : MultiMap[Any, Any] = {
+    val mm = new HashMap[Any, Set[Any]] with MultiMap[Any, Any]
+    mm.addBinding("1", "a");
+    //TODO: convert jmultimap to scala multimap
+    mm
+  }
+
 
   def cookies():List[String] = {
     asScalaBufferConverter(internal.cookies()).asScala.toList
   }
 
-  def headers():Map[String, String] = {
-    mapAsScalaMapConverter(internal.headers()).asScala.toMap
+  def headers(): MultiMap[Any, Any] = {
+    multiMapAsScalaMultiMapConverter(internal.headers())
   }
 
   def statusCode():Int = internal.statusCode
 
   def statusMessage():String = internal.statusMessage
 
-  def trailers():Map[String, String] = {
-    mapAsScalaMapConverter(internal.trailers()).asScala.toMap
+  def trailers():MultiMap[Any, Any] = {
+    multiMapAsScalaMultiMapConverter(internal.trailers())
   }
 
   def bodyHandler(handler: Buffer => Unit):HttpClientResponse.this.type = {
@@ -64,7 +75,7 @@ class HttpClientResponse(val internal: JHttpClientResponse) extends ReadStream {
     this
   }
 
-  def exceptionHandler(handler: Exception => Unit):HttpClientResponse.this.type = {
+  def exceptionHandler(handler: Throwable => Unit):HttpClientResponse.this.type = {
     internal.exceptionHandler(handler)
     this
   }
