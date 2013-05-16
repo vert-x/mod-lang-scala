@@ -18,6 +18,7 @@ package org.vertx.scala.core.streams
 
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.streams.{ReadStream => JReadStream}
+import org.vertx.java.core.Handler
 
 
 /**
@@ -30,7 +31,7 @@ trait ReadStream {
 
   def endHandler(handler: () => Unit):ReadStream.this.type
 
-  def exceptionHandler(handler: (Exception) => Unit):ReadStream.this.type
+  def exceptionHandler(handler: Handler[Throwable]):ReadStream.this.type
 
   def pause():ReadStream.this.type
 

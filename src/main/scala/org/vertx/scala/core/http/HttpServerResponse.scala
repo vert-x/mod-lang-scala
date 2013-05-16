@@ -23,7 +23,7 @@ import org.vertx.java.core.buffer.Buffer
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.WriteStream
 import collection.mutable.{ HashMap, MultiMap, Set }
-import org.vertx.java.core.{MultiMap => JMultiMap}
+import org.vertx.java.core.{MultiMap => JMultiMap, Handler}
 
 /**
  * @author swilliams, nfmelendez
@@ -58,7 +58,7 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     this
   }
 
-  def exceptionHandler(handler: (Throwable) => Unit): HttpServerResponse.this.type = {
+  def exceptionHandler(handler: Handler[Throwable]): HttpServerResponse.this.type = {
     internal.exceptionHandler(handler)
     this
   }
@@ -138,13 +138,18 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     this
   }
 
+
   def write(data: String, encoding: String): HttpServerResponse.this.type = {
     internal.write(data, encoding)
     this
   }
 
-
-
   def writeQueueFull():Boolean = internal.writeQueueFull()
+
+  def writeBuffer(data: Buffer): HttpServerResponse.this.type = {
+    internal.write(data)
+    this
+  }
+
 
 }

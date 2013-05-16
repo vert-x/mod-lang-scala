@@ -22,7 +22,7 @@ import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.ReadStream
 import collection.mutable.{ HashMap, MultiMap, Set }
-import org.vertx.java.core.{MultiMap => JMultiMap}
+import org.vertx.java.core.{MultiMap => JMultiMap, Handler}
 
 
 /**
@@ -78,7 +78,7 @@ class HttpServerRequest(val internal: JHttpServerRequest) extends ReadStream {
     this
   }
 
-  def exceptionHandler(handler: (Throwable) => Unit):HttpServerRequest.this.type = {
+  def exceptionHandler(handler: Handler[Throwable]):HttpServerRequest.this.type = {
     internal.exceptionHandler(handler)
     this
   }

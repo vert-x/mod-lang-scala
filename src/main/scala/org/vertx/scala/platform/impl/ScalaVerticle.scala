@@ -22,7 +22,7 @@ import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.java.platform.{Verticle => JVerticle}
-import org.vertx.scala.platform.Verticle
+import org.vertx.scala.platform.{Container, Verticle}
 
 /**
  * @author swilliams

@@ -21,6 +21,7 @@ import org.vertx.java.core.sockjs.{SockJSSocket => JSockJSSocket}
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.ReadStream
 import org.vertx.scala.core.streams.WriteStream
+import org.vertx.java.core.Handler
 
 /**
  * @author swilliams
@@ -48,7 +49,7 @@ class SockJSSocket(internal: JSockJSSocket) extends ReadStream with WriteStream 
     this
   }
 
-  def exceptionHandler(handler: Exception => Unit): SockJSSocket.this.type = {
+  def exceptionHandler(handler: Handler[Throwable]): SockJSSocket.this.type = {
     internal.exceptionHandler(handler)
     this
   }
@@ -69,7 +70,7 @@ class SockJSSocket(internal: JSockJSSocket) extends ReadStream with WriteStream 
   }
 
   def writeBuffer(data: Buffer): SockJSSocket.this.type = {
-    internal.writeBuffer(data)
+    internal.write(data)
     this
   }
 

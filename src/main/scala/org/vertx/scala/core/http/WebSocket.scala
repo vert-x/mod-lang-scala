@@ -17,10 +17,11 @@
 package org.vertx.scala.core.http
 
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.http.{WebSocketBase => JWebSocket}
+import org.vertx.java.core.http.{WebSocket => JWebSocket}
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.WriteStream
 import org.vertx.scala.core.streams.ReadStream
+import org.vertx.java.core.Handler
 
 /**
  * @author swilliams
@@ -60,7 +61,7 @@ class WebSocket(internal: JWebSocket) extends ReadStream with WriteStream {
   }
 
   def writeBuffer(data: Buffer):WebSocket.this.type = {
-    internal.writeBuffer(data)
+    internal.write(data)
     this
   }
 
@@ -72,7 +73,7 @@ class WebSocket(internal: JWebSocket) extends ReadStream with WriteStream {
   def writeQueueFull():Boolean = internal.writeQueueFull()
 
   def closeHandler(handler: () => Unit):WebSocket.this.type = {
-    internal.closedHandler(handler)
+    internal.closeHandler(handler)
     this
   }
 
@@ -91,7 +92,7 @@ class WebSocket(internal: JWebSocket) extends ReadStream with WriteStream {
     this
   }
 
-  def exceptionHandler(handler: (Exception) => Unit):WebSocket.this.type = {
+  def exceptionHandler(handler: Handler[Throwable]):WebSocket.this.type = {
     internal.exceptionHandler(handler)
     this
   }

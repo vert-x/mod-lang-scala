@@ -52,10 +52,13 @@ object JSON {
     val data = if (json != null) json else ""
 //    new JSONObject(data)
     null  // FIXME
+
   }
 
   implicit def convertMapToJsonObject(json: Map[String, Object]): JsonObject = {
-    new JsonObject(mapAsJavaMapConverter(json).asJava)
+    new JsonObject(
+    scala.collection.JavaConverters.mapAsJavaMapConverter(json).asJava
+    )
   }
 
 }
