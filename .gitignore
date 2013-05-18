@@ -1,3 +1,6 @@
+.idea
+classes
+mod-lang-scala.iml
 .cache
 .classpath
 .DS_Store
