@@ -48,7 +48,7 @@ class SockJSSocket(internal: JSockJSSocket) extends ReadStream with WriteStream 
     this
   }
 
-  def exceptionHandler(handler: Exception => Unit): SockJSSocket.this.type = {
+  def exceptionHandler(handler: Throwable => Unit): SockJSSocket.this.type = {
     internal.exceptionHandler(handler)
     this
   }
@@ -68,8 +68,8 @@ class SockJSSocket(internal: JSockJSSocket) extends ReadStream with WriteStream 
     this
   }
 
-  def writeBuffer(data: Buffer): SockJSSocket.this.type = {
-    internal.writeBuffer(data)
+  def write(data: Buffer): SockJSSocket.this.type = {
+    internal.write(data)
     this
   }
 
