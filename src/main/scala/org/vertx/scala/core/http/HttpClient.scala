@@ -23,6 +23,7 @@ import org.vertx.java.core.http.{WebSocket => JWebSocket}
 import org.vertx.java.core.http.{WebSocketVersion => JWebSocketVersion}
 import org.vertx.scala.core.net.ClientConfigurer
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.{MultiMap => JMultiMap}
 
 
 /**
@@ -53,7 +54,7 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
     internal.delete(uri, HttpClientResponseHandler(handler))
   }
 
-  def exceptionHandler(handler: (Exception) => Unit):Unit = {
+  def exceptionHandler(handler: (Throwable) => Unit):Unit = {
     internal.exceptionHandler(handler)
   }
 
@@ -61,7 +62,7 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
     internal.get(uri, HttpClientResponseHandler(handler))
   }
 
-  def getNow(uri: String, headers: Map[String,_], handler: HttpClientResponse => Unit):Unit = {
+  def getNow(uri: String, headers: JMultiMap, handler: HttpClientResponse => Unit):Unit = {
     internal.getNow(uri, headers, HttpClientResponseHandler(handler))
   }
 
