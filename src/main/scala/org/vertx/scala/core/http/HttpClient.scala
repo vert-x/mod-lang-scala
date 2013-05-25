@@ -42,6 +42,7 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
     internal.connect(uri, HttpClientResponseHandler(handler))
   }
 
+/* todo: rewrite webSocket
   def connectWebsocket(uri: String, wsConnect: (WebSocket) => Unit):Unit = {
     internal.connectWebsocket(uri, WebSocketHandler1(wsConnect))
   }
@@ -49,6 +50,7 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
   def connectWebsocket(uri: String, wsVersion: JWebSocketVersion, wsConnect: (WebSocket) => Unit):Unit = {
     internal.connectWebsocket(uri, wsVersion, WebSocketHandler1(wsConnect))
   }
+  */
 
   def delete(uri: String, handler: HttpClientResponse => Unit):Unit = {
     internal.delete(uri, HttpClientResponseHandler(handler))
