@@ -22,7 +22,7 @@ import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.ReadStream
 import collection.mutable.{ HashMap, MultiMap, Set }
-import org.vertx.java.core.{MultiMap => JMultiMap}
+import org.vertx.java.core.{MultiMap => JMultiMap, Handler}
 
 /**
  * @author swilliams
@@ -34,7 +34,7 @@ object HttpClientResponse {
 }
 
 
-class HttpClientResponse(val internal: JHttpClientResponse) extends ReadStream {
+class HttpClientResponse(val internal: JHttpClientResponse) {
 
   def multiMapAsScalaMultiMapConverter (multiMap: JMultiMap) : MultiMap[Any, Any] = {
     val mm = new HashMap[Any, Set[Any]] with MultiMap[Any, Any]
@@ -75,7 +75,7 @@ class HttpClientResponse(val internal: JHttpClientResponse) extends ReadStream {
     this
   }
 
-  def exceptionHandler(handler: Throwable => Unit):HttpClientResponse.this.type = {
+  def exceptionHandler(handler: Handler[Throwable]):HttpClientResponse.this.type = {
     internal.exceptionHandler(handler)
     this
   }

@@ -31,7 +31,7 @@ object SockJSSocket {
     new SockJSSocket(internal)
 }
 
-class SockJSSocket(internal: JSockJSSocket) extends ReadStream with WriteStream {
+class SockJSSocket(internal: JSockJSSocket) {
 
   def dataHandler(handler: Buffer => Unit): SockJSSocket.this.type = {
     internal.dataHandler(handler)

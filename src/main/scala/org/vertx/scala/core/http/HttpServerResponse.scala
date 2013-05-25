@@ -34,7 +34,7 @@ object HttpServerResponse {
     new HttpServerResponse(internal)
 }
 
-class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
+class HttpServerResponse(internal: JHttpServerResponse) {
 
     //Code duplicated in HttpClientResponse.scala
   def multiMapAsScalaMultiMapConverter (multiMap: JMultiMap) : MultiMap[Any, Any] = {
