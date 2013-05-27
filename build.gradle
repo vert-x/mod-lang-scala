@@ -51,6 +51,8 @@ dependencies {
     transitive = false
   }
   testCompile  "junit:junit:$junitVersion"
+  testRuntime "org.scala-lang:scala-library:$scalaVersion"
+  testRuntime "org.scala-lang:scala-compiler:$scalaVersion"
 }
 
 sourceSets {
@@ -105,13 +107,6 @@ task prepareVertxTest(type: Copy, dependsOn: [cleanTestTmpModules, copyMod]) {
 
 test {
   dependsOn prepareVertxTest
-
-  // Remove any classpath entries for the classes or resources of the rhino verticle and also remove the
-  // Rhino jar from the classpath
-  // If we don't do this then the system classloader will load them which can cause issues with loading resources
-  // from inside JS verticles
-  classpath -= configurations.compile
-  println (classpath.getAsPath());
 
   outputs.upToDateWhen { false }
 
