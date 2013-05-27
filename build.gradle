@@ -59,7 +59,7 @@ sourceSets {
   }
   test {
     resources {
-      srcDirs "src/test/scala_scripts", "src/|/test/resources"
+      srcDirs "src/test/scala", "src/|/test/resources"
     }
   }
 }
@@ -69,6 +69,7 @@ task copyMod( type:Copy, dependsOn: 'classes' ) {
   from compileJava
   from 'src/main/conf'
   from 'src/main/resources'
+  from compileScala
   into( 'lib' ) {
     from configurations.compile
   }
@@ -109,8 +110,8 @@ test {
   // Rhino jar from the classpath
   // If we don't do this then the system classloader will load them which can cause issues with loading resources
   // from inside JS verticles
-  classpath -= sourceSets.main.output
   classpath -= configurations.compile
+  println (classpath.getAsPath());
 
   outputs.upToDateWhen { false }
 
