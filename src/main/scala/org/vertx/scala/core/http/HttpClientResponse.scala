@@ -37,10 +37,13 @@ object HttpClientResponse {
 class HttpClientResponse(val internal: JHttpClientResponse) {
 
   def multiMapAsScalaMultiMapConverter (multiMap: JMultiMap) : MultiMap[Any, Any] = {
-    val mm = new HashMap[Any, Set[Any]] with MultiMap[Any, Any]
-    mm.addBinding("1", "a");
-    //TODO: convert jmultimap to scala multimap
-    mm
+    val multim = new HashMap[Any, Set[Any]] with MultiMap[Any, Any]
+    val it = multiMap.iterator
+    while(it.hasNext() ) {
+      val keyValue = it.next()
+      multim.addBinding(keyValue.getKey(), keyValue.getValue());
+    }
+    multim
   }
 
 
@@ -61,7 +64,13 @@ class HttpClientResponse(val internal: JHttpClientResponse) {
   }
 
   def bodyHandler(handler: Buffer => Unit):HttpClientResponse.this.type = {
-    internal.bodyHandler(handler)
+
+    internal.bodyHandler(new Handler[Buffer] {
+      override def handle(bf: Buffer) {
+        handler(bf);
+      }
+    });
+
     this
   }
 
