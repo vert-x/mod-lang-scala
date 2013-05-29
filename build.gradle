@@ -1,161 +1,102 @@
+apply from: "gradle/setup.gradle"
+apply from: "gradle/vertx.gradle"
+
 /*
- * Copyright 2012 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+Usage:
+
+./gradlew task_name
+
+(or gradlew.bat task_name if you have the misfortune to have to use Windows)
+
+If no task name is specified then the default task 'assemble' is run
+
+Task names are:
+
+idea - generate a skeleton IntelliJ IDEA project
+
+eclipse - generate a skeleton Eclipse IDE project
+
+assemble - builds the outputs, by default this is the module zip file. It can also include a jar file if produceJar
+          in gradle.properties is set to true. Outputs are created in build/libs.
+          if pullInDeps in gradle.properties is set to 'true' then the modules dependencies will be
+          automatically pulled into a nested mods directory inside the module during the build
+
+copyMod - builds and copies the module to the local 'mods' directory so you can execute vertx runmod (etc)
+          directly from the command line
+
+modZip - creates the module zip into build/libs
+
+clean - cleans everything up
+
+test - runs the tests. An nice html test report is created in build/reports/tests (index.html)
+
+runMod - runs the module. This is similar to executing vertx runmod from the command line except that it does
+         not use the version of Vert.x installed and on the PATH to run it. Instead it uses the version of Vert.x
+         that the module was compiled and tested against.
+
+pullInDeps - pulls in all dependencies of the module into a nested module directory
+
+uploadArchives - upload the module zip file (and jar if one has been created) to Nexus. You will need to
+                 configure sonatypeUsername and sonatypePassword in ~/.gradle/gradle.properties.
+
+install - install any jars produced to the local Maven repository (.m2)
+
  */
 
-apply plugin: 'eclipse'
-apply plugin: 'idea'
-apply plugin: 'scala'
-apply plugin: 'java'
-apply from: "gradle/maven.gradle"
-apply from: "gradle/setup.gradle"
-
-group = groupname
-archivesBaseName = artifact
-
-defaultTasks = ['assemble']
-
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
-
-configurations {
-  provided
-  testCompile.extendsFrom provided
-}
-
-repositories {
-  mavenLocal()
-  maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-  mavenCentral()
-}
-
 dependencies {
-  compile "org.scala-lang:scala-library:$scalaVersion"
-  compile "org.scala-lang:scala-compiler:$scalaVersion"
+  /*
+  Add your module jar dependencies here
+  E.g.
+  compile "com.foo:foo-lib:1.0.1" - for compile time deps - this will end up in your module too!
+  testCompile "com.foo:foo-lib:1.0.1" - for test time deps
+  provided "com.foo:foo-lib:1.0.1" - if you DON'T want it to be packaged in the module zip
+    compile "org.mongodb:mongo-java-driver:$mongoVersion"
 
-  provided "io.vertx:vertx-core:$vertxVersion"
-  provided "io.vertx:vertx-platform:$vertxVersion"
-
-  provided( "io.vertx:vertx-testframework:$vertxVersion" ) {
-    transitive = false
-  }
-  testCompile  "junit:junit:$junitVersion"
-  testRuntime "org.scala-lang:scala-library:$scalaVersion"
-  testRuntime "org.scala-lang:scala-compiler:$scalaVersion"
-}
-
-sourceSets {
-  main {
-    compileClasspath = compileClasspath + configurations.provided
-  }
-  test {
-    resources {
-      srcDirs "src/test/scala", "src/|/test/resources"
-    }
-  }
-}
-
-task copyMod( type:Copy, dependsOn: 'classes' ) {
-  into "build/mod/maven:$groupname:$artifact:$version"
-  from compileJava
-  from 'src/main/conf'
-  from 'src/main/resources'
-  from compileScala
-  into( 'lib' ) {
-    from configurations.compile
-  }
-}
-
-// Package into build/libs/mod.zip
-task dist( type: Zip) {
-  group = 'vert.x'
-  description = "Assembles a vert.x module"
-  destinationDir = project.file('build/libs')
-  archiveName = "${artifact}-${version}" + ".zip"
-  from copyMod
-}
-
-artifacts {
-  archives dist
-}
-
-task cleanTestTmpModules(type: Delete) {
-  delete { file("src/test/mod-test").listFiles().find {
-    true
-  } }
-}
-
-clean {
-  dependsOn cleanTestTmpModules
-}
-
-task prepareVertxTest(type: Copy, dependsOn: [cleanTestTmpModules, copyMod]) {
-  from 'build/mod'
-  into 'src/test/mod-test' // Copy the mod into the mods directory
+   */
 }
 
 test {
-  dependsOn prepareVertxTest
+  /* Configure which tests are included
+  include 'org/foo/**'
+  exclude 'org/boo/**'
+  */
 
-  outputs.upToDateWhen { false }
-
-  // Some vert.x properties
-  systemProperty 'vertx.test.timeout', 15
-  systemProperty 'vertx.mods', "$projectDir/src/test/mod-test"  // Set vertx.mods to the mod directory
-  systemProperty 'vertx.version', "$project.version"
-
-  // Show output
-  testLogging.showStandardStreams = true
-
-  testLogging { exceptionFormat "full" }
 }
 
+/*
+If you're uploading stuff to Maven, Gradle needs to generate a POM.
+Please edit the details below.
+ */
+def configurePom(def pom) {
+  pom.project {
+    name rootProject.name
+    description 'MongoDB Persistor Module for Vert.x'
+    inceptionYear '2012'
+    packaging 'zip'
+    url 'https://github.com/vert-x/mod-mongo-persistor'
 
-task collectDeps(type: Copy) {
-  group = 'vert.x'
-  description = 'conveniently collect dependencies for other IDEs'
-  destinationDir = file("build/deps")
-  into("compile") {
-    from configurations.compile
-  }
-  into("test") {
-    from configurations.testCompile
-  }
-}
+    developers {
+      developer {
+        id 'purplefox'
+        name 'Tim Fox'
+        // email 'developer email'
+      }
+    }
 
-tasks.withType(ScalaCompile) {
-  scalaCompileOptions.useAnt = false
-  // FIXME remove when Gradle 1.5 is released
-  scalaCompileOptions.additionalParameters = ['-target:jvm-1.7']
-}
+    scm {
+      url 'https://github.com/vert-x/mod-mongo-persistor'
+    }
 
+    licenses {
+      license {
+        name 'The Apache Software License, Version 2.0'
+        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        distribution 'repo'
+      }
+    }
 
-// TODO scaladoc
-scaladoc {
-  excludes = ["**/impl/**"]
-  destinationDir = file("build/docs/scala/api")
-  outputs.dir destinationDir
-}
-
-// Map the 'provided' dependency configuration to the appropriate IDEA visibility scopes.
-plugins.withType(IdeaPlugin) {
-  idea {
-    module {
-      scopes.PROVIDED.plus += configurations.provided
-      scopes.COMPILE.minus += configurations.provided
-      scopes.TEST.minus += configurations.provided
-      scopes.RUNTIME.minus += configurations.provided
+    properties {
+      setProperty('project.build.sourceEncoding', 'UTF8')
     }
   }
 }
