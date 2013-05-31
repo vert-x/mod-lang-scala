@@ -155,4 +155,9 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
     this
   }
 
+  def setPort(port: Int) = {
+    internal.setPort(port)
+    this
+  }
+
 }

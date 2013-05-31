@@ -38,13 +38,18 @@ class HttpServerResponse(internal: JHttpServerResponse) {
 
     //Code duplicated in HttpClientResponse.scala
   def multiMapAsScalaMultiMapConverter (multiMap: JMultiMap) : MultiMap[Any, Any] = {
-    val mm = new HashMap[Any, Set[Any]] with MultiMap[Any, Any]
-    mm.addBinding("1", "a");
-    //TODO: convert jmultimap to scala multimap
-    mm
+    val multim = new HashMap[Any, Set[Any]] with MultiMap[Any, Any]
+    val it = multiMap.iterator
+    while(it.hasNext() ) {
+      val keyValue = it.next()
+      multim.addBinding(keyValue.getKey(), keyValue.getValue());
+    }
+    multim
   }
 
+  
   def close(): Unit = {
+
     internal.close()
   }
 

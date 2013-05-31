@@ -16,7 +16,7 @@
 
 package org.vertx.scala.core.http
 
-import org.vertx.java.core.Handler
+import org.vertx.java.core.{Handler => JHandler, AsyncResult => JAsyncResult}
 import org.vertx.java.core.http.{HttpServer => JHttpServer}
 import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
 import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
@@ -44,12 +44,23 @@ class HttpServer(val actual: JHttpServer) extends SocketConfigurer {
     this
   }
 
+  def listen(port: Int, handler: JAsyncResult[JHttpServer] => Unit):HttpServer.this.type = {
+    actual.listen(port, new JHandler[JAsyncResult[JHttpServer]]() {
+      override def handle(result: JAsyncResult[JHttpServer]) = {
+        handler(result)
+      }
+      })
+
+    this
+  }
+
+
   def listen(port: Int, address: String):HttpServer.this.type = {
     actual.listen(port, address)
     this
   }
 
-  def requestHandler():Handler[JHttpServerRequest] = {
+  def requestHandler():JHandler[JHttpServerRequest] = {
     actual.requestHandler
   }
 
@@ -58,7 +69,7 @@ class HttpServer(val actual: JHttpServer) extends SocketConfigurer {
     this
   }
 
-  def websocketHandler():Handler[JServerWebSocket] = actual.websocketHandler
+  def websocketHandler(): JHandler[JServerWebSocket] = actual.websocketHandler
 
   def websocketHandler(handler: ServerWebSocket => Unit):HttpServer.this.type = {
     actual.websocketHandler(ServerWebSocketHandler1(handler))
