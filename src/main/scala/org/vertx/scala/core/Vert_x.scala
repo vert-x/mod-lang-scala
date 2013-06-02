@@ -5,7 +5,6 @@ import org.vertx.scala.core.http.{HttpClient, HttpServer, HttpServerRequest}
 
 /**
  * Date: 6/1/13
- * Time: 1:18 AM
  * @author Edgar Chan
  */
 object Vert_x {

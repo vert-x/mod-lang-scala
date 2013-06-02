@@ -21,15 +21,15 @@ class ScalaHttpExperimentalTest extends TestVerticle{
 
 
     vertx.newHttpServer{
-      _.response.end(html)
+      r => r.response.end(html)
     }.listen(port, server =>{
       val client = vertx.newHttpClient.setPort(port)
       client.getNow("/"){
-        _.bodyHandler{
-            data => {
-                assertEquals( html, data.toString )
-                testComplete()
-            }
+        h => h.bodyHandler{
+                data => {
+                    assertEquals( html, data.toString )
+                    testComplete()
+                }
         }
       }
     })
