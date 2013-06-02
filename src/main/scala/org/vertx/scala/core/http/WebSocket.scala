@@ -17,83 +17,78 @@
 package org.vertx.scala.core.http
 
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.http.{WebSocket => JWebSocket}
+import org.vertx.java.core.http.{WebSocketBase => JWebSocketBase}
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.WriteStream
 import org.vertx.scala.core.streams.ReadStream
+import org.vertx.java.core.Handler
 
 /**
  * @author swilliams
  * 
  */
 object WebSocket {
-  def apply(jsocket: JWebSocket) =
+  def apply[T] (jsocket: JWebSocketBase[T]) =
     new WebSocket(jsocket)
 }
 
-class WebSocket(internal: JWebSocket) extends ReadStream with WriteStream {
+class WebSocket [T](internal: JWebSocketBase [T]) {
 
   def binaryHandlerID():String = internal.binaryHandlerID
 
-  def pause():WebSocket.this.type = {
+  def pause(): T = {
     internal.pause()
-    this
+    
   }
 
-  def resume():WebSocket.this.type = {
+  def resume(): T = {
     internal.resume()
-    this
+    
   }
 
   def textHandlerID():String = internal.textHandlerID
 
   def close():Unit = internal.close()
 
-  def setWriteQueueMaxSize(maxSize: Int):WebSocket.this.type = {
+  def setWriteQueueMaxSize(maxSize: Int): T = {
     internal.setWriteQueueMaxSize(maxSize)
-    this
   }
 
-  def writeBinaryFrame(data: Buffer):WebSocket.this.type = {
+  def writeBinaryFrame(data: Buffer): T = {
     internal.writeBinaryFrame(data)
-    this
   }
 
-  def writeBuffer(data: Buffer):WebSocket.this.type = {
-    internal.writeBuffer(data)
-    this
+  def writeBuffer(data: Buffer): T = {
+    internal.write(data)
+    
   }
 
-  def writeTextFrame(data: String):WebSocket.this.type = {
+  def writeTextFrame(data: String): T = {
     internal.writeTextFrame(data)
-    this
+    
   }
 
   def writeQueueFull():Boolean = internal.writeQueueFull()
 
-  def closeHandler(handler: () => Unit):WebSocket.this.type = {
-    internal.closedHandler(handler)
-    this
-  }
 
-  def dataHandler(handler: (Buffer) => Unit):WebSocket.this.type = {
+  def dataHandler(handler: (Buffer) => Unit): T = {
     internal.dataHandler(handler)
-    this
+    
   }
 
-  def drainHandler(handler: () => Unit):WebSocket.this.type = {
+  def drainHandler(handler: () => Unit): T = {
     internal.drainHandler(handler)
-    this
+    
   }
 
-  def endHandler(handler: () => Unit):WebSocket.this.type = {
+  def endHandler(handler: () => Unit): T = {
     internal.endHandler(handler)
-    this
+    
   }
 
-  def exceptionHandler(handler: (Exception) => Unit):WebSocket.this.type = {
+  def exceptionHandler(handler: Handler[Throwable]): T = {
     internal.exceptionHandler(handler)
-    this
+    
   }
 
 }

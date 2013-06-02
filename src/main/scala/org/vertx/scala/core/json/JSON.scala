@@ -21,6 +21,7 @@ import scala.util.parsing.json.JSONArray
 import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.json.JsonArray
 import scala.util.parsing.json.{JSON => sJSON}
+import scala.collection.JavaConversions._
 
 /**
  * @author swilliams
@@ -55,7 +56,7 @@ object JSON {
   }
 
   implicit def convertMapToJsonObject(json: Map[String, Object]): JsonObject = {
-    new JsonObject(mapAsJavaMapConverter(json).asJava)
+    new JsonObject(json)
   }
 
 }

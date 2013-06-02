@@ -15,10 +15,42 @@
  */
 package org.vertx.scala.testframework
 
+import org.vertx.java.core.buffer.Buffer
+
 /**
- * @author swilliams
- *
+ * Date: 6/1/13
+ * @author Edgar Chan
  */
-class TestUtils {
+object TestUtils {
+
+
+  def generateRandomBuffer(length:Int):Buffer={
+    generateRandomBuffer(length, false, 0.toByte)
+  }
+
+  def generateRandomBuffer(length:Int, avoid:Boolean, avoidByte:Byte):Buffer={
+    val line = generateRandomByteArray(length, avoid, avoidByte)
+    new Buffer(line)
+  }
+
+
+  def generateRandomByteArray(length:Int):Array[Byte]={
+    generateRandomByteArray(length, false,  0.toByte )
+  }
+
+  def generateRandomByteArray(length:Int, avoid:Boolean, avoidByte:Byte):Array[Byte]={
+    val line  = new Array[Byte](length)
+    var i = 0
+    do {
+     var rand:Byte = 0.toByte
+      do{
+        rand = (((Math.random() * 255) - 128).asInstanceOf[Int]).toByte
+      }while(avoid && rand == avoidByte)
+      line(i) = rand
+     i+=1
+    }while(i < length)
+    line
+  }
+
 
 }

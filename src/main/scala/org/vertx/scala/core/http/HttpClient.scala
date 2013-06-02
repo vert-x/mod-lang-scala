@@ -23,6 +23,7 @@ import org.vertx.java.core.http.{WebSocket => JWebSocket}
 import org.vertx.java.core.http.{WebSocketVersion => JWebSocketVersion}
 import org.vertx.scala.core.net.ClientConfigurer
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.{MultiMap => JMultiMap}
 
 
 /**
@@ -41,6 +42,7 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
     internal.connect(uri, HttpClientResponseHandler(handler))
   }
 
+/* todo: rewrite webSocket
   def connectWebsocket(uri: String, wsConnect: (WebSocket) => Unit):Unit = {
     internal.connectWebsocket(uri, WebSocketHandler1(wsConnect))
   }
@@ -48,12 +50,13 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
   def connectWebsocket(uri: String, wsVersion: JWebSocketVersion, wsConnect: (WebSocket) => Unit):Unit = {
     internal.connectWebsocket(uri, wsVersion, WebSocketHandler1(wsConnect))
   }
+  */
 
   def delete(uri: String, handler: HttpClientResponse => Unit):Unit = {
     internal.delete(uri, HttpClientResponseHandler(handler))
   }
 
-  def exceptionHandler(handler: (Exception) => Unit):Unit = {
+  def exceptionHandler(handler: (Throwable) => Unit):Unit = {
     internal.exceptionHandler(handler)
   }
 
@@ -61,13 +64,21 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
     internal.get(uri, HttpClientResponseHandler(handler))
   }
 
-  def getNow(uri: String, headers: Map[String,_], handler: HttpClientResponse => Unit):Unit = {
+  def getNow(uri: String, headers: JMultiMap, handler: HttpClientResponse => Unit):Unit = {
     internal.getNow(uri, headers, HttpClientResponseHandler(handler))
   }
 
-  def getNow(uri: String, handler: HttpClientResponse => Unit):Unit = {
+  /*def getNow(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.getNow(uri, HttpClientResponseHandler(handler))
+  }*/
+
+
+  def getNow(uri: String)(handler: HttpClientResponse => Unit):Unit = {
     internal.getNow(uri, HttpClientResponseHandler(handler))
   }
+
+
+
 
   def head(uri: String, handler: HttpClientResponse => Unit):Unit = {
     internal.head(uri, HttpClientResponseHandler(handler))
@@ -149,6 +160,11 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
 
   def trustStorePath(path: String):HttpClient.this.type = {
     internal.setTrustStorePath(path)
+    this
+  }
+
+  def setPort(port: Int) = {
+    internal.setPort(port)
     this
   }
 
