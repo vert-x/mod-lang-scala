@@ -27,7 +27,7 @@ class ScalaHttpTest extends TestVerticle {
         server =>
           val client = Vertx(vertx).createHttpClient().setPort(port)
 
-          client.getNow("/", {
+          client.getNow("/"){
             resp =>
               resp.bodyHandler({
                 data =>
@@ -36,7 +36,7 @@ class ScalaHttpTest extends TestVerticle {
                     testComplete();
                   }
               });
-          });
+          }
 
       });
 

@@ -21,7 +21,6 @@ import org.vertx.java.core.buffer.{Buffer => JBuffer}
  * @author swilliams
  *
  */
-
 object Buffer {
   def apply(actual: JBuffer) =
     new Buffer(actual)

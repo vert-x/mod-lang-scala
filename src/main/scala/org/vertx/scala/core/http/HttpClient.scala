@@ -68,9 +68,17 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
     internal.getNow(uri, headers, HttpClientResponseHandler(handler))
   }
 
-  def getNow(uri: String, handler: HttpClientResponse => Unit):Unit = {
+  /*def getNow(uri: String, handler: HttpClientResponse => Unit):Unit = {
+    internal.getNow(uri, HttpClientResponseHandler(handler))
+  }*/
+
+
+  def getNow(uri: String)(handler: HttpClientResponse => Unit):Unit = {
     internal.getNow(uri, HttpClientResponseHandler(handler))
   }
+
+
+
 
   def head(uri: String, handler: HttpClientResponse => Unit):Unit = {
     internal.head(uri, HttpClientResponseHandler(handler))
