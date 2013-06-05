@@ -16,11 +16,11 @@
 
 package org.vertx.scala.core.net
 
-import collection.JavaConversions._
 import org.vertx.java.core.net.{NetClient => JNetClient}
 import org.vertx.java.core.net.{NetSocket => JNetSocket}
-import org.vertx.java.core.{AsyncResult => JAsyncResult}
-import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.{TCPSupport, ClientSSLSupport, Handler, AsyncResult}
+import org.vertx.java.core.impl.DefaultFutureResult
+
 
 
 /**
@@ -32,23 +32,31 @@ object NetClient {
     new NetClient(actual)
 }
 
-class NetClient(internal: JNetClient) extends ClientConfigurer {
+//TODO: ClientSSLSupport, TCPSupport extends ClientSSLSupport[NetClient] with TCPSupport[NetClient]
+class NetClient(internal: JNetClient) {
 
-  def connect(port: Int, host: String, handler: (JAsyncResult[JNetSocket]) => Unit): Unit = {
-    internal.connect(port, host, handler)
+  def connect(port: Int, handler: AsyncResult[NetSocket] => Unit): NetClient = {
+    connect(port, "localhost", handler)
   }
 
-  def connect(port: Int, handler: (JAsyncResult[JNetSocket]) => Unit): Unit = {
-    internal.connect(port, handler)
+  def connect(port: Int, host: String, handler: AsyncResult[NetSocket] => Unit):NetClient= {
+    internal.connect(port, host, new Handler[AsyncResult[JNetSocket]]() {
+      override def handle(result: AsyncResult[JNetSocket]) = {
+        if (result.succeeded)
+           handler(new DefaultFutureResult[NetSocket](NetSocket(result.result)))
+      }
+    })
+    this
   }
+
 
   def close(): Unit = internal.close()
 
-  def connectTimeout(): Long = internal.getConnectTimeout()
+  def connectTimeout(): Long = internal.getConnectTimeout
 
-  def keyStorePassword(): String = internal.getKeyStorePassword()
+  def keyStorePassword(): String = internal.getKeyStorePassword
 
-  def keyStorePath(): String = internal.getKeyStorePath()
+  def keyStorePath(): String = internal.getKeyStorePath
 
   def keyStorePassword(keyStorePassword: String): NetClient.this.type = {
     internal.setKeyStorePassword(keyStorePassword)

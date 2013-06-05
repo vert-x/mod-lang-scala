@@ -16,22 +16,20 @@
 
 package org.vertx.scala.core.net
 
-import collection.JavaConversions._
-import org.vertx.java.core.net.{NetSocket => JNetSocket}
-import org.vertx.java.core.net.{NetServer => JNetServer}
 import org.vertx.scala.core.FunctionConverters._
-
+import org.vertx.java.core.net.{NetServer => JNetServer}
+import org.vertx.java.core.{Handler => JHandler, AsyncResult => JAsyncResult}
 
 /**
  * @author swilliams
  * 
  */
 object NetServer {
-  def apply(actual: JNetServer) =
-    new NetServer(actual)
+  def apply(actual: JNetServer) = new NetServer(actual)
+
 }
 
-class NetServer(internal: JNetServer) extends SocketConfigurer {
+class NetServer(val internal: JNetServer) extends SocketConfigurer {
 
   def close():Unit = internal.close
 
@@ -47,6 +45,17 @@ class NetServer(internal: JNetServer) extends SocketConfigurer {
     internal.listen(port, address)
     this
   }
+
+
+  def listen(port: Int, handler: JAsyncResult[JNetServer] => Unit):NetServer.this.type = {
+    internal.listen(port,  new JHandler[JAsyncResult[JNetServer]]() {
+       override def handle(result: JAsyncResult[JNetServer]) = {
+         handler(result)
+       }
+    })
+     this
+  }
+
 
   def connectHandler(handler: (NetSocket) => Unit):NetServer.this.type = {
     internal.connectHandler(ConnectHandler(handler))
