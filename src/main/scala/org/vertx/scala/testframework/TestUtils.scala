@@ -18,7 +18,7 @@ package org.vertx.scala.testframework
 import org.vertx.java.core.buffer.Buffer
 
 /**
- * Date: 6/1/13
+ * Port of some of the original TestUtils Helper methods
  * @author Edgar Chan
  */
 object TestUtils {
@@ -50,6 +50,19 @@ object TestUtils {
      i+=1
     }while(i < length)
     line
+  }
+
+
+  def bufferEquals(b1:Buffer, b2:Buffer):Boolean={
+    if(b1.length != b2.length) false
+
+    var i=0
+    do{
+       if (b1.getByte(i) != b2.getByte(i)){ return false}
+      i+=1
+    }while( i < b1.length)
+
+     true
   }
 
 
