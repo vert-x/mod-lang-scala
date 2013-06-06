@@ -28,7 +28,7 @@ class NetServerTest extends TestVerticle{
     ).listen(8080, async =>{
 
       assertEquals(true, async.succeeded)
-      assertEquals(server.internal, async.result)
+      assertEquals(server.internal, async.result.internal)
 
       client.connect(8080, "localhost", async1 =>{
         assertEquals(true, async1.succeeded)

@@ -18,7 +18,8 @@ package org.vertx.scala.core.net
 
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.java.core.net.{NetServer => JNetServer}
-import org.vertx.java.core.{Handler => JHandler, AsyncResult => JAsyncResult, ServerTCPSupport, ServerSSLSupport}
+import org.vertx.java.core.{Handler, AsyncResult, ServerTCPSupport, ServerSSLSupport}
+import org.vertx.java.core.impl.DefaultFutureResult
 
 /**
  * @author swilliams
@@ -48,19 +49,15 @@ class NetServer(val internal: JNetServer) extends ServerSSLSupport[NetServer] wi
     this
   }
 
-  def listen(port: Int, handler: JAsyncResult[JNetServer] => Unit):NetServer = {
-    internal.listen(port,  new JHandler[JAsyncResult[JNetServer]]() {
-       override def handle(result: JAsyncResult[JNetServer]) = {
-         handler(result)
-       }
-    })
-     this
+  def listen(port: Int, handler: AsyncResult[NetServer] => Unit):NetServer = {
+    listen(port, "0.0.0.0", handler)
   }
 
-  def listen(port: Int, host:String,  handler: JAsyncResult[JNetServer] => Unit):NetServer = {
-    internal.listen(port,  host, new JHandler[JAsyncResult[JNetServer]]() {
-       override def handle(result: JAsyncResult[JNetServer]) = {
-         handler(result)
+  def listen(port: Int, host:String,  handler: AsyncResult[NetServer] => Unit):NetServer = {
+    internal.listen(port,  host, new Handler[AsyncResult[JNetServer]]() {
+       override def handle(result: AsyncResult[JNetServer]) = {
+         if (result.succeeded)
+             handler(new DefaultFutureResult[NetServer](NetServer(result.result)))
        }
     })
      this
