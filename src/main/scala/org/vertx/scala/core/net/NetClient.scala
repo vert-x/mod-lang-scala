@@ -48,62 +48,14 @@ class NetClient(internal: JNetClient) extends ClientSSLSupport[NetClient] with T
     this
   }
 
-  def close(): Unit = internal.close()
+  def close: Unit = internal.close
 
-  def connectTimeout(): Long = internal.getConnectTimeout
+  def getConnectTimeout: Long = internal.getConnectTimeout
 
-  def keyStorePassword(): String = internal.getKeyStorePassword
+  def reconnectAttempts:Int = internal.getReconnectAttempts
 
-  def keyStorePath(): String = internal.getKeyStorePath
+  def reconnectInterval:Long = internal.getReconnectInterval
 
-  def keyStorePassword(keyStorePassword: String): NetClient.this.type = {
-    internal.setKeyStorePassword(keyStorePassword)
-    this
-  }
-
-  def keyStorePath(keyStorePath: String): NetClient = {
-    internal.setKeyStorePath(keyStorePath)
-    this
-  }
-
-  def reconnectAttempts():Int = internal.getReconnectAttempts
-
-  def reconnectInterval():Long = internal.getReconnectInterval
-
-  def receiveBufferSize():Int = internal.getReceiveBufferSize
-
-  def receiveBufferSize(receiveBufferSize: Int):NetClient = {
-    internal.setReceiveBufferSize(receiveBufferSize)
-    this
-  }
-
-  def sendBufferSize(): Int = internal.getSendBufferSize
-
-  def sendBufferSize(sendBufferSize: Int): NetClient= {
-    internal.setSendBufferSize(sendBufferSize)
-    this
-  }
-
-  def trafficClass(): Int = internal.getTrafficClass
-
-  def trafficClass(trafficClass: Int): NetClient= {
-    internal.setTrafficClass(trafficClass)
-    this
-  }
-
-  def trustStorePassword(): String = internal.getTrustStorePassword
-
-  def trustStorePassword(password: String): NetClient= {
-    internal.setTrustStorePassword(password)
-    this
-  }
-
-  def trustStorePath(): String = internal.getTrustStorePath
-
-  def trustStorePath(path: String): NetClient = {
-    internal.setTrustStorePath(path)
-    this
-  }
 
   def setSSL(ssl: Boolean): NetClient = {
     internal.setSSL(ssl)
@@ -115,12 +67,12 @@ class NetClient(internal: JNetClient) extends ClientSSLSupport[NetClient] with T
   }
 
   def setKeyStorePath(path: String): NetClient = {
-    internal.setKeyStorePassword(path)
+    internal.setKeyStorePath(path)
     this
   }
 
   def getKeyStorePath: String = {
-    internal.getKeyStorePassword
+    internal.getKeyStorePath
   }
 
   def setKeyStorePassword(pwd: String): NetClient = {
@@ -133,12 +85,12 @@ class NetClient(internal: JNetClient) extends ClientSSLSupport[NetClient] with T
   }
 
   def setTrustStorePath(path: String): NetClient = {
-    internal.setKeyStorePath(path)
+    internal.setTrustStorePath(path)
     this
   }
 
   def getTrustStorePath: String = {
-    internal.getTrustStorePassword
+    internal.getTrustStorePath
   }
 
   def setTrustStorePassword(pwd: String): NetClient = {
