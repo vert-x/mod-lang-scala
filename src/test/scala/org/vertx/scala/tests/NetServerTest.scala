@@ -6,6 +6,7 @@ import org.vertx.testtools.VertxAssert.assertEquals
 import org.junit.Test
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.scala.testframework.TestUtils
+import java.nio.file.FileSystems
 
 /**
  * @author Edgar Chan
@@ -17,9 +18,35 @@ class NetServerTest extends TestVerticle{
 
   @Test
   def echoNoSSLTest(){
+    echoTest(withSSl = false)
+  }
+
+  @Test
+  def echoSSLTest(){
+    echoTest(withSSl = true)
+  }
+
+  private def echoTest(withSSl:Boolean){
 
     val server = vertx.newNetServer
     val client = vertx.newNetClient
+
+
+    if (withSSl){
+      server.setSSL(true)
+      .setKeyStorePath(testResourcesPath("server-keystore.jks"))
+      .setKeyStorePassword("wibble")
+      .setTrustStorePath(testResourcesPath("server-truststore.jks"))
+      .setTrustStorePassword("wibble")
+      .setClientAuthRequired(true)
+
+      client.setSSL(true)
+      .setKeyStorePath(testResourcesPath("client-keystore.jks"))
+      .setKeyStorePassword("wibble")
+      .setTrustStorePath(testResourcesPath("client-truststore.jks"))
+      .setTrustStorePassword("wibble")
+    }
+
 
     server.connectHandler( socket =>
       socket.dataHandler{
@@ -47,7 +74,7 @@ class NetServerTest extends TestVerticle{
           if(received.length == sends * size){
             TestUtils.bufferEquals(sent, received)
             server.close(() =>{
-                client.close()
+                client.close
                 testComplete()
             })
           }
@@ -65,6 +92,12 @@ class NetServerTest extends TestVerticle{
 
       })
     })
+  }
+
+  private def testResourcesPath(fn:String)={
+    val path = FileSystems.getDefault.getPath(this.getClass.getClassLoader.getResource("").getPath)
+    val full = List(path.getParent.getParent.toAbsolutePath, "resources", "test", "keystores").mkString("/")
+    s"""$full/$fn"""
   }
 
 }
