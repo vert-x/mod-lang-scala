@@ -16,9 +16,8 @@
 
 package org.vertx.scala.core.file
 
-import org.vertx.java.core.AsyncResult
+import org.vertx.java.core.{Handler, AsyncResult}
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.file.{FileSystem => JFileSystem}
 import org.vertx.java.core.file.{FileProps, AsyncFile, FileSystemProps}
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.java.core.file.{FileSystem => JFileSystem}
@@ -46,11 +45,6 @@ class FileSystem(internal: JFileSystem) {
   def chmodSync(path: String, perms: String, dirPerms: String = null):Unit =
     internal.chmodSync(path, perms, dirPerms)
 
-//  def copy(from: String, to: String, handler: () => Unit):Unit =
-//    internal.copy(from, to, handler)
-
-  def copy(from: String, to: String, recursive: Boolean = false, handler: () => Unit):Unit =
-    internal.copy(from, to, recursive, handler)
 
 //  def copySync(from: String, to: String):Unit = internal.copySync(from, to)
 
@@ -131,8 +125,6 @@ class FileSystem(internal: JFileSystem) {
   def mkdirSync(path: String, perms: String, createParents: Boolean):Unit =
     internal.mkdirSync(path, perms, createParents)
 
-  def move(from: String, to: String, handler: () => Unit):Unit =
-    internal.move(from, to, handler)
 
   def moveSync(from: String, to: String):Unit =
     internal.moveSync(from, to)
@@ -208,9 +200,43 @@ class FileSystem(internal: JFileSystem) {
 
   def unlinkSync(link: String):Unit = internal.unlinkSync(link)
 
-  def writeFile(path: String, data: Buffer, handler: () => Unit):Unit =
-    internal.writeFile(path, data, handler)
-
   def writeFileSync(path: String, data: Buffer):Unit = internal.writeFileSync(path, data)
+
+
+
+
+  def move(from: String, to: String, handler: AsyncResult[Unit] => Unit):FileSystem ={
+    internal.move(from, to, new Handler[AsyncResult[Void]]() {
+          override def handle(result: AsyncResult[Void]) = {
+            handler(result.asInstanceOf[AsyncResult[Unit]])
+          }
+    })
+    this
+  }
+
+
+  def copy(from: String, to: String, handler: AsyncResult[Unit] => Unit):FileSystem ={
+    internal.copy(from, to, new Handler[AsyncResult[Void]]() {
+      override def handle(result: AsyncResult[Void]) = {
+        handler(result.asInstanceOf[AsyncResult[Unit]])
+      }
+    })
+    this
+  }
+
+
+  def writeFile(path: String, data: Buffer, handler: () => FileSystem):FileSystem ={
+    internal.writeFile(path, data, new Handler[AsyncResult[Void]]() {
+      override def handle(result: AsyncResult[Void]) = {
+        handler()
+      }
+    })
+    this
+  }
+
+  def writeFile(path:String, data:String, handler: () => FileSystem):FileSystem={
+    writeFile(path, new org.vertx.java.core.buffer.Buffer(data), handler)
+    this
+  }
 
 }
