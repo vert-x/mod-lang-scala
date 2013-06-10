@@ -13,7 +13,7 @@ import java.nio.file.FileSystems
  */
 class NetServerTest extends TestVerticle{
 
-  import org.vertx.scala.core.Vert_x._
+  import org.vertx.scala.core._
   import org.vertx.scala.core.buffer.Buffer._
 
   @Test
