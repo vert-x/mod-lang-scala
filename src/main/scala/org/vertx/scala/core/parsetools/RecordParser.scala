@@ -17,7 +17,6 @@
 package org.vertx.scala.core.parsetools
 
 import scala.language.implicitConversions
-import org.vertx.scala.core.buffer.Buffer
 import org.vertx.java.core.Handler
 import org.vertx.java.core.parsetools.{RecordParser => JRecordParser}
 import org.vertx.scala.core.FunctionConverters._
@@ -56,15 +55,16 @@ object RecordParser {
 
   def latin1StringToBytes(str: String):Array[Byte] = JRecordParser.latin1StringToBytes(str)
 
-  def newDelimited(delim: String, handler: Handler[JBuffer]):RecordParser = {
-    // RecordParser(JRecordParser.newDelimited(delim, {output(new Buffer(it))} as Handler))
+  def newDelimited(delim: String, handler: JBuffer => Unit):RecordParser = {
     RecordParser(JRecordParser.newDelimited(delim, handler))
   }
 
   def newDelimited(delim: Array[Byte], handler: Handler[JBuffer]):RecordParser = {
-    // RecordParser(JRecordParser.newDelimited(delim, {output(new Buffer(it))} as Handler))
-    //     RecordParser(JRecordParser.newDelimited(delim.map(byte2Byte(_)), handler))
     RecordParser(JRecordParser.newDelimited(delim, handler))
+  }
+
+  def newFixed(size: Int, handler: JBuffer => Unit):RecordParser = {
+    RecordParser(JRecordParser.newFixed(size, handler))
   }
 
 }
