@@ -295,11 +295,7 @@ class FileSystem(internal: JFileSystem) {
   }
 
   def move(from: String, to: String, handler: AsyncResult[Unit] => Unit):FileSystem ={
-    internal.move(from, to, new Handler[AsyncResult[Void]]() {
-          override def handle(result: AsyncResult[Void]) = {
-            handler(result.asInstanceOf[AsyncResult[Unit]])
-          }
-    })
+    internal.move(from, to, voidAsyncHandler(handler))
     this
   }
 
