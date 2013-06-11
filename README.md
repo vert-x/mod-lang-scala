@@ -1,4 +1,4 @@
-# mod-lang-scala
+# Scala Module for Vert.x
 
 Scala language implementation for vert.x 2.0
 
