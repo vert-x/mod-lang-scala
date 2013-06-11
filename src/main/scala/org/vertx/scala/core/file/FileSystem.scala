@@ -16,9 +16,9 @@
 
 package org.vertx.scala.core.file
 
-import org.vertx.java.core.{Handler, AsyncResult}
+import org.vertx.java.core.{file, Handler, AsyncResult}
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.file.{FileProps, AsyncFile, FileSystemProps}
+import org.vertx.java.core.file.{FileProps, FileSystemProps, AsyncFile => JAsyncFile}
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.java.core.file.{FileSystem => JFileSystem}
 
@@ -33,125 +33,152 @@ object FileSystem {
 
 class FileSystem(internal: JFileSystem) {
 
-//  def chmod(path: String, perms: String, handler: () => Unit):Unit =
-//    internal.chmod(path, perms, handler)
+  def chmod(path: String, perms: String, dirPerms: Option[String], handler: () => Unit):FileSystem ={
+    internal.chmod(path, perms, dirPerms.getOrElse(null) , handler)
+    this
+  }
 
-  def chmod(path: String, perms: String, dirPerms: String = null, handler: () => Unit):Unit =
-    internal.chmod(path, perms, dirPerms, handler)
-
-//  def chmodSync(path: String, perms: String):Unit =
-//    internal.chmodSync(path, perms)
-
-  def chmodSync(path: String, perms: String, dirPerms: String = null):Unit =
-    internal.chmodSync(path, perms, dirPerms)
+  def chmodSync(path: String, perms: String, dirPerms: Option[String]):FileSystem = {
+    internal.chmodSync(path, perms, dirPerms.getOrElse(null))
+    this
+  }
 
 
-//  def copySync(from: String, to: String):Unit = internal.copySync(from, to)
-
-  def copySync(from: String, to: String, recursive: Boolean = false):Unit =
+  def copySync(from: String, to: String, recursive: Boolean = false):FileSystem = {
     internal.copySync(from, to, recursive)
+    this
+  }
 
-  def copySync(path: String, perms: String, handler: () => Unit):Unit =
+  def copySync(path: String, perms: String, handler: () => Unit):FileSystem = {
     internal.createFile(path, perms, handler)
+    this
+  }
 
-  def createFile(path: String, handler: () => Unit):Unit =
+  def createFile(path: String, handler: () => Unit):FileSystem ={
     internal.createFile(path, handler)
+    this
+  }
 
-//  def createFileSync(path: String):Unit =
-//    internal.createFileSync(path)
 
-  def createFileSync(path: String, perms: String = null):Unit =
+  def createFileSync(path: String, perms: String = null):FileSystem = {
     internal.createFileSync(path, perms)
+    this
+  }
 
-  def delete(path: String, recursive: Boolean = false, handler: () => Unit):Unit =
+  def delete(path: String, recursive: Boolean, handler: () => Unit):FileSystem = {
     internal.delete(path, recursive, handler)
+    this
+  }
 
-//  def delete(path: String, handler: () => Unit):Unit =
-//    internal.delete(path, handler)
+  def delete(path: String, handler: () => Unit):FileSystem = {
+    delete(path, false, handler)
+    this
+  }
 
-  def deleteSync(path: String):Unit =
+  def deleteSync(path: String):FileSystem = {
     internal.deleteSync(path)
+    this
+  }
 
-  def deleteSync(path: String, recursive: Boolean):Unit =
+  def deleteSync(path: String, recursive: Boolean):FileSystem = {
     internal.deleteSync(path, recursive)
+    this
+  }
 
-  def exists(path: String, handler: (AsyncResult[java.lang.Boolean]) => Unit):Unit =
+  def exists(path: String, handler: (AsyncResult[java.lang.Boolean]) => Unit):FileSystem = {
     internal.exists(path, handler)
+    this
+  }
 
-  def existsSync(path: String):Unit =
+  def existsSync(path: String):Boolean =
     internal.existsSync(path)
 
-  def fsProps(path: String, handler: (AsyncResult[FileSystemProps]) => Unit):Unit =
-    internal.fsProps(path, handler)
 
-  def fsPropsSync(path: String):Unit =
+  def fsProps(path: String, handler: (AsyncResult[FileSystemProps]) => Unit):FileSystem = {
+    internal.fsProps(path, handler)
+    this
+  }
+
+
+  def fsPropsSync(path: String):FileSystemProps =
     internal.fsPropsSync(path)
 
-  def link(link: String, existing: String, handler: () => Unit):Unit =
+  def link(link: String, existing: String, handler: () => Unit):FileSystem = {
     internal.link(link, existing, handler)
+    this
+  }
 
-  def linkSync(link: String, existing: String):Unit =
+  def linkSync(link: String, existing: String):FileSystem = {
     internal.linkSync(link, existing)
+    this
+  }
 
-  def lprops(path: String, handler: (AsyncResult[FileProps]) => Unit):Unit =
+  def lprops(path: String, handler: (AsyncResult[FileProps]) => Unit):FileSystem = {
     internal.lprops(path, handler)
+    this
+  }
 
-  def lpropsSync(path: String):Unit =
+  def lpropsSync(path: String):FileProps =
     internal.lpropsSync(path)
 
-  def mkdir(path: String, createParents: Boolean, handler: () => Unit):Unit =
+  def mkdir(path: String, createParents: Boolean, handler: () => Unit):FileSystem = {
     internal.mkdir(path, createParents, handler)
+    this
+  }
 
-  def mkdir(path: String, perms: String, createParents: Boolean, handler: () => Unit):Unit =
+  def mkdir(path: String, perms: String, createParents: Boolean, handler: () => Unit):FileSystem = {
     internal.mkdir(path, perms, createParents, handler)
+    this
+  }
 
-  def mkdir(path: String, perms: String, handler: () => Unit):Unit = {
+  def mkdir(path: String, perms: String, handler: () => Unit):FileSystem = {
     internal.mkdir(path, perms, handler)
+    this
   }
 
-  def mkdir(path: String, handler: () => Unit):Unit = {
+  def mkdir(path: String, handler: () => Unit):FileSystem = {
     internal.mkdir(path, handler)
+    this
   }
 
-  def mkdirSync(path: String):Unit =
+  def mkdirSync(path: String):FileSystem = {
     internal.mkdirSync(path)
+    this
+  }
 
-  def mkdirSync(path: String, createParents: Boolean):Unit =
+  def mkdirSync(path: String, createParents: Boolean):FileSystem = {
     internal.mkdirSync(path, createParents)
+    this
+  }
 
-  def mkdirSync(path: String, perms: String):Unit =
+  def mkdirSync(path: String, perms: String):FileSystem = {
     internal.mkdirSync(path, perms)
+    this
+  }
 
-  def mkdirSync(path: String, perms: String, createParents: Boolean):Unit =
+  def mkdirSync(path: String, perms: String, createParents: Boolean):FileSystem = {
     internal.mkdirSync(path, perms, createParents)
+    this
+  }
 
 
-  def moveSync(from: String, to: String):Unit =
+  def moveSync(from: String, to: String):FileSystem = {
     internal.moveSync(from, to)
+    this
+  }
 
-  def open(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, flush: Boolean, handler: (AsyncResult[AsyncFile]) => Unit):Unit =
-    internal.open(path, perms, read, write, createNew, flush, handler)
 
-  def open(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, handler: (AsyncResult[AsyncFile]) => Unit):Unit =
-    internal.open(path, perms, read, write, createNew, handler)
-
-  def open(path: String, perms: String, createNew: Boolean, handler: (AsyncResult[AsyncFile]) => Unit):Unit =
-    internal.open(path, perms, createNew, handler)
-
-  def open(path: String, perms: String, handler: (AsyncResult[AsyncFile]) => Unit):Unit =
-    internal.open(path, perms, handler)
-
-  def open(path: String, handler: (AsyncResult[AsyncFile]) => Unit):Unit =
-    internal.open(path, handler)
-
-  def openSync(path: String):AsyncFile =
+  def openSync(path: String):AsyncFile = {
     internal.openSync(path)
+  }
 
-  def openSync(path: String, perms: String):AsyncFile =
+  def openSync(path: String, perms: String):AsyncFile = {
     internal.openSync(path, perms)
+  }
 
-  def openSync(path: String, perms: String, createNew: Boolean):AsyncFile =
+  def openSync(path: String, perms: String, createNew: Boolean):AsyncFile =  {
     internal.openSync(path, perms, createNew)
+  }
 
   def openSync(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean):AsyncFile =
     internal.openSync(path, perms, read, write, createNew)
@@ -159,51 +186,113 @@ class FileSystem(internal: JFileSystem) {
   def openSync(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, flush: Boolean):AsyncFile =
     internal.openSync(path, perms, read, write, createNew, flush)
 
-  def props(path: String, handler: (AsyncResult[FileProps]) => Unit):Unit =
-    internal.props(path, handler)
 
   def propsSync(path: String):FileProps = internal.propsSync(path)
 
-  def readDir(path: String, filter: String, handler: (AsyncResult[Array[String]]) => Unit):Unit =
-    internal.readDir(path, filter, handler)
-
-  def readDir(path: String, handler: (AsyncResult[Array[String]]) => Unit):Unit =
-    internal.readDir(path, handler)
 
   def readDirSync(path: String):Array[String] = internal.readDirSync(path)
 
   def readDirSync(path: String, filter: String):Array[String] = internal.readDirSync(path, filter)
 
-  def readFile(path: String, handler: (AsyncResult[Buffer]) => Unit):Unit =
+
+  def readFile(path: String, handler: (AsyncResult[Buffer]) => Unit):FileSystem = {
     internal.readFile(path, handler)
+    this
+  }
+
 
   def readFileSync(path: String):Buffer =
     internal.readFileSync(path)
 
-  def readSymlink(link: String, handler: (AsyncResult[String]) => Unit):Unit =
+  def readSymlink(link: String, handler: (AsyncResult[String]) => Unit):FileSystem = {
     internal.readSymlink(link, handler)
+    this
+  }
 
   def readSymlink(link: String):String = internal.readSymlinkSync(link)
 
-  def symlink(link: String, existing: String, handler: () => Unit):Unit =
+
+  def symlink(link: String, existing: String, handler: () => Unit):FileSystem = {
     internal.symlink(link, existing, handler)
+    this
+  }
 
-  def symlinkSync(link: String, existing: String):Unit = internal.symlinkSync(link, existing)
+  def symlinkSync(link: String, existing: String):FileSystem = {
+    internal.symlinkSync(link, existing)
+    this
+  }
 
-  def truncate(path: String, len: Int, handler: () => Unit):Unit =
+  def truncate(path: String, len: Int, handler: () => Unit):FileSystem = {
     internal.truncate(path, len, handler)
+    this
+  }
 
-  def truncateSync(path: String, len: Int):Unit = internal.truncateSync(path, len)
+  def truncateSync(path: String, len: Int):FileSystem = {
+    internal.truncateSync(path, len)
+    this
+  }
 
-  def unlink(link: String, handler: () => Unit):Unit =
+  def unlink(link: String, handler: () => Unit):FileSystem = {
     internal.unlink(link, handler)
+    this
+  }
 
-  def unlinkSync(link: String):Unit = internal.unlinkSync(link)
+  def unlinkSync(link: String):FileSystem =  {
+    internal.unlinkSync(link)
+    this
+  }
 
-  def writeFileSync(path: String, data: Buffer):Unit = internal.writeFileSync(path, data)
+  def writeFileSync(path: String, data: Buffer):FileSystem = {
+    internal.writeFileSync(path, data)
+    this
+  }
 
 
+  private def toAsync[T](h: AsyncResult[AsyncFile] => T)( f: JAsyncFile => AsyncFile ) = asyncHandler(h, f)
+  private val wrapAsync = toAsync( _:AsyncResult[AsyncFile] => Unit)(j => AsyncFile.apply(j))
 
+
+  def open(path: String, handler: (AsyncResult[AsyncFile]) => Unit):FileSystem ={
+    internal.open(path, wrapAsync(handler))
+    this
+  }
+
+  def open(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, flush: Boolean, handler: (AsyncResult[AsyncFile]) => Unit):FileSystem = {
+    internal.open(path, perms, read, write, createNew, flush, wrapAsync(handler))
+    this
+  }
+
+  def open(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, handler: (AsyncResult[AsyncFile]) => Unit):FileSystem = {
+    internal.open(path, perms, read, write, createNew, wrapAsync(handler))
+    this
+  }
+
+  def open(path: String, perms: String, createNew: Boolean, handler: (AsyncResult[AsyncFile]) => Unit):FileSystem = {
+    internal.open(path, perms, createNew, wrapAsync(handler))
+    this
+  }
+
+  def open(path: String, perms: String, handler: (AsyncResult[AsyncFile]) => Unit):FileSystem = {
+    internal.open(path, perms, wrapAsync(handler))
+    this
+  }
+
+
+  def props(path: String, handler: (AsyncResult[FileProps]) => Unit):FileSystem ={
+    internal.props(path, handler)
+    this
+  }
+
+
+  def readDir(path: String, filter: String, handler: (AsyncResult[Array[String]]) => Unit):FileSystem ={
+    internal.readDir(path, filter, handler)
+    this
+  }
+
+  def readDir(path: String, handler: (AsyncResult[Array[String]]) => Unit):FileSystem ={
+    internal.readDir(path, handler)
+    this
+  }
 
   def move(from: String, to: String, handler: AsyncResult[Unit] => Unit):FileSystem ={
     internal.move(from, to, new Handler[AsyncResult[Void]]() {
@@ -214,16 +303,10 @@ class FileSystem(internal: JFileSystem) {
     this
   }
 
-
   def copy(from: String, to: String, handler: AsyncResult[Unit] => Unit):FileSystem ={
-    internal.copy(from, to, new Handler[AsyncResult[Void]]() {
-      override def handle(result: AsyncResult[Void]) = {
-        handler(result.asInstanceOf[AsyncResult[Unit]])
-      }
-    })
+    internal.copy(from, to, voidAsyncHandler(handler))
     this
   }
-
 
   def writeFile(path: String, data: Buffer, handler: () => FileSystem):FileSystem ={
     internal.writeFile(path, data, new Handler[AsyncResult[Void]]() {

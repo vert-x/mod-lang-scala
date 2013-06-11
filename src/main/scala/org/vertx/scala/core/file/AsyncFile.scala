@@ -37,7 +37,11 @@ class AsyncFile(internal:JAsyncFile) extends ReadStream[AsyncFile] with WriteStr
     this
   }
 
-  def endHandler(h: () => Unit ):AsyncFile = endHandler(h)
+  def endHandler(h: () => Unit ):AsyncFile = {
+    internal.endHandler( new Handler[Void] {
+      def handle(event: Void) { h() }
+    })
+  }
 
   def endHandler(h: Handler[Void]): AsyncFile = {
     internal.endHandler(h)
@@ -56,7 +60,14 @@ class AsyncFile(internal:JAsyncFile) extends ReadStream[AsyncFile] with WriteStr
 
   def writeQueueFull: Boolean = internal.writeQueueFull()
 
-  def drainHandler(h: () => Unit):AsyncFile = drainHandler(h)
+  def drainHandler(h: () => Unit):AsyncFile = {
+    internal.drainHandler(new Handler[Void] {
+      def handle(event: Void) {
+        h()
+      }
+    })
+    this
+  }
 
   def drainHandler(h: Handler[Void]): AsyncFile = {
     internal.drainHandler(h)
@@ -74,8 +85,9 @@ class AsyncFile(internal:JAsyncFile) extends ReadStream[AsyncFile] with WriteStr
     internal.close()
   }
 
+
   def close(h:AsyncResult[Unit] => Unit){
-    close(h)
+    internal.close(voidAsyncHandler(h))
   }
 
   def close(handler: Handler[AsyncResult[Void]]) {
@@ -84,7 +96,8 @@ class AsyncFile(internal:JAsyncFile) extends ReadStream[AsyncFile] with WriteStr
 
 
   def write(b:Buffer, p:Int, h:AsyncResult[Unit] => Unit ):AsyncFile={
-    write(b, p, h)
+    internal.write(b, p, voidAsyncHandler(h))
+    this
   }
 
   def write(buffer: Buffer, position: Int, handler: Handler[AsyncResult[Void]]):AsyncFile = {
@@ -94,7 +107,11 @@ class AsyncFile(internal:JAsyncFile) extends ReadStream[AsyncFile] with WriteStr
 
 
   def read(buffer: Buffer, offset: Int, position: Int, length: Int, handler: AsyncResult[Buffer] => Unit):AsyncFile = {
-    read(buffer, offset, position, length, handler)
+    internal.read(buffer, offset, position, length, new Handler[AsyncResult[Buffer]] {
+      def handle(event: AsyncResult[Buffer]) {
+        handler(event)
+      }
+    })
     this
   }
 
@@ -109,7 +126,8 @@ class AsyncFile(internal:JAsyncFile) extends ReadStream[AsyncFile] with WriteStr
   }
 
   def flush(handler:AsyncResult[Unit] => Unit):AsyncFile={
-   flush(handler)
+   flush(voidAsyncHandler(handler))
+   this
   }
 
   def flush(handler: Handler[AsyncResult[Void]]):AsyncFile ={
