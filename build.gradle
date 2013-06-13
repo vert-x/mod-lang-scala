@@ -1,6 +1,7 @@
 apply from: "gradle/setup.gradle"
 apply from: "gradle/vertx.gradle"
 
+
 /*
 Usage:
 
@@ -43,25 +44,9 @@ install - install any jars produced to the local Maven repository (.m2)
 
  */
 
-dependencies {
-  /*
-  Add your module jar dependencies here
-  E.g.
-  compile "com.foo:foo-lib:1.0.1" - for compile time deps - this will end up in your module too!
-  testCompile "com.foo:foo-lib:1.0.1" - for test time deps
-  provided "com.foo:foo-lib:1.0.1" - if you DON'T want it to be packaged in the module zip
-    compile "org.mongodb:mongo-java-driver:$mongoVersion"
+dependencies { }
 
-   */
-}
-
-test {
-  /* Configure which tests are included
-  include 'org/foo/**'
-  exclude 'org/boo/**'
-  */
-
-}
+test { }
 
 /*
 If you're uploading stuff to Maven, Gradle needs to generate a POM.
@@ -70,21 +55,24 @@ Please edit the details below.
 def configurePom(def pom) {
   pom.project {
     name rootProject.name
-    description 'MongoDB Persistor Module for Vert.x'
-    inceptionYear '2012'
+    description 'Scala Language Module for Vert.x'
+    inceptionYear '2013'
     packaging 'zip'
-    url 'https://github.com/vert-x/mod-mongo-persistor'
+    url 'https://github.com/vert-x/mod-lang-scala'
 
     developers {
       developer {
-        id 'purplefox'
-        name 'Tim Fox'
-        // email 'developer email'
+        id 'edgarchan'
+        name 'Edgar Chan'
       }
+      developer {
+           id 'nfmelendez'
+           name 'Nicolas Melendez'
+       }
     }
 
     scm {
-      url 'https://github.com/vert-x/mod-mongo-persistor'
+      url 'https://github.com/vert-x/mod-lang-scala'
     }
 
     licenses {

@@ -127,11 +127,11 @@ test {
 
   if (System.getenv("JENKINS_URL") != null) {
     // When on Jenkins we need to point at the provisioned MongoDB instance
-    systemProperty 'vertx.mongo.username', 'cloudbees'
-    systemProperty 'vertx.mongo.password', 'cca3b410a04657061acc5d7ed4593a52'
-    systemProperty 'vertx.mongo.host', 'alex.mongohq.com'
-    systemProperty 'vertx.mongo.port', '10018'
-    systemProperty 'vertx.mongo.database', '0vaZnY5bN8I2LRGIrnp2Dw'
+    systemProperty 'vertx.scala.username', 'cloudbees'
+    systemProperty 'vertx.scala.password', 'cca3b410a04657061acc5d7ed4593a52'
+    systemProperty 'vertx.scala.host', 'alex.mongohq.com'
+    systemProperty 'vertx.scala.port', '10018'
+    systemProperty 'vertx.scala.database', '0vaZnY5bN8I2LRGIrnp2Dw'
   }
 
   systemProperty 'vertx.loadWithPlatformCL', 'false'
