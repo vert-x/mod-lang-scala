@@ -1,13 +1,13 @@
-package org.vertx.scala.tests
+package org.vertx.scala.tests.http
 
 import org.vertx.testtools.VertxAssert.testComplete
-import org.vertx.testtools.VertxAssert.assertEquals
+import org.vertx.testtools.VertxAssert._
 import org.vertx.testtools.TestVerticle
 import org.junit.Test
 
 /**
  * Date: 6/1/13
- * @author Edgar Chan
+ * @author Edgar Chan, nfmelendez
  */
 class ScalaHttpTest extends TestVerticle{
 
@@ -21,7 +21,7 @@ class ScalaHttpTest extends TestVerticle{
 
     vertx.newHttpServer{
       r => r.response.end(html)
-    }.listen(port, server =>{
+    }.listen(port, {  ar =>
       val client = vertx.newHttpClient.setPort(port)
       client.getNow("/"){
         h => h.bodyHandler{
@@ -34,5 +34,33 @@ class ScalaHttpTest extends TestVerticle{
     })
 
   }
+
+  @Test
+  def testListenInvalidPort() {
+    val server = vertx.newHttpServer
+
+    server.requestHandler{ r =>   }
+
+    server.listen(1128371831, {
+      ar =>
+        assert(ar.failed())
+        assert(ar.cause() != null)
+        testComplete()
+    })
+  }
+
+  @Test
+  def testListenInvalidHost() {
+    val server = vertx.newHttpServer;
+    server.requestHandler { r => }
+
+    server.listen(80, "iqwjdoqiwjdoiqwdiojwd", {
+       ar =>
+        assert(ar.failed())
+        assert(ar.cause() != null)
+        testComplete()
+    })
+  }
+
 
 }
