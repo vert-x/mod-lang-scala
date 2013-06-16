@@ -16,17 +16,14 @@
 
 package org.vertx.scala.core.http
 
-import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
 import org.vertx.java.core.http.{HttpServerResponse => JHttpServerResponse}
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.streams.WriteStream
-import collection.mutable.{ HashMap, MultiMap, Set }
-import org.vertx.java.core.{MultiMap => JMultiMap, Handler}
+import collection.mutable
+import org.vertx.java.core.Handler
 
 /**
- * @author swilliams, nfmelendez
+ * @author swilliams, nfmelendez, Ranie Jade Ramiso
  * 
  */
 object HttpServerResponse {
@@ -35,19 +32,6 @@ object HttpServerResponse {
 }
 
 class HttpServerResponse(internal: JHttpServerResponse) {
-
-    //Code duplicated in HttpClientResponse.scala
-  def multiMapAsScalaMultiMapConverter (multiMap: JMultiMap) : MultiMap[Any, Any] = {
-    val multim = new HashMap[Any, Set[Any]] with MultiMap[Any, Any]
-    val it = multiMap.iterator
-    while(it.hasNext() ) {
-      val keyValue = it.next()
-      multim.addBinding(keyValue.getKey(), keyValue.getValue());
-    }
-    multim
-  }
-
-  
   def close(): Unit = {
 
     internal.close()
@@ -84,8 +68,8 @@ class HttpServerResponse(internal: JHttpServerResponse) {
     internal.end(chunk, encoding)
   }
 
-  def headers():MultiMap[Any, Any] = {
-    multiMapAsScalaMultiMapConverter(internal.headers())
+  def headers():mutable.MultiMap[String, String] = {
+    internal.headers
   }
 
   //TODO: add also methods for Iterable<String>
@@ -128,8 +112,8 @@ class HttpServerResponse(internal: JHttpServerResponse) {
     this
   }
 
-  def trailers():MultiMap[Any, Any] = {
-    multiMapAsScalaMultiMapConverter(internal.trailers())
+  def trailers():mutable.MultiMap[String, String] = {
+    internal.trailers
   }
 
   def write(data: Buffer): HttpServerResponse = {

@@ -16,17 +16,15 @@
 
 package org.vertx.scala.core.http
 
-import scala.collection.JavaConverters._
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.streams.ReadStream
-import collection.mutable.{ HashMap, MultiMap, Set }
-import org.vertx.java.core.{MultiMap => JMultiMap, Handler}
+import collection.mutable.MultiMap
+import org.vertx.java.core.{Handler}
 
 
 /**
- * @author swilliams, nfmelendez
+ * @author swilliams, nfmelendez, Ranie Jade Ramiso
  * 
  */
 object HttpServerRequest {
@@ -36,25 +34,16 @@ object HttpServerRequest {
 
 class HttpServerRequest(val internal: JHttpServerRequest) {
 
-  //Code duplicated in HttpClientResponse.scala
-  def multiMapAsScalaMultiMapConverter (multiMap: JMultiMap) : MultiMap[Any, Any] = {
-    val mm = new HashMap[Any, Set[Any]] with MultiMap[Any, Any]
-    mm.addBinding("1", "a");
-    //TODO: convert jmultimap to scala multimap
-    mm
-  }
-
-
-  def headers():MultiMap[Any, Any] = {
-    multiMapAsScalaMultiMapConverter(internal.headers())
+  def headers():MultiMap[String, String] = {
+    internal.headers
   }
 
   def method():String = internal.method
 
   def path():String = internal.path
 
-  def params():MultiMap[Any, Any] = {
-    multiMapAsScalaMultiMapConverter(internal.params())
+  def params():MultiMap[String, String] = {
+    internal.params
   }
 
   def query():String = internal.query
