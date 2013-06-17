@@ -16,8 +16,7 @@
 
 package org.vertx.scala.core.eventbus
 
-import scala.language.implicitConversions
-import org.vertx.java.core.Handler
+import org.vertx.java.core.{AsyncResult, Handler}
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.eventbus.{EventBus => JEventBus}
 import org.vertx.java.core.eventbus.{Message => JMessage}
@@ -32,25 +31,36 @@ import org.vertx.scala.core.FunctionConverters._
  */
 object EventBus {
   def apply(actual: JEventBus) = new EventBus(actual)
+
+  class EventBusHandler[M](val jHandler:Handler[JMessage[M]]){
+    def unRegisterMe(jBus:JEventBus, address:String, resultHandler: AsyncResult[Unit] => Unit){
+      jBus.unregisterHandler(address, jHandler, voidAsyncHandler(resultHandler))
+    }
+  }
+
+  implicit def toBusHandler[T](h:Message[T] => Unit):EventBusHandler[T]={
+    new EventBusHandler[T](convertFunctionToMessageHandler(h))
+  }
+
+  implicit def toScalaEventBus(actual:JEventBus):EventBus = apply(actual)
+
 }
 
 class EventBus(internal: JEventBus) {
 
-  def registerHandler[T](address: String)(handler: Message[T] => Unit, resultHandler: () => Unit = {() => }):EventBus = {
-    internal.registerHandler(address, handler, resultHandler)
+  def registerHandler[T](address: String)(handler: EventBus.EventBusHandler[T], resultHandler: AsyncResult[Unit] => Unit = { ares => }):EventBus = {
+    internal.registerHandler(address, handler.jHandler, voidAsyncHandler(resultHandler))
     this
   }
 
-  def registerLocalHandler[T](address: String)(handler: Message[T] => Unit):EventBus = {
-    internal.registerLocalHandler(address, handler)
+  def registerLocalHandler[T](address: String)(handler: EventBus.EventBusHandler[T]):EventBus = {
+    internal.registerLocalHandler(address, handler.jHandler)
     this
   }
 
-  def unregisterHandler(address: String)(handler: Handler[JMessage[_]], resultHandler: () => Unit = {() => }):EventBus = {
-    internal.unregisterHandler(address, handler, resultHandler)
-    this
+  def unregisterHandler[T](address: String)( handler:EventBus.EventBusHandler[T], resultHandler: AsyncResult[Unit] => Unit = { ares => }){
+    handler.unRegisterMe(internal, address, resultHandler)
   }
-
 
   def send[T](address:String, message:T)(handler : Message[T] => Unit):EventBus={
     message match{
@@ -117,7 +127,7 @@ class EventBus(internal: JEventBus) {
       case srt:Short =>
               internal.publish(address, Short.box(srt))
 
-      case _ => throw new IllegalArgumentException("Invalid messagec" + message.getClass)
+      case _ => throw new IllegalArgumentException("Invalid message " + message.getClass)
     }
 
     this
