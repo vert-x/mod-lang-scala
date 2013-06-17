@@ -16,6 +16,19 @@
 
 package org.vertx.scala.core
 
+import org.vertx.java.core.{MultiMap => JMultiMap}
+import scala.collection.mutable
+import scala.collection.JavaConversions._
+
 package object http {
 
+  /**
+   * Implicit conversion for [[org.vertx.java.core.MultiMap]] to [[scala.collection.mutable.MultiMap]].
+   */
+  implicit def multiMapToScalaMultiMap(n: JMultiMap): mutable.MultiMap[String, String] = {
+    val multiMap = new mutable.HashMap[String, mutable.Set[String]] with mutable.MultiMap[String, String]
+    n.iterator.foldLeft(multiMap) { (prev, next) =>
+      prev.addBinding(next.getKey, next.getValue)
+    }
+  }
 }
