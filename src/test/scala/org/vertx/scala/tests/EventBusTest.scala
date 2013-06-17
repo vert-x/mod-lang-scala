@@ -3,20 +3,67 @@ package org.vertx.scala.tests
 import org.vertx.testtools.TestVerticle
 import org.junit.Test
 import org.vertx.testtools.VertxAssert._
-import org.vertx.scala.core.eventbus.EventBus
+import org.vertx.scala.core.eventbus.{Message, EventBus}
 import org.vertx.scala.testframework.TestUtils
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.json.{JsonObject, JsonArray}
 import scala.util.parsing.json.JSONArray
+import org.vertx.java.platform.Verticle
+import org.vertx.java.core.AsyncResult
 
 
 /**
  * @author Edgar Chan
  */
-class EventBusTest extends TestVerticle{
+
+trait EventBusTestBase{
+  val TEST_ADDRESS = "some-address"
+  val SENT = "foo"
+}
+
+class LocalTestVerticle extends Verticle with EventBusTestBase{
+
+  import org.vertx.scala.core.eventbus.EventBus._
+  lazy val eb = vertx.eventBus
+
+  val hdl: EventBusHandler[String] =
+    (msg:Message[String]) => {
+      assertEquals(SENT, msg.body)
+      eb.unregisterHandler(TEST_ADDRESS)(hdl, rst => {
+          if(rst.succeeded)
+            testComplete()
+          else
+            assertTrue(rst.succeeded)
+       })
+    }
+
+  override def start(){
+    eb.registerHandler(TEST_ADDRESS)(hdl, rst => {
+        if(rst.succeeded)
+          testComplete()
+        else
+          assertTrue(rst.succeeded)
+      }
+    )
+  }
+
+}
+
+
+class EventBusTest extends TestVerticle with EventBusTestBase{
 
   lazy val eb = EventBus(vertx.eventBus)
 
+  @Test
+  def pubSubTest(){
+    import org.vertx.scala.core.FunctionConverters._
+    container.deployVerticle(
+      classOf[LocalTestVerticle].getName,
+      (_ :AsyncResult[String]) => {
+        eb.publish(TEST_ADDRESS, SENT);{}
+      }
+    )
+  }
 
   @Test
   def echoStringTest(){
@@ -84,7 +131,7 @@ class EventBusTest extends TestVerticle{
 
   private def echo[T](sent:T){
     val address = "foo-address"
-    eb.registerHandler[T](address){ msg =>
+    eb.registerHandler[T](address){ (msg:Message[T]) =>
       localAssert(sent, msg.body)
       msg.reply[T](msg.body)
     }
