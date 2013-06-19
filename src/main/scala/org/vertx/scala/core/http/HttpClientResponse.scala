@@ -20,9 +20,8 @@ import scala.collection.JavaConverters._
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.streams.ReadStream
 import collection.mutable.{ HashMap, MultiMap, Set }
-import org.vertx.java.core.{MultiMap => JMultiMap, Handler}
+import org.vertx.java.core.{Handler}
 
 /**
  * @author swilliams
@@ -36,31 +35,21 @@ object HttpClientResponse {
 
 class HttpClientResponse(val internal: JHttpClientResponse) {
 
-  def multiMapAsScalaMultiMapConverter (multiMap: JMultiMap) : MultiMap[Any, Any] = {
-    val multim = new HashMap[Any, Set[Any]] with MultiMap[Any, Any]
-    val it = multiMap.iterator
-    while(it.hasNext() ) {
-      val keyValue = it.next()
-      multim.addBinding(keyValue.getKey(), keyValue.getValue());
-    }
-    multim
-  }
-
 
   def cookies():List[String] = {
     asScalaBufferConverter(internal.cookies()).asScala.toList
   }
 
-  def headers(): MultiMap[Any, Any] = {
-    multiMapAsScalaMultiMapConverter(internal.headers())
+  def headers(): MultiMap[String, String] = {
+    internal.headers
   }
 
   def statusCode():Int = internal.statusCode
 
   def statusMessage():String = internal.statusMessage
 
-  def trailers():MultiMap[Any, Any] = {
-    multiMapAsScalaMultiMapConverter(internal.trailers())
+  def trailers():MultiMap[String, String] = {
+    internal.trailers
   }
 
   def bodyHandler(handler: Buffer => Unit):HttpClientResponse.this.type = {
