@@ -16,38 +16,25 @@
 
 package org.vertx.scala.core.net
 
-import collection.JavaConversions._
 import org.vertx.java.core.net.{NetSocket => JNetSocket}
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.net.{NetSocket => JNetSocket}
+import java.net.InetSocketAddress
+import org.vertx.java.core.Handler
+import org.vertx.java.core.streams.{WriteStream, ReadStream}
 import org.vertx.scala.core.FunctionConverters._
-
 
 /**
  * @author swilliams
  * 
  */
 object NetSocket {
-  def apply(socket: JNetSocket) =
-    new NetSocket(socket)
+  def apply(socket: JNetSocket) = new NetSocket(socket)
 }
 
-class NetSocket (internal: JNetSocket) {
+class NetSocket(val internal: JNetSocket) extends ReadStream[NetSocket] with WriteStream[NetSocket]{
 
-  def dataHandler(buffer: Buffer => Unit):Unit = {
-    internal.dataHandler(buffer)
-  }
-
-  def drainHandler(handler: () => Unit):Unit = {
-    internal.drainHandler(handler)
-  }
-
-  def endHandler(handler: () => Unit):Unit = {
-    internal.endHandler(handler)
-  }
-
-  def sendFile(filename: String):Unit = {
-    internal.sendFile(filename)
+  def writeHandlerID():String = {
+    internal.writeHandlerID
   }
 
   def write(data: Buffer):NetSocket = {
@@ -55,35 +42,93 @@ class NetSocket (internal: JNetSocket) {
     this
   }
 
-  def write(data: Buffer, handler: () => Unit):NetSocket = {
-    internal.write(data, handler)
+  def setWriteQueueMaxSize(maxSize:Int):NetSocket={
+    internal.setWriteQueueMaxSize(maxSize)
     this
   }
+
 
   def write(data: String):NetSocket = {
     internal.write(data)
     this
   }
 
-  def write(data: String, handler: () => Unit):NetSocket = {
-    internal.write(data, handler)
-    this
-  }
-
-  def write(data: String, enc: String):NetSocket = {
+  def write(data: String, enc:String):NetSocket = {
     internal.write(data, enc)
     this
   }
 
-  def writeBuffer(data: Buffer):Unit = {
-    internal.writeBuffer(data)
+
+  def sendFile(filename: String):NetSocket= {
+    internal.sendFile(filename)
+    this
   }
 
-  def writeHandlerID():String = {
-    internal.writeHandlerID
+  def remoteAddress():InetSocketAddress={
+    internal.remoteAddress()
   }
 
-  def writeQueueFull():Boolean = {
+  def localAddress():InetSocketAddress={
+    internal.localAddress()
+  }
+
+  def close():Unit={
+    internal.close()
+  }
+
+
+
+  def dataHandler(buffer: Buffer => Unit):Unit = {
+    internal.dataHandler(buffer)
+  }
+
+  def endHandler(handler: () => Unit):Unit = {
+    internal.endHandler(handler)
+  }
+
+
+  def pause():NetSocket={
+    internal.pause()
+    this
+  }
+
+  def resume():NetSocket={
+    internal.resume()
+    this
+  }
+
+
+
+  def exceptionHandler(handler: Handler[Throwable]):NetSocket={
+    internal.exceptionHandler(handler )
+    this
+  }
+
+  //def closeHandler(handler: () => Unit):NetSocket ={
+  def closeHandler(handler: Handler[Void]):NetSocket ={
+    internal.closeHandler(handler)
+    this
+  }
+
+  //def dataHandler(buffer: Buffer => Unit):Unit = {
+  def dataHandler(buffer: Handler[Buffer]):NetSocket = {
+    internal.dataHandler(buffer)
+    this
+  }
+
+  //def endHandler(handler: () => Unit):NetSocket = {
+  def endHandler(handler: Handler[Void]):NetSocket = {
+    internal.endHandler(handler)
+    this
+  }
+
+  //def drainHandler(handler: () => Unit):NetSocket = {
+  def drainHandler(handler: Handler[Void]):NetSocket = {
+    internal.drainHandler(handler)
+    this
+  }
+
+  def writeQueueFull:Boolean = {
     internal.writeQueueFull()
   }
 

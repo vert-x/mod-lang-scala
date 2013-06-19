@@ -16,15 +16,15 @@
 
 package org.vertx.scala.core.http
 
-import scala.collection.JavaConverters._
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.streams.ReadStream
+import collection.mutable.MultiMap
+import org.vertx.java.core.{Handler}
 
 
 /**
- * @author swilliams
+ * @author swilliams, nfmelendez, Ranie Jade Ramiso
  * 
  */
 object HttpServerRequest {
@@ -32,18 +32,18 @@ object HttpServerRequest {
     new HttpServerRequest(internal)
 }
 
-class HttpServerRequest(val internal: JHttpServerRequest) extends ReadStream {
+class HttpServerRequest(val internal: JHttpServerRequest) {
 
-  def headers():Map[String, String] = {
-    mapAsScalaMapConverter(internal.headers()).asScala.toMap
+  def headers():MultiMap[String, String] = {
+    internal.headers
   }
 
   def method():String = internal.method
 
   def path():String = internal.path
 
-  def params():Map[String, String] = {
-    mapAsScalaMapConverter(internal.params()).asScala.toMap
+  def params():MultiMap[String, String] = {
+    internal.params
   }
 
   def query():String = internal.query
@@ -67,7 +67,7 @@ class HttpServerRequest(val internal: JHttpServerRequest) extends ReadStream {
     this
   }
 
-  def exceptionHandler(handler: (Exception) => Unit):HttpServerRequest.this.type = {
+  def exceptionHandler(handler: Handler[Throwable]):HttpServerRequest.this.type = {
     internal.exceptionHandler(handler)
     this
   }

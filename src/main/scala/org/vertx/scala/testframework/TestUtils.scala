@@ -15,10 +15,55 @@
  */
 package org.vertx.scala.testframework
 
+import org.vertx.java.core.buffer.Buffer
+
 /**
- * @author swilliams
- *
+ * Port of some of the original TestUtils Helper methods
+ * @author Edgar Chan
  */
-class TestUtils {
+object TestUtils {
+
+
+  def generateRandomBuffer(length:Int):Buffer={
+    generateRandomBuffer(length, false, 0.toByte)
+  }
+
+  def generateRandomBuffer(length:Int, avoid:Boolean, avoidByte:Byte):Buffer={
+    val line = generateRandomByteArray(length, avoid, avoidByte)
+    new Buffer(line)
+  }
+
+
+  def generateRandomByteArray(length:Int):Array[Byte]={
+    generateRandomByteArray(length, false,  0.toByte )
+  }
+
+  def generateRandomByteArray(length:Int, avoid:Boolean, avoidByte:Byte):Array[Byte]={
+    val line  = new Array[Byte](length)
+    var i = 0
+    do {
+     var rand:Byte = 0.toByte
+      do{
+        rand = (((Math.random() * 255) - 128).asInstanceOf[Int]).toByte
+      }while(avoid && rand == avoidByte)
+      line(i) = rand
+     i+=1
+    }while(i < length)
+    line
+  }
+
+
+  def bufferEquals(b1:Buffer, b2:Buffer):Boolean={
+    if(b1.length != b2.length) false
+
+    var i=0
+    do{
+       if (b1.getByte(i) != b2.getByte(i)){ return false}
+      i+=1
+    }while( i < b1.length)
+
+     true
+  }
+
 
 }
