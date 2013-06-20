@@ -54,6 +54,15 @@ class HttpServer(val actual: JHttpServer) extends SocketConfigurer {
     this
   }
 
+  def listen(port: Int, address: String, handler: JAsyncResult[JHttpServer] => Unit):HttpServer.this.type = {
+    actual.listen(port, address, new JHandler[JAsyncResult[JHttpServer]]() {
+      override def handle(result: JAsyncResult[JHttpServer]) = {
+        handler(result)
+      }
+    })
+    this
+  }
+
 
   def listen(port: Int, address: String):HttpServer.this.type = {
     actual.listen(port, address)

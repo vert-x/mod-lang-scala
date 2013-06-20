@@ -1,3 +1,6 @@
+mod-lang-scala.ipr
+mod-lang-scala.iws
+out
 src/test/mod-test
 .idea
 classes
