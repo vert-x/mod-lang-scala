@@ -16,11 +16,11 @@
 
 package org.vertx.scala.platform.impl
 
-import org.vertx.java.core.{Vertx => JVertx}
-import org.vertx.java.platform.{Verticle => JVerticle}
-import org.vertx.java.platform.{Container => JContainer}
+//import org.vertx.java.core.{Vertx => JVertx}
+//import org.vertx.java.platform.{Verticle => JVerticle}
+//import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.java.platform.VerticleFactory
-import org.vertx.scala.core.Vertx
+//import org.vertx.scala.core.Vertx
 import scala.reflect.internal.util.BatchSourceFile
 import scala.reflect.io.Path.string2path
 import scala.reflect.io.PlainFile
@@ -42,7 +42,7 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   private val settings = new Settings()
 
-  private var vertx: Vertx = null
+  private var vertx: org.vertx.scala.core.Vertx = null
 
   private var container: JContainer = null
 
@@ -51,7 +51,7 @@ class ScalaVerticleFactory extends VerticleFactory {
   private var interpreter: IMain = null
 
   override def init(jvertx: JVertx, jcontainer: JContainer, aloader: ClassLoader): Unit = {
-    this.vertx = new Vertx(jvertx)
+    this.vertx = new org.vertx.scala.core.Vertx(jvertx)
     this.container = jcontainer
     this.loader = aloader
     settings.embeddedDefaults(aloader)
@@ -83,5 +83,7 @@ class ScalaVerticleFactory extends VerticleFactory {
     val className = main.replaceFirst(".scala$", "").replaceAll("/", ".")
     interpreter.classLoader.loadClass(className)
   }
+
+
 
 }
