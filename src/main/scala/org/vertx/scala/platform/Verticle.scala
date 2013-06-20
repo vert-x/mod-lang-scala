@@ -16,9 +16,6 @@
 
 package org.vertx.scala.platform
 
-//import org.vertx.scala.core.Vertx
-//import org.vertx.scala.core.FunctionConverters._
-
 
 /**
  * @author swilliams
