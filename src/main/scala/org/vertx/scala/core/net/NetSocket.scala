@@ -19,7 +19,6 @@ package org.vertx.scala.core.net
 import collection.JavaConversions._
 import org.vertx.java.core.net.{NetSocket => JNetSocket}
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.net.{NetSocket => JNetSocket}
 import org.vertx.scala.core.FunctionConverters._
 
 
@@ -55,28 +54,9 @@ class NetSocket (internal: JNetSocket) {
     this
   }
 
-  def write(data: Buffer, handler: () => Unit):NetSocket = {
-    internal.write(data, handler)
-    this
-  }
-
   def write(data: String):NetSocket = {
     internal.write(data)
     this
-  }
-
-  def write(data: String, handler: () => Unit):NetSocket = {
-    internal.write(data, handler)
-    this
-  }
-
-  def write(data: String, enc: String):NetSocket = {
-    internal.write(data, enc)
-    this
-  }
-
-  def writeBuffer(data: Buffer):Unit = {
-    internal.writeBuffer(data)
   }
 
   def writeHandlerID():String = {

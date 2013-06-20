@@ -7,6 +7,8 @@ import org.vertx.java.core.json.JsonArray
 import org.vertx.java.core.json.JsonObject
 import org.vertx.scala.core.buffer.Buffer
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.Handler
+
 
 object Message {
 
@@ -51,7 +53,7 @@ class Message[T](jmessage: JMessage[T]) {
 //
 //  def reply(payload: JsonObject):Unit = jmessage.reply(payload)
 
-  def reply(payload: Any)(handler: (Message[Any]) => Unit):Unit = {
+  def reply(payload: Any)(handler: JMessage[Any] => Unit):Unit = {
     jmessage.reply(payload, handler)
   }
 

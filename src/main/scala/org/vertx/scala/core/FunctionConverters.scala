@@ -45,9 +45,10 @@ trait FunctionConverters {
     override def handle(event: AsyncResult[T]) = func(event)
   }
 
+  /*
   implicit def convertFunctionToMessageHandler[T](func: Message[T] => Unit): Handler[Message[T]] = new Handler[Message[T]]() {
     override def handle(event: JMessage[T]) = func(Message(event))
-  }
+  } */
 
 }
 
