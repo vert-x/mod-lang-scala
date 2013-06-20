@@ -18,6 +18,7 @@ package org.vertx.scala.core.buffer
 import org.vertx.java.core.buffer.{Buffer => JBuffer}
 
 /**
+ * @author swilliams
  * @author Edgar Chan
  */
 object Buffer {

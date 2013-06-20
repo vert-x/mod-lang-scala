@@ -26,8 +26,8 @@ import collection.mutable.{ HashMap, MultiMap, Set }
 import org.vertx.java.core.{MultiMap => JMultiMap, Handler}
 
 /**
- * @author swilliams, nfmelendez
- * 
+ * @author swilliams
+ * @author nfmelendez
  */
 object HttpServerResponse {
   def apply(internal: JHttpServerResponse) = 
