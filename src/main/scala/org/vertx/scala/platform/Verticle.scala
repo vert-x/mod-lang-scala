@@ -16,9 +16,6 @@
 
 package org.vertx.scala.platform
 
-import org.vertx.scala.core.Vertx
-import org.vertx.scala.core.FunctionConverters._
-
 
 /**
  * @author swilliams
@@ -26,9 +23,9 @@ import org.vertx.scala.core.FunctionConverters._
  */
 trait Verticle {
 
-  var vertx: Vertx = null
+  var vertx:  org.vertx.scala.core.Vertx
 
-  var container: Container = null
+  var container: Container
 
   @throws(classOf[Exception])
   def start(): Unit

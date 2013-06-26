@@ -20,7 +20,8 @@ import scala.collection.JavaConverters._
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.streams.ReadStream
+import collection.mutable.{ HashMap, MultiMap, Set }
+import org.vertx.java.core.{Handler}
 
 /**
  * @author swilliams
@@ -31,26 +32,34 @@ object HttpClientResponse {
     new HttpClientResponse(internal)
 }
 
-class HttpClientResponse(val internal: JHttpClientResponse) extends ReadStream {
+
+class HttpClientResponse(val internal: JHttpClientResponse) {
+
 
   def cookies():List[String] = {
     asScalaBufferConverter(internal.cookies()).asScala.toList
   }
 
-  def headers():Map[String, String] = {
-    mapAsScalaMapConverter(internal.headers()).asScala.toMap
+  def headers(): MultiMap[String, String] = {
+    internal.headers
   }
 
   def statusCode():Int = internal.statusCode
 
   def statusMessage():String = internal.statusMessage
 
-  def trailers():Map[String, String] = {
-    mapAsScalaMapConverter(internal.trailers()).asScala.toMap
+  def trailers():MultiMap[String, String] = {
+    internal.trailers
   }
 
   def bodyHandler(handler: Buffer => Unit):HttpClientResponse.this.type = {
-    internal.bodyHandler(handler)
+
+    internal.bodyHandler(new Handler[Buffer] {
+      override def handle(bf: Buffer) {
+        handler(bf);
+      }
+    });
+
     this
   }
 
@@ -64,7 +73,7 @@ class HttpClientResponse(val internal: JHttpClientResponse) extends ReadStream {
     this
   }
 
-  def exceptionHandler(handler: Exception => Unit):HttpClientResponse.this.type = {
+  def exceptionHandler(handler: Handler[Throwable]):HttpClientResponse.this.type = {
     internal.exceptionHandler(handler)
     this
   }
@@ -78,4 +87,6 @@ class HttpClientResponse(val internal: JHttpClientResponse) extends ReadStream {
     internal.resume()
     this
   }
+
+
 }

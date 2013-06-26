@@ -22,6 +22,7 @@ import org.vertx.java.core.AsyncResultHandler
 import org.vertx.java.core.Handler
 import org.vertx.java.core.eventbus.{Message => JMessage}
 import org.vertx.scala.core.eventbus.Message
+import org.vertx.java.core.impl.DefaultFutureResult
 
 /**
  * @author swilliams
@@ -45,8 +46,30 @@ trait FunctionConverters {
     override def handle(event: AsyncResult[T]) = func(event)
   }
 
-  implicit def convertFunctionToMessageHandler[T](func: Message[T] => Unit): Handler[Message[T]] = new Handler[Message[T]]() {
-    override def handle(event: JMessage[T]) = func(Message(event))
+
+  implicit def convertFunctionToMessageHandler[T](func: Message[T] => Unit): Handler[JMessage[T]] = new Handler[JMessage[T]] {
+    def handle(event: JMessage[T]) {
+      func(Message(event))
+    }
+  }
+
+
+  def asyncHandler[A,B,C](handler: AsyncResult[A] => B, f: C => A) : Handler[AsyncResult[C]] = {
+    new Handler[AsyncResult[C]] {
+      def handle(rst:AsyncResult[C]){
+        handler (
+          new DefaultFutureResult[A]( f(rst.result) )
+        )
+      }
+    }
+  }
+
+  def voidAsyncHandler(handler: AsyncResult[Unit] => Unit) : Handler[AsyncResult[Void]] = {
+    new Handler[AsyncResult[Void]] {
+      def handle(rst:AsyncResult[Void]){
+        handler( rst.asInstanceOf[AsyncResult[Unit]]  )
+      }
+    }
   }
 
 }
