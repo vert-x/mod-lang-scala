@@ -18,6 +18,7 @@ package org.vertx.scala.core.streams
 
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.streams.{WriteStream => JWriteStream}
+import org.vertx.java.core.Handler
 
 
 /**
@@ -28,7 +29,7 @@ trait WriteStream {
 
   def drainHandler(handler: () => Unit):WriteStream.this.type
 
-  def exceptionHandler(handler: (Exception) => Unit):WriteStream.this.type
+  def exceptionHandler(handler: Handler[Throwable]):WriteStream.this.type
 
   def setWriteQueueMaxSize(maxSize: Int):WriteStream.this.type
 
