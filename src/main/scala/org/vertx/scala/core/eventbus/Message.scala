@@ -1,19 +1,31 @@
+/*
+ * Copyright 2011-2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 package org.vertx.scala.core.eventbus
 
-import scala.language.implicitConversions
 import org.vertx.java.core.eventbus.{Message => JMessage}
-import org.vertx.java.core.buffer.{Buffer => JBuffer}
-import org.vertx.java.core.json.JsonArray
-import org.vertx.java.core.json.JsonObject
-import org.vertx.scala.core.buffer.Buffer
 import org.vertx.scala.core.FunctionConverters._
+
 
 object Message {
 
   def apply[T](jmessage: JMessage[T]) =
     new Message(jmessage)
 
-  implicit def convertScalaToJava[T](message: Message[T]):JMessage[T] = message.toJavaMessage()
+  implicit def convertScalaToJava[T](message: Message[T]):JMessage[T] = message.toJavaMessage
 
   implicit def convertJavaToScala[T](jmessage: JMessage[T]):Message[T] = Message(jmessage)
 
@@ -21,38 +33,20 @@ object Message {
 
 class Message[T](jmessage: JMessage[T]) {
 
-  def toJavaMessage():JMessage[T] = jmessage
+  def toJavaMessage:JMessage[T] = jmessage
 
-  def body():T = jmessage.body()
+  def body:T = jmessage.body()
 
-  def replyAddress():String = jmessage.replyAddress()
+  def replyAddress:String = jmessage.replyAddress()
 
-  def reply():Unit = jmessage.reply()
+  def reply:Unit = jmessage.reply()
 
-//  def reply(payload: Any):Unit = jmessage.reply(payload)
-//
-//  def reply(payload: Array[Byte]):Unit = jmessage.reply(payload)
-//
-//  def reply(payload: Boolean):Unit = jmessage.reply(payload)
-//
-//  def reply(payload: Character):Unit = jmessage.reply(payload)
-//
-//  def reply(payload: Double):Unit = jmessage.reply(payload)
-//
-//  def reply(payload: Float):Unit = jmessage.reply(payload)
-//  
-//  def reply(payload: Integer):Unit = jmessage.reply(payload)
-//
-//  def reply(payload: Long):Unit = jmessage.reply(payload)
-//
-//  def reply(payload: Buffer):Unit = jmessage.reply(payload)
-//
-//  def reply(payload: JsonArray):Unit = jmessage.reply(payload)
-//
-//  def reply(payload: JsonObject):Unit = jmessage.reply(payload)
-
-  def reply(payload: Any)(handler: (Message[Any]) => Unit):Unit = {
+  def reply(payload: Any)(handler: JMessage[Any] => Unit):Unit = {
     jmessage.reply(payload, handler)
+  }
+
+  def reply[T](payload: T):Unit = {
+    jmessage.reply(payload)
   }
 
 }

@@ -15,14 +15,15 @@
  */
 
 package org.vertx.scala.platform.impl
-import org.vertx.scala.core.Vertx
-import org.vertx.java.core.{Vertx => JVertx}
-import org.vertx.java.platform.{Verticle => JVerticle}
-import org.vertx.java.platform.{Container => JContainer}
+//import org.vertx.scala.core.Vertx
+//import org.vertx.java.core.{Vertx => JVertx}
+//import org.vertx.java.platform.{Verticle => JVerticle}
+//import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.java.platform.{Verticle => JVerticle}
 import org.vertx.scala.platform.Verticle
+import org.vertx.scala.platform.Container
 
 /**
  * @author swilliams
@@ -41,7 +42,7 @@ final private[platform] class ScalaVerticle(delegate: => Verticle) extends JVert
   }
 
   override def setVertx(jvertx: JVertx) {
-    delegate.vertx = Vertx(jvertx)
+    delegate.vertx = org.vertx.scala.core.Vertx(jvertx)
     super.setVertx(jvertx)
   }
 

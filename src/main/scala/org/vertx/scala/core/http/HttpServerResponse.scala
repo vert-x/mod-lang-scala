@@ -16,15 +16,16 @@
 
 package org.vertx.scala.core.http
 
-import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
 import org.vertx.java.core.http.{HttpServerResponse => JHttpServerResponse}
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.streams.WriteStream
+import collection.mutable
+import org.vertx.java.core.Handler
 
 /**
  * @author swilliams
+ * @author nfmelendez
+ * @author Ranie Jade Ramiso
  * 
  */
 object HttpServerResponse {
@@ -32,9 +33,9 @@ object HttpServerResponse {
     new HttpServerResponse(internal)
 }
 
-class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
-
+class HttpServerResponse(internal: JHttpServerResponse) {
   def close(): Unit = {
+
     internal.close()
   }
 
@@ -48,7 +49,7 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     this
   }
 
-  def exceptionHandler(handler: (Exception) => Unit): HttpServerResponse.this.type = {
+  def exceptionHandler(handler: Handler[Throwable]): HttpServerResponse.this.type = {
     internal.exceptionHandler(handler)
     this
   }
@@ -69,16 +70,17 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     internal.end(chunk, encoding)
   }
 
-  def headers():Map[String, Object] = {
-    mapAsScalaMapConverter(internal.headers()).asScala.toMap
+  def headers():mutable.MultiMap[String, String] = {
+    internal.headers
   }
 
-  def putHeader(name: String, value: Any): HttpServerResponse.this.type = {
+  //TODO: add also methods for Iterable<String>
+  def putHeader(name: String, value: String): HttpServerResponse.this.type = {
     internal.putHeader(name, value)
     this
   }
 
-  def putTrailer(name: String, value: Any): HttpServerResponse.this.type = {
+  def putTrailer(name: String, value: String): HttpServerResponse.this.type = {
     internal.putTrailer(name, value)
     this
   }
@@ -93,17 +95,17 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     this
   }
 
-  def statusCode():Int = internal.statusCode
+  def statusCode():Int = internal.getStatusCode()
 
   def statusCode(code: Int): HttpServerResponse.this.type = {
-    internal.statusCode = code
+    internal.setStatusCode(code)
     this
   }
 
-  def statusMessage():String = internal.statusMessage
+  def statusMessage():String = internal.getStatusMessage()
 
   def statusMessage(message: String): HttpServerResponse = {
-    internal.statusMessage = message
+    internal.setStatusMessage(message)
     this
   }
 
@@ -112,8 +114,8 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     this
   }
 
-  def trailers():Map[String, Object] = {
-    mapAsScalaMapConverter(internal.trailers()).asScala.toMap
+  def trailers():mutable.MultiMap[String, String] = {
+    internal.trailers
   }
 
   def write(data: Buffer): HttpServerResponse = {
@@ -121,36 +123,24 @@ class HttpServerResponse(internal: JHttpServerResponse) extends WriteStream {
     this
   }
 
-  def write(data: Buffer, handler: () => Unit): HttpServerResponse.this.type = {
-    internal.write(data, handler)
-    this
-  }
 
-  def writeBuffer(data: String): HttpServerResponse.this.type = {
+  def write(data: String): HttpServerResponse.this.type = {
     internal.write(data)
     this
   }
 
-  def writeBuffer(data: String, handler: () => Unit): HttpServerResponse.this.type = {
-    internal.write(data, handler)
-    this
-  }
 
-  def writeBuffer(data: String, encoding: String): HttpServerResponse.this.type = {
+  def write(data: String, encoding: String): HttpServerResponse.this.type = {
     internal.write(data, encoding)
     this
   }
 
-  def writeBuffer(data: String, encoding: String, handler: () => Unit): HttpServerResponse.this.type = {
-    internal.write(data, encoding, handler)
-    this
-  }
+  def writeQueueFull():Boolean = internal.writeQueueFull()
 
   def writeBuffer(data: Buffer): HttpServerResponse.this.type = {
-    internal.writeBuffer(data)
+    internal.write(data)
     this
   }
 
-  def writeQueueFull():Boolean = internal.writeQueueFull()
 
 }

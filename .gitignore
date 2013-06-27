@@ -1,3 +1,10 @@
+mod-lang-scala.ipr
+mod-lang-scala.iws
+out
+src/test/mod-test
+.idea
+classes
+mod-lang-scala.iml
 .cache
 .classpath
 .DS_Store

@@ -17,10 +17,11 @@
 package org.vertx.scala.core.parsetools
 
 import scala.language.implicitConversions
-import org.vertx.scala.core.buffer.Buffer
 import org.vertx.java.core.Handler
 import org.vertx.java.core.parsetools.{RecordParser => JRecordParser}
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.buffer.{Buffer => JBuffer}
+
 
 /**
  * A helper class which allows you to easily parse protocols which are delimited by a sequence of bytes, or fixed
@@ -54,14 +55,16 @@ object RecordParser {
 
   def latin1StringToBytes(str: String):Array[Byte] = JRecordParser.latin1StringToBytes(str)
 
-  def newDelimited(delim: String, handler: Buffer => Unit):RecordParser = {
-    // RecordParser(JRecordParser.newDelimited(delim, {output(new Buffer(it))} as Handler))
+  def newDelimited(delim: String, handler: JBuffer => Unit):RecordParser = {
     RecordParser(JRecordParser.newDelimited(delim, handler))
   }
 
-  def newDelimited(delim: Array[Byte], handler: Buffer => Unit):RecordParser = {
-    // RecordParser(JRecordParser.newDelimited(delim, {output(new Buffer(it))} as Handler))
+  def newDelimited(delim: Array[Byte], handler: Handler[JBuffer]):RecordParser = {
     RecordParser(JRecordParser.newDelimited(delim, handler))
+  }
+
+  def newFixed(size: Int, handler: JBuffer => Unit):RecordParser = {
+    RecordParser(JRecordParser.newFixed(size, handler))
   }
 
 }
@@ -73,7 +76,7 @@ class RecordParser(jParser: JRecordParser) {
    * by the {@code size} parameter.<p>
    * {@code output} Will receive whole records which have been parsed.
    */
-  def newFixed(size: Int)(handler: Buffer => Unit):RecordParser = {
+  def newFixed(size: Int)(handler: JBuffer => Unit):RecordParser = {
     // RecordParser(JRecordParser.newFixed(size, {output(new Buffer(it))} as Handler))
     RecordParser(JRecordParser.newFixed(size, handler))
   }
@@ -98,19 +101,12 @@ class RecordParser(jParser: JRecordParser) {
    */
   def fixedSizeMode(size: Int):Unit = jParser.fixedSizeMode(size)
 
-  /**
-   * Convert to a closure so it can be plugged into data handlers
-   * @return a Closure
-   */
-  Closure toClosure() {
-    return {jParser.handle(it.toJavaBuffer())}
+
+  def setOutput(output: Handler[JBuffer]) {
+    jParser.setOutput(output)
   }
 
-  void setOutput(Closure output) {
-    jParser.setOutput({output(new Buffer(it))} as Handler)
-  }
-
-  void handle(Buffer data) {
-    jParser.handle(new Buffer(data))
+  def handle(data: JBuffer) {
+    jParser.handle(data)
   }
 }
