@@ -16,6 +16,8 @@
 
 package org.vertx.scala.platform
 
+import org.vertx.java.core.Future
+import org.vertx.scala.core.Vertx
 
 /**
  * @author swilliams
@@ -23,14 +25,20 @@ package org.vertx.scala.platform
  */
 trait Verticle {
 
-  var vertx:  org.vertx.scala.core.Vertx
+  var vertx: Vertx
 
   var container: Container
 
-  @throws(classOf[Exception])
-  def start(): Unit
+  def start(): Unit = {
+    // NO-OP
+  }
 
-  @throws(classOf[Exception])
+  // TODO use an idiomatic Future type here
+  def start(result: Future[Void]): Unit = {
+    start()
+    result.setResult(null)
+  }
+
   def stop(): Unit = {
     // NO-OP
   }

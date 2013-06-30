@@ -20,8 +20,6 @@ import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.streams.{ReadStream => JReadStream}
 import org.vertx.java.core.Handler
 
-
-
 /**
  * @author swilliams
  * 

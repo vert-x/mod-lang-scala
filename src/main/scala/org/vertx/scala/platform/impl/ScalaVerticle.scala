@@ -15,15 +15,12 @@
  */
 
 package org.vertx.scala.platform.impl
-//import org.vertx.scala.core.Vertx
-//import org.vertx.java.core.{Vertx => JVertx}
-//import org.vertx.java.platform.{Verticle => JVerticle}
-//import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.java.core.{Vertx => JVertx}
 import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.java.platform.{Verticle => JVerticle}
 import org.vertx.scala.platform.Verticle
 import org.vertx.scala.platform.Container
+import org.vertx.java.core.Future
 
 /**
  * @author swilliams
@@ -46,10 +43,13 @@ final private[platform] class ScalaVerticle(delegate: => Verticle) extends JVert
     super.setVertx(jvertx)
   }
 
-  @throws(classOf[Exception])
   override def start(): Unit = delegate.start
 
-  @throws(classOf[Exception])
+  override def start(result: Future[Void]): Unit = {
+    // TODO auto-convert type?
+    delegate.start(result)
+  }
+
   override def stop(): Unit = delegate.stop
 
 }

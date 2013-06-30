@@ -24,7 +24,9 @@ import org.vertx.java.core.{Handler}
 
 
 /**
- * @author swilliams, nfmelendez, Ranie Jade Ramiso
+ * @author swilliams
+ * @author nfmelendez
+ * @author Ranie Jade Ramiso
  * 
  */
 object HttpServerRequest {

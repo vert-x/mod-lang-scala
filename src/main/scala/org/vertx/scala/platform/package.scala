@@ -16,6 +16,9 @@
 
 package org.vertx.scala
 
+/**
+ * @author swilliams
+ */
 package object platform {
 
 }

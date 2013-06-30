@@ -21,9 +21,9 @@ import org.vertx.java.core.logging.Logger
 import org.vertx.java.core.eventbus.Message
 import org.vertx.java.core.json.JsonArray
 import org.vertx.scala.core.eventbus.EventBus
-//import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.JSON._
 import org.vertx.scala.platform.Verticle
+import org.vertx.java.core.Future
 
 
 /**
@@ -43,12 +43,15 @@ trait ModuleBase extends Verticle {
 
   var logger: Logger = null
 
-  @throws(classOf[Exception])
-  final def start(): Unit = {
+  override final def start(): Unit = {
     eb = vertx.eventBus
     config = container.config()
     logger = container.logger()
     startMod()
+  }
+
+  override def start(result: Future[Void]): Unit = {
+    super.start(result)
   }
 
   def startMod(): Unit

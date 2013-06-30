@@ -19,6 +19,6 @@ package org.vertx.scala.core
 /**
  * @author swilliams
  */
-package object parsetools {
+package object streams {
 
 }

@@ -16,6 +16,9 @@
 
 package org.vertx.scala.platform
 
+/**
+ * @author swilliams
+ */
 package object impl {
 
 }

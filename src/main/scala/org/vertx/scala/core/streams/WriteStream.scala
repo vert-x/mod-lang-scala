@@ -20,7 +20,6 @@ import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.streams.{WriteStream => JWriteStream}
 import org.vertx.java.core.Handler
 
-
 /**
  * @author swilliams
  * 

@@ -19,7 +19,9 @@ package org.vertx.scala.core.eventbus
 import org.vertx.java.core.eventbus.{Message => JMessage}
 import org.vertx.scala.core.FunctionConverters._
 
-
+/**
+ * @author pidster
+ */
 object Message {
 
   def apply[T](jmessage: JMessage[T]) =
