@@ -23,7 +23,8 @@ import org.junit.Test
 
 /**
  * Date: 6/1/13
- * @author Edgar Chan, nfmelendez
+ * @author Edgar Chan
+ * @author nfmelendez
  */
 class ScalaHttpTest extends TestVerticle{
 
