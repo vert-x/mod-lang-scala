@@ -25,9 +25,9 @@ import org.vertx.scala.core.Vertx
  */
 trait Verticle {
 
-  var vertx: Vertx
+  var vertx: Vertx = null
 
-  var container: Container
+  var container: Container = null
 
   def start(): Unit = {
     // NO-OP
