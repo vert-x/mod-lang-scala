@@ -22,7 +22,9 @@ import org.vertx.java.core.{Handler, AsyncResult, ServerTCPSupport, ServerSSLSup
 import org.vertx.java.core.impl.DefaultFutureResult
 
 /**
- * @author swilliams, Ranie Jade Ramiso
+ *
+ * @author swilliams
+ * @author Ranie Jade Ramiso
  *
  */
 object NetServer {

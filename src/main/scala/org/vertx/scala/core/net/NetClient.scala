@@ -25,7 +25,9 @@ import org.vertx.java.core.impl.DefaultFutureResult
 
 /**
  *
- * @author swilliams, Edgar Chan, Ranie Jade Ramiso
+ * @author swilliams
+ * @author Edgar Chan
+ * @author Ranie Jade Ramiso
  *
  */
 object NetClient {
