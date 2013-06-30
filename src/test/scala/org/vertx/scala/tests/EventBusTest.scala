@@ -34,6 +34,7 @@ import org.vertx.java.core.AsyncResult
 
 trait EventBusTestBase{
   val TEST_ADDRESS = "some-address"
+  val REPLY_ADDRESS = "reply-address"
   val SENT = "foo"
 }
 
@@ -53,6 +54,16 @@ class LocalTestVerticle extends Verticle with EventBusTestBase{
        })
     }
 
+  val replyHandler: EventBusHandler[String] =
+    (msg:Message[String]) => {
+      assertEquals(SENT, msg.body)
+      msg.reply("reply", reply =>{
+        assertEquals("reply-of-reply", reply.body)
+        reply.reply("reply-of-reply-of-reply")
+        eb.unregisterHandler(REPLY_ADDRESS)(replyHandler)
+      })
+    }
+
   override def start(){
     eb.registerHandler(TEST_ADDRESS)(hdl, rst => {
         if(rst.succeeded)
@@ -61,6 +72,9 @@ class LocalTestVerticle extends Verticle with EventBusTestBase{
           assertTrue(rst.succeeded)
       }
     )
+
+    eb.registerHandler(REPLY_ADDRESS)(replyHandler)
+
   }
 
 }
@@ -80,6 +94,24 @@ class EventBusTest extends TestVerticle with EventBusTestBase{
       }
     )
   }
+
+  @Test
+  def replyOfReplyOfReplyTest(){
+    import org.vertx.scala.core.FunctionConverters._
+    container.deployVerticle(
+      classOf[LocalTestVerticle].getName,
+      (_ :AsyncResult[String]) => {
+        eb.send(REPLY_ADDRESS, SENT){ reply =>
+          assertEquals("reply", reply.body)
+          reply.reply("reply-of-reply", replyreply => {
+            assertEquals("reply-of-reply-of-reply", replyreply.body)
+            testComplete()
+          })
+        };{}
+      }
+    )
+  }
+
 
   @Test
   def echoStringTest(){
@@ -149,7 +181,7 @@ class EventBusTest extends TestVerticle with EventBusTestBase{
     val address = "foo-address"
     eb.registerHandler[T](address){ (msg:Message[T]) =>
       localAssert(sent, msg.body)
-      msg.reply[T](msg.body)
+      msg.reply(msg.body)
     }
 
     eb.send(address, sent){ reply =>

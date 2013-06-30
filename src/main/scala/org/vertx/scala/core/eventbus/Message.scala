@@ -18,6 +18,8 @@ package org.vertx.scala.core.eventbus
 
 import org.vertx.java.core.eventbus.{Message => JMessage}
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.buffer.Buffer
+import org.vertx.java.core.json.{JsonObject, JsonArray}
 
 /**
  * @author pidster
@@ -26,10 +28,6 @@ object Message {
 
   def apply[T](jmessage: JMessage[T]) =
     new Message(jmessage)
-
-  implicit def convertScalaToJava[T](message: Message[T]):JMessage[T] = message.toJavaMessage
-
-  implicit def convertJavaToScala[T](jmessage: JMessage[T]):Message[T] = Message(jmessage)
 
 }
 
@@ -41,14 +39,36 @@ class Message[T](jmessage: JMessage[T]) {
 
   def replyAddress:String = jmessage.replyAddress()
 
-  def reply:Unit = jmessage.reply()
+  def reply(payload: T, handler: Message[T] => Unit = msg => {}):Unit = payload match{
+      case str:String =>
+              jmessage.reply(str, handler)
+      case boo:Boolean =>
+              jmessage.reply(boo, handler)
+      case bff:Buffer =>
+              jmessage.reply(bff, handler)
+      case bya:Array[Byte] =>
+              jmessage.reply(bya, handler)
+      case chr:Char =>
+              jmessage.reply(Char.box(chr), handler)
+      case dbl:Double =>
+              jmessage.reply(dbl, handler)
+      case flt:Float =>
+              jmessage.reply(Float.box(flt), handler)
+      case int:Int =>
+              jmessage.reply(Int.box(int), handler)
+      case jsa:JsonArray =>
+              jmessage.reply(jsa, handler)
+      case jso:JsonObject =>
+              jmessage.reply(jso, handler)
+      case lng:Long =>
+              jmessage.reply(Long.box(lng), handler)
+      case srt:Short =>
+              jmessage.reply(Short.box(srt), handler)
+      case obj:AnyRef=>
+              jmessage.reply(obj, handler)
 
-  def reply(payload: Any)(handler: JMessage[Any] => Unit):Unit = {
-    jmessage.reply(payload, handler)
-  }
+      case _ => throw new IllegalArgumentException("Invalid reply message " + payload.getClass)
 
-  def reply[T](payload: T):Unit = {
-    jmessage.reply(payload)
   }
 
 }
