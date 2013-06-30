@@ -31,6 +31,8 @@ object Message {
 
 class Message[T](jmessage: JMessage[T]) {
 
+  def toJavaMessage:JMessage[T] = jmessage
+
   def body:T = jmessage.body()
 
   def replyAddress:String = jmessage.replyAddress()
