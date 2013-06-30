@@ -25,9 +25,8 @@ import org.vertx.java.core.impl.DefaultFutureResult
 
 /**
  *
- * @author swilliams
- * @author Edgar Chan
- * 
+ * @author swilliams, Edgar Chan, Ranie Jade Ramiso
+ *
  */
 object NetClient {
   def apply(actual: JNetClient) =
@@ -40,7 +39,7 @@ class NetClient(internal: JNetClient) extends ClientSSLSupport[NetClient] with T
     connect(port, "localhost", handler)
   }
 
-  def connect(port: Int, host: String, handler: AsyncResult[NetSocket] => Unit):NetClient= {
+  def connect(port: Int, host: String, handler: AsyncResult[NetSocket] => Unit) = {
     internal.connect(port, host, new Handler[AsyncResult[JNetSocket]]() {
       override def handle(result: AsyncResult[JNetSocket]) = {
         if (result.succeeded)
@@ -50,139 +49,113 @@ class NetClient(internal: JNetClient) extends ClientSSLSupport[NetClient] with T
     this
   }
 
-  def close: Unit = internal.close
+  def close() {
+    internal.close
+  }
 
-  def getConnectTimeout: Long = internal.getConnectTimeout
+  def getConnectTimeout = internal.getConnectTimeout
 
-  def reconnectAttempts:Int = internal.getReconnectAttempts
+  def reconnectAttempts = internal.getReconnectAttempts
 
-  def reconnectInterval:Long = internal.getReconnectInterval
+  def reconnectInterval = internal.getReconnectInterval
 
 
-  def setSSL(ssl: Boolean): NetClient = {
+  def setSSL(ssl: Boolean) = {
     internal.setSSL(ssl)
     this
   }
 
-  def isSSL: Boolean = {
-    internal.isSSL
-  }
+  def isSSL = internal.isSSL
 
-  def setKeyStorePath(path: String): NetClient = {
+  def setKeyStorePath(path: String) = {
     internal.setKeyStorePath(path)
     this
   }
 
-  def getKeyStorePath: String = {
-    internal.getKeyStorePath
-  }
+  def getKeyStorePath = internal.getKeyStorePath
 
-  def setKeyStorePassword(pwd: String): NetClient = {
+  def setKeyStorePassword(pwd: String) = {
     internal.setKeyStorePassword(pwd)
     this
   }
 
-  def getKeyStorePassword: String = {
-    internal.getKeyStorePassword
-  }
+  def getKeyStorePassword = internal.getKeyStorePassword
 
-  def setTrustStorePath(path: String): NetClient = {
+  def setTrustStorePath(path: String) = {
     internal.setTrustStorePath(path)
     this
   }
 
-  def getTrustStorePath: String = {
-    internal.getTrustStorePath
-  }
+  def getTrustStorePath = internal.getTrustStorePath
 
-  def setTrustStorePassword(pwd: String): NetClient = {
+  def setTrustStorePassword(pwd: String) = {
     internal.setTrustStorePassword(pwd)
     this
   }
 
-  def getTrustStorePassword: String = {
-    internal.getTrustStorePassword
-  }
+  def getTrustStorePassword = internal.getTrustStorePassword
 
-  def setTrustAll(trustAll: Boolean): NetClient = {
+  def setTrustAll(trustAll: Boolean) = {
     internal.setTrustAll(trustAll)
     this
   }
 
-  def isTrustAll: Boolean = {
-    internal.isTrustAll
-  }
+  def isTrustAll = internal.isTrustAll
 
-  def setTCPNoDelay(tcpNoDelay: Boolean): NetClient = {
+  def setTCPNoDelay(tcpNoDelay: Boolean) = {
     internal.isTCPNoDelay
     this
   }
 
-  def setSendBufferSize(size: Int): NetClient = {
+  def setSendBufferSize(size: Int) = {
     internal.setSendBufferSize(size)
     this
   }
 
-  def setReceiveBufferSize(size: Int): NetClient = {
+  def setReceiveBufferSize(size: Int) = {
     internal.setReceiveBufferSize(size)
     this
   }
 
-  def setTCPKeepAlive(keepAlive: Boolean): NetClient = {
+  def setTCPKeepAlive(keepAlive: Boolean) = {
     internal.setTCPKeepAlive(keepAlive)
     this
   }
 
-  def setReuseAddress(reuse: Boolean): NetClient = {
+  def setReuseAddress(reuse: Boolean) = {
     internal.setReuseAddress(reuse)
     this
   }
 
-  def setSoLinger(linger: Int): NetClient = {
+  def setSoLinger(linger: Int) = {
     internal.setSoLinger(linger)
     this
   }
 
-  def setTrafficClass(trafficClass: Int): NetClient = {
+  def setTrafficClass(trafficClass: Int) = {
     internal.setTrafficClass(trafficClass)
     this
   }
 
-  def setUsePooledBuffers(pooledBuffers: Boolean): NetClient = {
+  def setUsePooledBuffers(pooledBuffers: Boolean) = {
     internal.setUsePooledBuffers(pooledBuffers)
     this
   }
 
-  def isTCPNoDelay: Boolean = {
-    internal.isTCPNoDelay
-  }
+  def isTCPNoDelay = internal.isTCPNoDelay
 
-  def getSendBufferSize: Int = {
-    internal.getSendBufferSize
-  }
+  def getSendBufferSize = internal.getSendBufferSize
 
-  def getReceiveBufferSize: Int = {
-    internal.getReceiveBufferSize
-  }
+  def getReceiveBufferSize = internal.getReceiveBufferSize
 
-  def isTCPKeepAlive: Boolean = {
-    internal.isTCPKeepAlive
-  }
+  def isTCPKeepAlive = internal.isTCPKeepAlive
 
-  def isReuseAddress: Boolean = {
-    internal.isReuseAddress
-  }
+  def isReuseAddress = internal.isReuseAddress
 
-  def getSoLinger: Int = {
-    internal.getSoLinger
-  }
+  def getSoLinger = internal.getSoLinger
 
-  def getTrafficClass: Int = {
-    internal.getTrafficClass
-  }
+  def getTrafficClass = internal.getTrafficClass
 
-  def isUsePooledBuffers: Boolean = {
-    internal.isUsePooledBuffers
-  }
+  def isUsePooledBuffers = internal.isUsePooledBuffers
 }
 
