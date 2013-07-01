@@ -17,7 +17,8 @@
 package org.vertx.scala.tests.http
 
 import org.vertx.java.core.http.{HttpServerResponse => JHttpServerResponse}
-import org.vertx.java.core.{MultiMap => JMultiMap, CaseInsensitiveMultiMap, Handler}
+import org.vertx.java.core.{MultiMap => JMultiMap, Handler}
+import org.vertx.java.core.impl.CaseInsensitiveMultiMap
 import org.vertx.java.core.buffer.Buffer
 import java.lang.Iterable
 import org.junit.Test
@@ -30,8 +31,8 @@ import org.junit.Assert._
 class HttpServerResponseTest {
   // stub implementation
   class StubHttpServerResponse extends JHttpServerResponse {
-    private val headerMap = new CaseInsensitiveMultiMap
-    private val trailerMap = new CaseInsensitiveMultiMap
+    private val headerMap:JMultiMap = new CaseInsensitiveMultiMap
+    private val trailerMap:JMultiMap = new CaseInsensitiveMultiMap
 
     def close() {}
 
@@ -74,6 +75,8 @@ class HttpServerResponseTest {
     }
 
     def sendFile(filename: String): JHttpServerResponse = ???
+
+    def sendFile(filename: String, encoding: String): JHttpServerResponse = ???
 
     def setChunked(chunked: Boolean): JHttpServerResponse = ???
 
