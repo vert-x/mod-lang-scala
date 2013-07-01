@@ -24,13 +24,11 @@ import org.vertx.java.core.Handler
  * @author swilliams
  * 
  */
-trait ReadStream {
+trait ReadStream extends ExceptionSupport {
 
   def dataHandler(handler: (Buffer) => Unit):ReadStream.this.type
 
   def endHandler(handler: () => Unit):ReadStream.this.type
-
-  def exceptionHandler(handler: Handler[Throwable]):ReadStream.this.type
 
   def pause():ReadStream.this.type
 

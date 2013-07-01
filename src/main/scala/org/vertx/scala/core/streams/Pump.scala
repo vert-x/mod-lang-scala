@@ -15,10 +15,51 @@
  */
 package org.vertx.scala.core.streams
 
+import org.vertx.java.core.buffer.Buffer
+
 /**
  * @author swilliams
  *
  */
-class Pump {
+object Pump {
+  def newPump(rs: ReadStream, ws: WriteStream) = {
+    new Pump(rs, ws)
+  }
+  def newPump(rs: ReadStream, ws: WriteStream, writeQueueMaxSize:Int) = {
+    def pump = new Pump(rs, ws)
+    pump.writeQueueMaxSize = writeQueueMaxSize
+    pump
+  }
+}
+
+class Pump(readStream: ReadStream, writeStream: WriteStream) {
+
+  private var writeQueueMaxSize:Int = Int.MaxValue
+
+  private var bytesPumped:Int = 0
+
+  private val drainHandler:() => Unit = { () =>
+    readStream.resume()
+  }
+
+  private val dataHandler:Buffer => Unit = { data:Buffer =>
+    writeStream.write(data)
+    bytesPumped += data.length()
+    if (writeStream.writeQueueFull()) {
+      readStream.pause()
+      writeStream.drainHandler(drainHandler)
+    }
+  }
+
+  def start():Pump = {
+    readStream.dataHandler(dataHandler)
+    this
+  }
+
+  def stop():Pump = {
+    writeStream.drainHandler(null)
+    readStream.dataHandler(null)
+    this
+  }
 
 }

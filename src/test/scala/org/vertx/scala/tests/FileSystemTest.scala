@@ -23,7 +23,7 @@ import org.junit.{Before, Test}
 import java.nio.file.{FileSystems, Files}
 import java.io.File
 import org.vertx.scala.testframework.TestUtils
-import org.vertx.java.core.streams.Pump
+import org.vertx.scala.core.streams.Pump
 
 /**
  * @author Edgar Chan
@@ -134,7 +134,7 @@ class FileSystemTest extends TestVerticle {
           assertEquals(true, Option(ares2.cause).isEmpty)
           val rs = ares1.result
           val ws = ares2.result
-          val pump = Pump.createPump(rs, ws)
+          val pump = Pump.newPump(rs, ws)
           pump.start
           rs.endHandler(() =>{
             ares1.result.close{ cr1 =>

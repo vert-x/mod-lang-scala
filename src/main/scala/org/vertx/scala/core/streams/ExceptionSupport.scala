@@ -17,21 +17,15 @@
 package org.vertx.scala.core.streams
 
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.streams.{WriteStream => JWriteStream}
+import org.vertx.java.core.streams.{ReadStream => JReadStream}
 import org.vertx.java.core.Handler
 
 /**
  * @author swilliams
  * 
  */
-trait WriteStream extends ExceptionSupport {
+trait ExceptionSupport {
 
-  def drainHandler(handler: () => Unit):WriteStream.this.type
-
-  def setWriteQueueMaxSize(maxSize: Int):WriteStream.this.type
-
-  def write(data: Buffer):WriteStream.this.type
-
-  def writeQueueFull():Boolean
+  def exceptionHandler(handler: (Throwable) => Unit):ExceptionSupport.this.type
 
 }
