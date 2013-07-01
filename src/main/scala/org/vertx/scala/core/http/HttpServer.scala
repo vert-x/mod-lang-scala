@@ -46,7 +46,7 @@ class HttpServer(val actual: JHttpServer) extends SocketConfigurer {
 
   def listen(port: Int, handler: JAsyncResult[JHttpServer] => Unit):HttpServer.this.type = {
     actual.listen(port, new JHandler[JAsyncResult[JHttpServer]]() {
-      override def handle(result: JAsyncResult[JHttpServer]) = {
+      override def handle(result: JAsyncResult[JHttpServer]):Unit = {
         handler(result)
       }
       })
@@ -56,7 +56,7 @@ class HttpServer(val actual: JHttpServer) extends SocketConfigurer {
 
   def listen(port: Int, address: String, handler: JAsyncResult[JHttpServer] => Unit):HttpServer.this.type = {
     actual.listen(port, address, new JHandler[JAsyncResult[JHttpServer]]() {
-      override def handle(result: JAsyncResult[JHttpServer]) = {
+      override def handle(result: JAsyncResult[JHttpServer]):Unit = {
         handler(result)
       }
     })

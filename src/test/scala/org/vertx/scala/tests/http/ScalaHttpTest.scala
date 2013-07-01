@@ -20,6 +20,8 @@ import org.vertx.testtools.VertxAssert.testComplete
 import org.vertx.testtools.VertxAssert._
 import org.vertx.testtools.TestVerticle
 import org.junit.Test
+import org.vertx.java.core.AsyncResult
+import org.vertx.java.core.http.HttpServer
 
 /**
  * Date: 6/1/13
@@ -37,17 +39,18 @@ class ScalaHttpTest extends TestVerticle{
     val port = 8080
 
     vertx.newHttpServer{
-      r => r.response.end(html)
-    }.listen(port, {  ar =>
-      val client = vertx.newHttpClient.setPort(port)
-      client.getNow("/"){
-        h => h.bodyHandler{
-                data => {
-                    assertEquals( html, data.toString )
-                    testComplete()
-                }
+      r => r.response.end(html, "utf8")
+    }.listen(port, { ar: AsyncResult[HttpServer] =>
+        assertTrue(ar.succeeded())
+        val client = vertx.newHttpClient.setPort(port)
+        client.getNow("/"){
+          h => h.bodyHandler {
+                  data => {
+                      assertEquals(html, data.toString )
+                      testComplete()
+                  }
+          }
         }
-      }
     })
 
   }
@@ -60,8 +63,8 @@ class ScalaHttpTest extends TestVerticle{
 
     server.listen(1128371831, {
       ar =>
-        assert(ar.failed())
-        assert(ar.cause() != null)
+        assertTrue(ar.failed())
+        assertTrue(ar.cause() != null)
         testComplete()
     })
   }
@@ -73,8 +76,8 @@ class ScalaHttpTest extends TestVerticle{
 
     server.listen(80, "iqwjdoqiwjdoiqwdiojwd", {
        ar =>
-        assert(ar.failed())
-        assert(ar.cause() != null)
+        assertTrue(ar.failed())
+        assertTrue(ar.cause() != null)
         testComplete()
     })
   }
