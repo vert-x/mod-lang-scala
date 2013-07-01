@@ -46,7 +46,9 @@ install - install any jars produced to the local Maven repository (.m2)
 
 dependencies { }
 
-test { }
+test {
+  systemProperty 'vertx.test.timeout', 10
+}
 
 /*
 If you're uploading stuff to Maven, Gradle needs to generate a POM.

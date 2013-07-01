@@ -17,7 +17,8 @@
 package org.vertx.scala.tests.http
 
 import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest, HttpServerResponse, HttpServerFileUpload, HttpVersion}
-import org.vertx.java.core.{MultiMap => JMultiMap, CaseInsensitiveMultiMap, Handler}
+import org.vertx.java.core.{MultiMap => JMultiMap, Handler}
+import org.vertx.java.core.impl.CaseInsensitiveMultiMap
 import org.vertx.java.core.buffer.Buffer
 import java.net.{URI, InetSocketAddress}
 import javax.security.cert.X509Certificate
@@ -39,7 +40,7 @@ class HttpServerRequestTest {
 
     def bodyHandler(bodyHandler: Handler[Buffer]): JHttpServerRequest = ???
 
-    def formAttributes(): util.Map[String, String] = ???
+    def formAttributes(): JMultiMap = ???
 
     def headers(): JMultiMap = headerMap
 
