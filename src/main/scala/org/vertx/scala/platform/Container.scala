@@ -21,7 +21,7 @@ import scala.util.parsing.json.JSONObject
 import scala.collection.JavaConverters._
 import org.vertx.java.core.logging.Logger
 import org.vertx.java.platform.{Container => JContainer}
-import org.vertx.scala.core.JSON._
+import org.vertx.scala.core.json.JSON._
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.java.core.AsyncResult
 

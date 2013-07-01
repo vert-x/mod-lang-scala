@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.vertx.scala.core
+package org.vertx.scala.core.json
 import scala.util.parsing.json.{JSON => sJSON}
 import scala.util.parsing.json.JSONObject
 import scala.util.parsing.json.JSONArray
