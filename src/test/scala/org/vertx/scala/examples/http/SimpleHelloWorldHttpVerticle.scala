@@ -15,10 +15,9 @@
  */
 package org.vertx.scala.examples.http
 
-import org.vertx.scala.platform.Verticle
-import org.vertx.java.core.Future
-import org.vertx.java.core.AsyncResult
+import org.vertx.scala.core._
 import org.vertx.scala.core.http.HttpServerRequest
+import org.vertx.scala.platform.Verticle
 
 /**
  * @author swilliams

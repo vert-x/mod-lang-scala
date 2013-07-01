@@ -13,38 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.vertx.scala.platform
-
-import org.vertx.scala.core._
+package org.vertx.scala.examples
 
 /**
  * @author swilliams
- * 
+ *
  */
-trait Verticle {
-
-  var vertx: Vertx = null
-
-  var container: Container = null
-
-  def start(): Unit = {
-    // NO-OP
-  }
-
-  /**
-   * Start verticle with a callback enabling asynchronous 
-   * notification of start completion.
-   * 
-   * @param future
-   */
-  def start(future: Future[Void]): Unit = {
-    start()
-    future.setResult(null)
-  }
-
-  def stop(): Unit = {
-    // NO-OP
-  }
+package object file {
 
 }

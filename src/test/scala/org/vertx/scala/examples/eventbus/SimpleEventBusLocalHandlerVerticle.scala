@@ -15,9 +15,9 @@
  */
 package org.vertx.scala.examples.eventbus
 
-import org.vertx.scala.platform.Verticle
-import org.vertx.java.core.Future
+import org.vertx.scala.core._
 import org.vertx.scala.core.eventbus.Message
+import org.vertx.scala.platform.Verticle
 
 /**
  * @author swilliams

@@ -16,15 +16,16 @@
 
 package org.vertx.scala
 
+import org.vertx.java.core.{Vertx => JVertx}
+import org.vertx.java.core.{VertxFactory => JVertxFactory}
+import org.vertx.java.core.AsyncResult
+import org.vertx.java.core.{Future => JFuture}
 import org.vertx.scala.core.eventbus.EventBus
 import org.vertx.scala.core.http.{HttpClient, HttpServerRequest, HttpServer}
 import org.vertx.scala.core.net.{NetServer, NetClient}
 import org.vertx.scala.core.sockjs.SockJSServer
 import org.vertx.scala.core.file.FileSystem
-import org.vertx.java.core.{Vertx => JVertx}
-import org.vertx.java.core.{VertxFactory => JVertxFactory}
 import org.vertx.scala.core.FunctionConverters._
-
 
 package object core {
 
@@ -75,8 +76,35 @@ package object core {
 
     def sharedData:SharedData = SharedData(internal.sharedData)
 
-
   }
 
+  implicit class Future[T](internal: JFuture[T]) extends AsyncResult[T] {
+
+    def complete():Boolean = internal.complete()
+
+    def setHandler(handler: AsyncResult[T] => Unit):Future[T] = {
+      internal.setHandler(handler)
+      this
+    }
+
+    def setFailure(cause: Throwable):Future[T] = {
+      internal.setFailure(cause)
+      this
+    }
+
+    def setResult(result: T):Future[T] = {
+      internal.setResult(result)
+      this
+    }
+
+    override def result():T = internal.result()
+
+    override def cause():Throwable = internal.cause()
+
+    override def succeeded():Boolean = internal.succeeded()
+
+    override def failed():Boolean = internal.failed()
+
+  }
 
 }
