@@ -90,6 +90,11 @@ class HttpServerResponse(internal: JHttpServerResponse) {
     this
   }
 
+  def sendFile(name: String, notFoundFile: String): HttpServerResponse.this.type = {
+    internal.sendFile(name, notFoundFile)
+    this
+  }
+
   def setChunked(value: Boolean): HttpServerResponse.this.type = {
     internal.setChunked(value)
     this
