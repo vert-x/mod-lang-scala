@@ -13,35 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vertx.scala.examples.eventbus
+package org.vertx.scala.examples.http
 
 import org.vertx.scala.platform.Verticle
 import org.vertx.java.core.Future
-import org.vertx.scala.core.eventbus.Message
 import org.vertx.java.core.AsyncResult
+import org.vertx.scala.core.http.HttpServerRequest
 
 /**
  * @author swilliams
  */
-class SimpleEventBusReplyHandlerVerticle extends Verticle {
+class SimpleHelloWorldHttpVerticle extends Verticle {
 
   override def start(future: Future[Void]):Unit = {
     start()
-    vertx.eventBus.registerHandler("echo")(
-      (msg: Message[String]) => {
-        // FIXME should the following also work? msg.reply("foo") { r: Message[String] => /* etc */ }
-        msg.reply(msg.body, (reply: Message[String]) => {
-          reply.reply(reply.body)
-        })
-      },
-      result => {
-          if (result.succeeded()) {
-            future.setResult(null)
-          }
-          else {
-            future.setFailure(result.cause())
-          }
-      })
-  }
+    vertx.newHttpServer.requestHandler { req: HttpServerRequest =>
+      req.response.end("Hello World!")
 
+    }.listen(8080, { ar =>
+      if (ar.succeeded()) {
+        future.setResult(null)
+      }
+      else {
+        future.setFailure(ar.cause())
+      }
+    })
+  }
 }
