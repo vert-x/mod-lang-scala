@@ -26,7 +26,7 @@ import org.vertx.java.core.Handler
  */
 trait ReadStream extends ExceptionSupport {
 
-  def dataHandler(handler: (Buffer) => Unit):ReadStream.this.type
+  def dataHandler(handler: Buffer => Unit):ReadStream.this.type
 
   def endHandler(handler: () => Unit):ReadStream.this.type
 

@@ -26,6 +26,6 @@ import org.vertx.java.core.Handler
  */
 trait ExceptionSupport {
 
-  def exceptionHandler(handler: (Throwable) => Unit):ExceptionSupport.this.type
+  def exceptionHandler(handler: Throwable => Unit):ExceptionSupport.this.type
 
 }
