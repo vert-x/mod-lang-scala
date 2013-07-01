@@ -39,17 +39,17 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   private val settings = new Settings()
 
-  private var vertx: Vertx = null
+  private var jvertx: JVertx = null
 
-  private var container: JContainer = null
+  private var jcontainer: JContainer = null
 
   private var loader: ClassLoader = null
 
   private var interpreter: IMain = null
 
   override def init(jvertx: JVertx, jcontainer: JContainer, aloader: ClassLoader): Unit = {
-    this.vertx = new org.vertx.scala.core.Vertx(jvertx)
-    this.container = jcontainer
+    this.jvertx = jvertx
+    this.jcontainer = jcontainer
     this.loader = aloader
     settings.embeddedDefaults(aloader)
     settings.usejavacp.value = true
@@ -61,8 +61,8 @@ class ScalaVerticleFactory extends VerticleFactory {
   @throws(classOf[Exception])
   override def createVerticle(main: String): JVerticle = {
     val rawClass = if (main.startsWith(PREFIX)) loader.loadClass(main.replaceFirst(PREFIX, "")) else loadScript(main)
-    val verticle = rawClass.newInstance().asInstanceOf[Verticle]
-    ScalaVerticle(verticle) // this is required, to get the Scala flavoured Container
+    val delegate = rawClass.newInstance().asInstanceOf[Verticle]
+    ScalaVerticle.newVerticle(delegate, jvertx, jcontainer)
   }
 
   override def reportException(logger: Logger, t: Throwable): Unit = {
@@ -74,7 +74,7 @@ class ScalaVerticleFactory extends VerticleFactory {
   }
 
   @throws(classOf[Exception])
-  private def loadScript(main: String):Class[_] = {
+  private def loadScript(main: String): Class[_] = {
     val resolved = loader.getResource(main).toExternalForm()
     interpreter.compileSources(new BatchSourceFile(PlainFile.fromPath(resolved.replaceFirst("file:", ""))))
     val className = main.replaceFirst(".scala$", "").replaceAll("/", ".")

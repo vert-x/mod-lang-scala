@@ -33,10 +33,16 @@ trait Verticle {
     // NO-OP
   }
 
+  /**
+   * Start verticle with a callback enabling asynchronous 
+   * notification of start completion.
+   * 
+   * @param future
+   */
   // TODO use an idiomatic Future type here
-  def start(result: Future[Void]): Unit = {
+  def start(future: Future[Void]): Unit = {
     start()
-    result.setResult(null)
+    future.setResult(null)
   }
 
   def stop(): Unit = {

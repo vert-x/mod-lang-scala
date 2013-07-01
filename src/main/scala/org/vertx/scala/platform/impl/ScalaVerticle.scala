@@ -28,11 +28,15 @@ import org.vertx.scala.platform.Container
  * 
  */
 object ScalaVerticle {
-  def apply(delegate: => Verticle) = 
-    new ScalaVerticle(delegate)
+  def newVerticle(delegate: Verticle, jvertx: JVertx, jcontainer: JContainer):ScalaVerticle = {
+    def verticle = new ScalaVerticle(delegate)
+    verticle.vertx = jvertx
+    verticle.container = jcontainer
+    verticle
+  }
 }
 
-final private[platform] class ScalaVerticle(delegate: => Verticle) extends JVerticle {
+final private[platform] class ScalaVerticle(delegate: Verticle) extends JVerticle {
 
   override def setContainer(jcontainer: JContainer) {
     delegate.container = Container(jcontainer)
@@ -46,9 +50,9 @@ final private[platform] class ScalaVerticle(delegate: => Verticle) extends JVert
 
   override def start(): Unit = delegate.start
 
-  override def start(result: Future[Void]): Unit = {
-    // TODO auto-convert type?
-    delegate.start(result)
+  override def start(future: Future[Void]): Unit = {
+    // TODO auto-convert future type here?
+    delegate.start(future)
   }
 
   override def stop(): Unit = delegate.stop
