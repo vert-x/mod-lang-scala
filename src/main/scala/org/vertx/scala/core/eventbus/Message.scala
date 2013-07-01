@@ -39,7 +39,7 @@ class Message[T](jmessage: JMessage[T]) {
 
   def replyAddress:String = jmessage.replyAddress()
 
-  def reply(payload: T, handler: Message[T] => Unit = msg => {}):Unit = payload match{
+  def reply(payload: T, handler: Message[T] => Unit = msg => {}):Unit = payload match {
       case str:String =>
               jmessage.reply(str, handler)
       case boo:Boolean =>

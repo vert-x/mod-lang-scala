@@ -58,12 +58,12 @@ class EventBus(internal: JEventBus) {
     this
   }
 
-  def unregisterHandler[T](address: String)( handler:EventBus.EventBusHandler[T], resultHandler: AsyncResult[Unit] => Unit = { ares => }){
+  def unregisterHandler[T](address: String)(handler: EventBus.EventBusHandler[T], resultHandler: AsyncResult[Unit] => Unit = { ares => }):EventBus = {
     handler.unRegisterMe(internal, address, resultHandler)
+    this
   }
 
-  def send[T](address:String, message:T)(handler : Message[T] => Unit):EventBus={
-    message match{
+  def send[T](address:String, message:T)(handler: Message[T] => Unit):EventBus = message match {
       case str:String =>
               internal.send(address, str, handler)
       case boo:Boolean =>
@@ -92,14 +92,12 @@ class EventBus(internal: JEventBus) {
               internal.send(address, Short.box(srt), handler)
 
       case _ => throw new IllegalArgumentException("Invalid message " + message.getClass)
-    }
 
     this
   }
 
 
-  def publish[T](address:String, message:T):EventBus={
-    message match{
+  def publish[T](address:String, message:T):EventBus = message match {
       case str:String =>
               internal.publish(address, str)
       case boo:Boolean =>
@@ -128,7 +126,6 @@ class EventBus(internal: JEventBus) {
               internal.publish(address, Short.box(srt))
 
       case _ => throw new IllegalArgumentException("Invalid message " + message.getClass)
-    }
 
     this
   }
