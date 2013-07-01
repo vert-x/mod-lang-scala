@@ -22,8 +22,10 @@ import org.vertx.java.core.{Handler, AsyncResult, ServerTCPSupport, ServerSSLSup
 import org.vertx.java.core.impl.DefaultFutureResult
 
 /**
+ *
  * @author swilliams
- * 
+ * @author Ranie Jade Ramiso
+ *
  */
 object NetServer {
   def apply(actual: JNetServer) = new NetServer(actual)
@@ -33,27 +35,27 @@ object NetServer {
 class NetServer(val internal: JNetServer) extends ServerSSLSupport[NetServer] with ServerTCPSupport[NetServer] {
 
 
-  def connectHandler(handler: (NetSocket) => Unit):NetServer = {
+  def connectHandler(handler: (NetSocket) => Unit) = {
     internal.connectHandler(ConnectHandler(handler))
     this
   }
 
-  def listen(port: Int):NetServer = {
+  def listen(port: Int) = {
     internal.listen(port)
     this
   }
 
 
-  def listen(port: Int, host: String):NetServer = {
+  def listen(port: Int, host: String) = {
     internal.listen(port, host)
     this
   }
 
-  def listen(port: Int, handler: AsyncResult[NetServer] => Unit):NetServer = {
+  def listen(port: Int, handler: AsyncResult[NetServer] => Unit): NetServer = {
     listen(port, "0.0.0.0", handler)
   }
 
-  def listen(port: Int, host:String,  handler: AsyncResult[NetServer] => Unit):NetServer = {
+  def listen(port: Int, host:String,  handler: AsyncResult[NetServer] => Unit) = {
     internal.listen(port,  host, new Handler[AsyncResult[JNetServer]]() {
        override def handle(result: AsyncResult[JNetServer]) = {
          if (result.succeeded)
@@ -64,151 +66,120 @@ class NetServer(val internal: JNetServer) extends ServerSSLSupport[NetServer] wi
   }
 
 
-  def close:Unit = internal.close
+  def close() {
+    internal.close
+  }
 
-  def close(handler: () => Unit):Unit = 
+  def close(handler: () => Unit) {
     internal.close(handler)
-
-  def port:Int={
-    internal.port
   }
 
-  def host:String={
-    internal.host
-  }
+  def port = internal.port
 
-  def setTCPNoDelay(tcpNoDelay: Boolean): NetServer = {
+  def host = internal.host
+
+  def setTCPNoDelay(tcpNoDelay: Boolean) = {
     internal.setTCPNoDelay(tcpNoDelay)
     this
   }
 
-  def setSendBufferSize(size: Int): NetServer = {
+  def setSendBufferSize(size: Int) = {
     internal.setSendBufferSize(size)
     this
   }
 
-  def setReceiveBufferSize(size: Int): NetServer = {
+  def setReceiveBufferSize(size: Int) = {
     internal.setReceiveBufferSize(size)
     this
   }
 
-  def setTCPKeepAlive(keepAlive: Boolean): NetServer = {
+  def setTCPKeepAlive(keepAlive: Boolean) = {
     internal.setTCPKeepAlive(keepAlive)
     this
   }
 
-  def setReuseAddress(reuse: Boolean): NetServer = {
+  def setReuseAddress(reuse: Boolean) = {
     internal.setReuseAddress(reuse)
     this
   }
 
-  def setSoLinger(linger: Int): NetServer = {
+  def setSoLinger(linger: Int) = {
     internal.setSoLinger(linger)
     this
   }
 
-  def setTrafficClass(trafficClass: Int): NetServer = {
+  def setTrafficClass(trafficClass: Int) = {
     internal.setTrafficClass(trafficClass)
     this
   }
 
-  def setUsePooledBuffers(pooledBuffers: Boolean): NetServer = {
+  def setUsePooledBuffers(pooledBuffers: Boolean) = {
     internal.setUsePooledBuffers(pooledBuffers)
     this
   }
 
-  def isTCPNoDelay: Boolean = {
-    internal.isTCPNoDelay
-  }
+  def isTCPNoDelay = internal.isTCPNoDelay
 
-  def getSendBufferSize: Int = {
-    internal.getSendBufferSize
-  }
+  def getSendBufferSize = internal.getSendBufferSize
 
-  def getReceiveBufferSize: Int = {
-    internal.getReceiveBufferSize
-  }
+  def getReceiveBufferSize = internal.getReceiveBufferSize
 
-  def isTCPKeepAlive: Boolean = {
-    internal.isTCPKeepAlive
-  }
+  def isTCPKeepAlive = internal.isTCPKeepAlive
 
-  def isReuseAddress: Boolean = {
-    internal.isReuseAddress
-  }
+  def isReuseAddress = internal.isReuseAddress
 
-  def getSoLinger: Int = {
-    internal.getSoLinger
-  }
+  def getSoLinger = internal.getSoLinger
 
-  def getTrafficClass: Int = {
-    internal.getTrafficClass
-  }
+  def getTrafficClass = internal.getTrafficClass
 
-  def isUsePooledBuffers: Boolean = {
-    internal.isUsePooledBuffers
-  }
+  def isUsePooledBuffers = internal.isUsePooledBuffers
 
-  def setAcceptBacklog(backlog: Int): NetServer = {
+  def setAcceptBacklog(backlog: Int) = {
     internal.setAcceptBacklog(backlog)
     this
   }
 
-  def getAcceptBacklog: Int = {
-    internal.getAcceptBacklog
-  }
+  def getAcceptBacklog = internal.getAcceptBacklog
 
-  def setSSL(ssl: Boolean): NetServer = {
+  def setSSL(ssl: Boolean) = {
     internal.setSSL(ssl)
     this
   }
 
-  def isSSL: Boolean = {
-    internal.isSSL
-  }
+  def isSSL = internal.isSSL
 
-  def setKeyStorePath(path: String): NetServer = {
+  def setKeyStorePath(path: String) = {
     internal.setKeyStorePath(path)
     this
   }
 
-  def getKeyStorePath: String = {
-    internal.getKeyStorePath
-  }
+  def getKeyStorePath = internal.getKeyStorePath
 
-  def setKeyStorePassword(pwd: String): NetServer = {
+  def setKeyStorePassword(pwd: String) = {
     internal.setKeyStorePassword(pwd)
     this
   }
 
-  def getKeyStorePassword: String = {
-    internal.getKeyStorePassword
-  }
+  def getKeyStorePassword = internal.getKeyStorePassword
 
-  def setTrustStorePath(path: String): NetServer = {
+  def setTrustStorePath(path: String) = {
     internal.setTrustStorePath(path)
     this
   }
 
-  def getTrustStorePath: String = {
-    internal.getTrustStorePath
-  }
+  def getTrustStorePath = internal.getTrustStorePath
 
-  def setTrustStorePassword(pwd: String): NetServer = {
+  def setTrustStorePassword(pwd: String) = {
     internal.setTrustStorePassword(pwd)
     this
   }
 
-  def getTrustStorePassword: String = {
-    internal.getTrustStorePassword
-  }
+  def getTrustStorePassword = internal.getTrustStorePassword
 
-  def setClientAuthRequired(required: Boolean): NetServer = {
+  def setClientAuthRequired(required: Boolean) = {
     internal.setClientAuthRequired(required)
     this
   }
 
-  def isClientAuthRequired: Boolean = {
-    internal.isClientAuthRequired
-  }
+  def isClientAuthRequired = internal.isClientAuthRequired
 }
