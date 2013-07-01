@@ -43,7 +43,8 @@ class LocalTestVerticle extends Verticle with EventBusTestBase{
   import org.vertx.scala.core.eventbus.EventBus._
   lazy val eb = vertx.eventBus
 
-  val hdl: EventBusHandler[String] =
+  // FIXME auto-conversion was failing at compile-time for some reason
+  val hdl: EventBusHandler[String] = EventBus.toBusHandler(
     (msg:Message[String]) => {
       assertEquals(SENT, msg.body)
       eb.unregisterHandler(TEST_ADDRESS)(hdl, rst => {
@@ -52,7 +53,7 @@ class LocalTestVerticle extends Verticle with EventBusTestBase{
           else
             assertTrue(rst.succeeded)
        })
-    }
+    })
 
   val replyHandler: EventBusHandler[String] =
     (msg:Message[String]) => {
@@ -170,7 +171,7 @@ class EventBusTest extends TestVerticle with EventBusTestBase{
     val jsObject2 = new JsonObject(jsonString)
     val jsObject3 = new JsonObject(jsonString)
 
-    import org.vertx.scala.core.JSON._
+    import org.vertx.scala.core.json.JSON._
     val jsArray:JsonArray = JSONArray(List(jsObject1, jsObject2, jsObject3))
 
     echo( jsArray )
