@@ -76,7 +76,7 @@ class HttpServerResponseTest {
 
     def sendFile(filename: String): JHttpServerResponse = ???
 
-    def sendFile(filename: String, encoding: String): JHttpServerResponse = ???
+    def sendFile(filename: String, notFoundFile: String): JHttpServerResponse = ???
 
     def setChunked(chunked: Boolean): JHttpServerResponse = ???
 
