@@ -34,8 +34,8 @@ object HttpServerResponse {
 }
 
 class HttpServerResponse(internal: JHttpServerResponse) {
-  def close(): Unit = {
 
+  def close(): Unit = {
     internal.close()
   }
 
@@ -104,7 +104,7 @@ class HttpServerResponse(internal: JHttpServerResponse) {
 
   def statusMessage():String = internal.getStatusMessage()
 
-  def statusMessage(message: String): HttpServerResponse = {
+  def statusMessage(message: String): HttpServerResponse.this.type = {
     internal.setStatusMessage(message)
     this
   }
@@ -118,7 +118,7 @@ class HttpServerResponse(internal: JHttpServerResponse) {
     internal.trailers
   }
 
-  def write(data: Buffer): HttpServerResponse = {
+  def write(data: Buffer): HttpServerResponse.this.type = {
     internal.write(data)
     this
   }
