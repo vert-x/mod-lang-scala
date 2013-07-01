@@ -10,13 +10,13 @@ class SimpleEventBusReplyHandlerVerticle extends Verticle {
   override def start(future: Future[Void]):Unit = {
     start()
     vertx.eventBus.registerHandler("echo")(
-      { msg: Message[String] =>
+      (msg: Message[String]) => {
         // FIXME should the following also work? msg.reply("foo") { r: Message[String] => /* etc */ }
-        msg.reply(msg.body, { reply: Message[String] =>
+        msg.reply(msg.body, (reply: Message[String]) => {
           reply.reply(reply.body)
         })
       },
-      { result: AsyncResult[Unit] =>
+      result => {
           if (result.succeeded()) {
             future.setResult(null)
           }

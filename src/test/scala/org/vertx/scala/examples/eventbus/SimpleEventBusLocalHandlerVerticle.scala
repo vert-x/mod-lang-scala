@@ -8,9 +8,9 @@ class SimpleEventBusLocalHandlerVerticle extends Verticle {
 
   override def start(future: Future[Void]):Unit = {
     start()
-    vertx.eventBus.registerLocalHandler("echo") { msg: Message[String] =>
+    vertx.eventBus.registerLocalHandler("echo")((msg: Message[String]) => {
         msg.reply(msg.body)
-      }
+      })
 
     future.setResult(null)
   }
