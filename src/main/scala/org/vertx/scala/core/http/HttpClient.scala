@@ -16,10 +16,7 @@
 
 package org.vertx.scala.core.http
 
-import collection.JavaConversions._
 import org.vertx.java.core.http.{HttpClient => JHttpClient}
-import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
-import org.vertx.java.core.http.{WebSocket => JWebSocket}
 import org.vertx.java.core.http.{WebSocketVersion => JWebSocketVersion}
 import org.vertx.scala.core.net.ClientConfigurer
 import org.vertx.scala.core.FunctionConverters._
@@ -28,7 +25,7 @@ import org.vertx.java.core.{MultiMap => JMultiMap}
 
 /**
  * @author swilliams
- * 
+ * @author Galder Zamarreño
  */
 object HttpClient {
   def apply(actual: JHttpClient) =
@@ -42,15 +39,13 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
     internal.connect(uri, HttpClientResponseHandler(handler))
   }
 
-/* todo: rewrite webSocket
-  def connectWebsocket(uri: String, wsConnect: (WebSocket) => Unit):Unit = {
-    internal.connectWebsocket(uri, WebSocketHandler1(wsConnect))
+  def connectWebsocket(uri: String)(wsConnect: WebSocket => Unit) {
+    internal.connectWebsocket(uri, WebSocketHandler(wsConnect))
   }
 
-  def connectWebsocket(uri: String, wsVersion: JWebSocketVersion, wsConnect: (WebSocket) => Unit):Unit = {
-    internal.connectWebsocket(uri, wsVersion, WebSocketHandler1(wsConnect))
+  def connectWebsocket(uri: String, wsVersion: JWebSocketVersion)(wsConnect: WebSocket => Unit) {
+    internal.connectWebsocket(uri, wsVersion, WebSocketHandler(wsConnect))
   }
-  */
 
   def delete(uri: String, handler: HttpClientResponse => Unit):Unit = {
     internal.delete(uri, HttpClientResponseHandler(handler))
@@ -76,9 +71,6 @@ class HttpClient(internal: JHttpClient) extends ClientConfigurer {
   def getNow(uri: String)(handler: HttpClientResponse => Unit):Unit = {
     internal.getNow(uri, HttpClientResponseHandler(handler))
   }
-
-
-
 
   def head(uri: String, handler: HttpClientResponse => Unit):Unit = {
     internal.head(uri, HttpClientResponseHandler(handler))

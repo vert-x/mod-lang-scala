@@ -18,77 +18,57 @@ package org.vertx.scala.core.http
 
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{WebSocketBase => JWebSocketBase}
+import org.vertx.java.core.http.{WebSocket => JWebSocket}
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.streams.WriteStream
-import org.vertx.scala.core.streams.ReadStream
 import org.vertx.java.core.Handler
+import scala.xml.Node
 
 /**
  * @author swilliams
- * 
+ * @author Galder Zamarreño
  */
 object WebSocket {
-  def apply[T] (jsocket: JWebSocketBase[T]) =
-    new WebSocket(jsocket)
+  def apply(jsocket: JWebSocket) = new WebSocket(jsocket)
 }
 
-class WebSocket [T](internal: JWebSocketBase [T]) {
+class WebSocket(internal: JWebSocket) extends WebSocketBase[JWebSocket](internal)
+
+abstract class WebSocketBase[T](internal: JWebSocketBase[T]) {
 
   def binaryHandlerID():String = internal.binaryHandlerID
 
-  def pause(): T = {
-    internal.pause()
-    
+  def pause(): T = internal.pause()
+
+  def resume(): T = internal.resume()
+
+  def textHandlerID(): String = internal.textHandlerID
+
+  def close() {
+    internal.close()
   }
 
-  def resume(): T = {
-    internal.resume()
-    
-  }
+  def setWriteQueueMaxSize(maxSize: Int): T = internal.setWriteQueueMaxSize(maxSize)
 
-  def textHandlerID():String = internal.textHandlerID
+  def writeBinaryFrame(data: Buffer): T = internal.writeBinaryFrame(data)
 
-  def close():Unit = internal.close()
+  def writeBuffer(data: Buffer): T = internal.write(data)
 
-  def setWriteQueueMaxSize(maxSize: Int): T = {
-    internal.setWriteQueueMaxSize(maxSize)
-  }
+  def writeTextFrame(data: String): T = internal.writeTextFrame(data)
 
-  def writeBinaryFrame(data: Buffer): T = {
-    internal.writeBinaryFrame(data)
-  }
+  /**
+   * Write XML to the websocket as a text frame.
+   */
+  def writeXml(xml: Node): T = internal.writeTextFrame(xml.toString())
 
-  def writeBuffer(data: Buffer): T = {
-    internal.write(data)
-    
-  }
+  def writeQueueFull(): Boolean = internal.writeQueueFull()
 
-  def writeTextFrame(data: String): T = {
-    internal.writeTextFrame(data)
-    
-  }
+  def dataHandler(handler: Buffer => Unit): T = internal.dataHandler(handler)
 
-  def writeQueueFull():Boolean = internal.writeQueueFull()
+  def drainHandler(handler: () => Unit): T = internal.drainHandler(handler)
 
+  def endHandler(handler: () => Unit): T = internal.endHandler(handler)
 
-  def dataHandler(handler: (Buffer) => Unit): T = {
-    internal.dataHandler(handler)
-    
-  }
-
-  def drainHandler(handler: () => Unit): T = {
-    internal.drainHandler(handler)
-    
-  }
-
-  def endHandler(handler: () => Unit): T = {
-    internal.endHandler(handler)
-    
-  }
-
-  def exceptionHandler(handler: Handler[Throwable]): T = {
+  def exceptionHandler(handler: Handler[Throwable]): T =
     internal.exceptionHandler(handler)
-    
-  }
 
 }
