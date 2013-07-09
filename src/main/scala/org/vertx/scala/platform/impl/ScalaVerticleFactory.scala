@@ -60,7 +60,9 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   @throws(classOf[Exception])
   override def createVerticle(main: String): JVerticle = {
-    val rawClass = if (main.startsWith(PREFIX)) loader.loadClass(main.replaceFirst(PREFIX, "")) else loadScript(main)
+    // TODO: main without language Id is passed in.
+    //val rawClass = if (main.startsWith(PREFIX)) loader.loadClass(main.replaceFirst(PREFIX, "")) else loadScript(main)
+    val rawClass = loader.loadClass(main.replaceFirst(PREFIX, ""))
     val delegate = rawClass.newInstance().asInstanceOf[Verticle]
     ScalaVerticle.newVerticle(delegate, jvertx, jcontainer)
   }

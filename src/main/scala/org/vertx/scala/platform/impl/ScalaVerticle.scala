@@ -29,9 +29,9 @@ import org.vertx.scala.platform.Container
  */
 object ScalaVerticle {
   def newVerticle(delegate: Verticle, jvertx: JVertx, jcontainer: JContainer):ScalaVerticle = {
-    def verticle = new ScalaVerticle(delegate)
-    verticle.vertx = jvertx
-    verticle.container = jcontainer
+    val verticle = new ScalaVerticle(delegate)
+    verticle.setVertx(jvertx)
+    verticle.setContainer(jcontainer)
     verticle
   }
 }
