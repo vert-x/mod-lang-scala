@@ -35,18 +35,13 @@ object Container {
 }
 
 class Container(internal: JContainer) {
+  private val defaultJsConfig = new JSONObject(Map.empty)
 
-  def deployModule(name: String, config: JSONObject, instances: Int):Unit = internal.deployModule(name, config, instances)
+  def deployModule(name: String, config: JSONObject = defaultJsConfig, instances: Int = 1, handler: AsyncResult[String] => Unit = {ar: AsyncResult[String] => }):Unit = internal.deployModule(name, config, instances, handler)
 
-  def deployModule(name: String, config: JSONObject, instances: Int)(handler: AsyncResult[String] => Unit = {ar: AsyncResult[String] => }):Unit = internal.deployModule(name, config, instances, handler)
+  def deployVerticle(name: String, config: JSONObject = defaultJsConfig, instances: Int = 1, handler: AsyncResult[String] => Unit = {ar: AsyncResult[String] => }):Unit = internal.deployVerticle(name, config, instances, handler)
 
-  def deployVerticle(name: String, config: JSONObject, instances: Int):Unit = internal.deployVerticle(name, config, instances)
-
-  def deployVerticle(name: String, config: JSONObject, instances: Int)(handler: AsyncResult[String] => Unit = {ar: AsyncResult[String] => }):Unit = internal.deployVerticle(name, config, instances, handler)
-
-  def deployWorkerVerticle(name: String, config: JSONObject, instances: Int, multithreaded: Boolean):Unit = internal.deployWorkerVerticle(name, config, instances, multithreaded)
-
-  def deployWorkerVerticle(name: String, config: JSONObject, instances: Int, multithreaded: Boolean)(handler: AsyncResult[String] => Unit = {ar: AsyncResult[String] => }):Unit = internal.deployWorkerVerticle(name, config, instances, multithreaded, handler)
+  def deployWorkerVerticle(name: String, config: JSONObject = defaultJsConfig, instances: Int = 1, multithreaded: Boolean = false, handler: AsyncResult[String] => Unit = {ar: AsyncResult[String] => }):Unit = internal.deployWorkerVerticle(name, config, instances, multithreaded, handler)
 
   def config():JSONObject = internal.config()
 
@@ -56,11 +51,7 @@ class Container(internal: JContainer) {
 
   def logger():Logger = internal.logger()
 
-  def undeployModule(deploymentID: String):Unit = internal.undeployModule(deploymentID)
-
   def undeployModule(deploymentID: String, handler: () => Unit):Unit = internal.undeployModule(deploymentID, handler)
-
-  def undeployVerticle(deploymentID: String):Unit = internal.undeployVerticle(deploymentID)
 
   def undeployVerticle(deploymentID: String, handler: () => Unit):Unit = internal.undeployVerticle(deploymentID, handler)
 
