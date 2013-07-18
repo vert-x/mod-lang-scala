@@ -75,6 +75,8 @@ class HttpServerRequestTest {
     def resume(): JHttpServerRequest = ???
 
     def exceptionHandler(handler: Handler[Throwable]): JHttpServerRequest = ???
+
+    def expectMultiPart(expect: Boolean): JHttpServerRequest = ???
   }
 
   @Test
