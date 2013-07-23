@@ -1,16 +1,22 @@
-mod-lang-scala.ipr
-mod-lang-scala.iws
+# ignore IDEA files
+*.iml
+*.ipr
+*.iws
+.idea
+# ignore eclipse files
+.project
+.classpath
+.settings
+.scala_dependencies
+.externalToolBuilders
+.factorypath
+# ignore others
 out
 src/test/mod-test
-.idea
 classes
-mod-lang-scala.iml
 .cache
-.classpath
 .DS_Store
 .gradle
-.project
-.settings
 .springBeans
 bin
 build

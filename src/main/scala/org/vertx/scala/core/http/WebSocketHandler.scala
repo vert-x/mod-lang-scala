@@ -24,18 +24,18 @@ import org.vertx.java.core.http.{WebSocket => JWebSocket}
  * @author swilliams
  * 
  */
-object WebSocketHandler1 {
-  def apply[_](delegate: Handler[WebSocket[_]]) = 
-    new WebSocketHandler1(delegate)
+object WebSocketHandler {
+  def apply(delegate: Handler[WebSocket]) =
+    new WebSocketHandler(delegate)
 }
 
-class WebSocketHandler1(delegate: Handler[WebSocket[_]]) extends Handler[JWebSocket] {
+class WebSocketHandler(delegate: Handler[WebSocket]) extends Handler[JWebSocket] {
 
-  implicit def convertJavaToScalaWebSocket(jsocket: JWebSocket):WebSocket[_] = {
+  implicit def convertJavaToScalaWebSocket(jsocket: JWebSocket):WebSocket = {
     WebSocket(jsocket)
   }
 
-  def handle(jsocket: JWebSocket):Unit = {
+  def handle(jsocket: JWebSocket) {
     delegate.handle(jsocket)
   }
 

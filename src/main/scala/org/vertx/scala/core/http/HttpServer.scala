@@ -81,7 +81,7 @@ class HttpServer(val actual: JHttpServer) extends SocketConfigurer {
   def websocketHandler(): JHandler[JServerWebSocket] = actual.websocketHandler
 
   def websocketHandler(handler: ServerWebSocket => Unit):HttpServer.this.type = {
-    actual.websocketHandler(ServerWebSocketHandler1(handler))
+    actual.websocketHandler(ServerWebSocketHandler(handler))
     this
   }
 
