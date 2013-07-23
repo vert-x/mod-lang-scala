@@ -17,23 +17,21 @@
 package org.vertx.scala.core.http
 
 import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
-import org.vertx.java.core.http.{WebSocket => JWebSocket}
 
 /**
  * @author swilliams
- * 
+ * @author Galder Zamarreño
  */
-//TODO:Rewrite
 object ServerWebSocket {
-  def apply(socket: JServerWebSocket) = throw new UnsupportedOperationException
-    //new ServerWebSocket(socket)
+  def apply(socket: JServerWebSocket) = new ServerWebSocket(socket)
 }
 
-class ServerWebSocket(internal: JWebSocket with JServerWebSocket) extends WebSocket(internal) {
+class ServerWebSocket(internal: JServerWebSocket)
+    extends WebSocketBase[JServerWebSocket](internal) {
 
-  def path():String = internal.path
+  def path(): String = internal.path
 
-  def reject():ServerWebSocket = {
+  def reject(): ServerWebSocket = {
     internal.reject()
     this
   }

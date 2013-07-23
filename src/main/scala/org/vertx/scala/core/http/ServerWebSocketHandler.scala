@@ -22,14 +22,14 @@ import org.vertx.java.core.Handler
 
 /**
  * @author swilliams
- * 
+ * @author Galder Zamarreño
  */
-object ServerWebSocketHandler1 {
+object ServerWebSocketHandler {
   def apply(socket: (ServerWebSocket) => Unit) =
-    new ServerWebSocketHandler1(socket)
+    new ServerWebSocketHandler(socket)
 }
 
-class ServerWebSocketHandler1(delegate: (ServerWebSocket) => Unit) extends Handler[JServerWebSocket] {
+class ServerWebSocketHandler(delegate: (ServerWebSocket) => Unit) extends Handler[JServerWebSocket] {
 
   implicit def convertJavaToScalaWebSocket(jsocket: JServerWebSocket):ServerWebSocket = {
     ServerWebSocket(jsocket)
