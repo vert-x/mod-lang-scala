@@ -15,44 +15,45 @@
  */
 
 package org.vertx.scala.core.json
-import scala.util.parsing.json.{JSON => sJSON}
+import scala.util.parsing.json.{ JSON => sJSON }
 import scala.util.parsing.json.JSONObject
 import scala.util.parsing.json.JSONArray
 import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.json.JsonArray
-import scala.util.parsing.json.{JSON => sJSON}
+import scala.util.parsing.json.{ JSON => sJSON }
 import scala.collection.JavaConversions._
+import org.vertx.java.core.json.DecodeException
 
 /**
  * @author swilliams
- * 
+ *
  */
 object JSON {
 
   implicit def convertJsonObjectToScala(json: JsonObject): JSONObject = {
-    val data:String = if (json != null) json.encode() else ""
-    sJSON.parseRaw(data).asInstanceOf[JSONObject]
+    val data: String = if (json != null) json.encode() else "{}"
+    sJSON.parseRaw(data) match {
+      case Some(x: JSONObject) => x
+      case otherType => throw new DecodeException("Failed to decode to JSONObject:" + otherType)
+    }
   }
 
   implicit def convertScalaToJsonArray(json: JSONArray): JsonArray = {
-    val data:String = if (json != null) json.toString else ""
+    val data: String = if (json != null) json.toString else ""
     new JsonArray(data)
   }
 
   implicit def convertScalaToJsonObject(json: JSONObject): JsonObject = {
-    val data:String = if (json != null) json.toString else ""
+    val data: String = if (json != null) json.toString else ""
     new JsonObject(data)
   }
 
   implicit def convertStringToJsonObject(json: String): JsonObject = {
-    val data = if (json != null) json else ""
-    new JsonObject(data)
+    new JsonObject(json)
   }
 
-  implicit def convertStringToJSONObject(json: String): JsonObject = {
-    val data = if (json != null) json else ""
-//    new JSONObject(data)
-    null  // FIXME
+  implicit def convertStringToJSONObject(json: String): JSONObject = {
+    sJSON.parseRaw(json).map(_.asInstanceOf[JSONObject]).get
   }
 
   implicit def convertMapToJsonObject(json: Map[String, Object]): JsonObject = {
