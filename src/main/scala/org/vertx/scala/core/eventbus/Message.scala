@@ -19,7 +19,7 @@ package org.vertx.scala.core.eventbus
 import org.vertx.java.core.eventbus.{Message => JMessage}
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.json.{JsonObject, JsonArray}
+import org.vertx.scala.core.json.{JsonObject, JsonArray}
 
 /**
  * @author pidster

@@ -22,10 +22,9 @@ import org.vertx.testtools.VertxAssert._
 import org.vertx.scala.core.eventbus.{ Message, EventBus }
 import org.vertx.scala.testframework.TestUtils
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.json.{ JsonObject, JsonArray }
-import scala.util.parsing.json.JSONArray
 import org.vertx.java.platform.Verticle
 import org.vertx.java.core.AsyncResult
+import org.vertx.scala.core.json._
 
 /**
  * @author Edgar Chan
@@ -213,8 +212,7 @@ class EventBusTest extends TestVerticle with EventBusTestBase {
     val jsObject2 = new JsonObject(jsonString)
     val jsObject3 = new JsonObject(jsonString)
 
-    import org.vertx.scala.core.json.JSON._
-    val jsArray: JsonArray = JSONArray(List(jsObject1, jsObject2, jsObject3))
+    val jsArray: JsonArray = Json(List(jsObject1, jsObject2, jsObject3))
 
     echo(jsArray)
   }
