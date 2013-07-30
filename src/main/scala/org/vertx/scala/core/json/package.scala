@@ -15,10 +15,24 @@
  */
 package org.vertx.scala.core
 
+import scala.collection.mutable.Map
+
 /**
  * @author swilliams
+ * @author Edgar Chan
  *
  */
 package object json {
+
+  type JsonElement = org.vertx.java.core.json.JsonElement
+  type JsonArray = org.vertx.java.core.json.JsonArray
+  type JsonObject = org.vertx.java.core.json.JsonObject
+
+  implicit def toJsonObject(js: JsObject): JsonObject = js.internal
+
+  implicit class JsObject(val internal: JsonObject) extends AnyVal{
+    import scala.collection.JavaConverters._
+    def asMap: Map[String, AnyRef] = internal.toMap.asScala
+  }
 
 }
