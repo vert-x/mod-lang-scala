@@ -18,9 +18,6 @@ package org.vertx.scala.core.json
 import scala.util.parsing.json.{JSON => sJSON}
 import scala.util.parsing.json.JSONObject
 import scala.util.parsing.json.JSONArray
-import org.vertx.java.core.json.JsonObject
-import org.vertx.java.core.json.JsonArray
-import scala.util.parsing.json.{JSON => sJSON}
 import scala.collection.JavaConversions._
 
 /**
