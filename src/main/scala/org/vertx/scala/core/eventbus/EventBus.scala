@@ -20,8 +20,7 @@ import org.vertx.java.core.{ AsyncResult, Handler }
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.eventbus.{ EventBus => JEventBus }
 import org.vertx.java.core.eventbus.{ Message => JMessage }
-import org.vertx.java.core.json.JsonArray
-import org.vertx.java.core.json.JsonObject
+import org.vertx.scala.core.json.{JsonObject, JsonArray}
 import org.vertx.scala.core.FunctionConverters._
 
 /*

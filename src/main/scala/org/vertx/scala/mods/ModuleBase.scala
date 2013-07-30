@@ -22,7 +22,6 @@ import org.vertx.java.core.eventbus.Message
 import org.vertx.java.core.json.JsonArray
 import org.vertx.scala.core.eventbus.EventBus
 import org.vertx.scala.core._
-import org.vertx.scala.core.json.JSON._
 import org.vertx.scala.platform.Verticle
 
 
