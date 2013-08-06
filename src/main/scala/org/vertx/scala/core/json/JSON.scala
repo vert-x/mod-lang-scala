@@ -31,10 +31,7 @@ object JSON {
 
   implicit def convertJsonObjectToScala(json: JsonObject): JSONObject = {
     val data: String = if (json != null) json.encode() else "{}"
-    sJSON.parseRaw(data) match {
-      case Some(x: JSONObject) => x
-      case otherType => throw new DecodeException("Failed to decode to JSONObject:" + otherType)
-    }
+    parseRawJason(data)
   }
 
   implicit def convertScalaToJsonArray(json: JSONArray): JsonArray = {
@@ -51,12 +48,18 @@ object JSON {
     new JsonObject(json)
   }
 
-  implicit def convertStringToJSONObject(json: String): JSONObject = {
-    sJSON.parseRaw(json).map(_.asInstanceOf[JSONObject]).get
-  }
+  implicit def convertStringToJSONObject(json: String): JSONObject =
+    parseRawJason(json)
 
   implicit def convertMapToJsonObject(json: Map[String, Object]): JsonObject = {
     new JsonObject(json)
+  }
+
+  private def parseRawJason(json: String): JSONObject = {
+    sJSON.parseRaw(json) match {
+      case Some(x: JSONObject) => x
+      case otherType => throw new DecodeException("Failed to decode to JSONObject: " + json)
+    }
   }
 
 }
