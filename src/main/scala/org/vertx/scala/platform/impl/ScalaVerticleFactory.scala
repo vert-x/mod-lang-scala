@@ -28,12 +28,17 @@ import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.java.platform.{Verticle => JVerticle}
 import org.vertx.java.platform.VerticleFactory
 import org.vertx.scala.platform.Verticle
+import java.io.{FilenameFilter, File}
+import scala.util.matching.Regex
 
 /**
  * @author swilliams
- * 
+ * @author Ranie Jade Ramiso
+ * @author Galder Zamarreño
  */
 class ScalaVerticleFactory extends VerticleFactory {
+
+  import ScalaVerticleFactory._
 
   protected val SUFFIX: String = ".scala"
 
@@ -55,8 +60,6 @@ class ScalaVerticleFactory extends VerticleFactory {
     this.jvertx = jvertx
     this.jcontainer = jcontainer
     this.loader = aloader
-
-    println("HELLO WORLD")
 
     initializeScalaInterpreter()
   }
@@ -93,12 +96,14 @@ class ScalaVerticleFactory extends VerticleFactory {
   }
 
   private def initializeScalaInterpreter(): Unit = {
-    val scalaLibrary = classLoader.getResource("./lib/scala-library-2.10.2.jar").toExternalForm
-    val scalaReflectLibrary = classLoader.getResource("./lib/scala-reflect-2.10.2.jar").toExternalForm
-    val modLangScala = classLoader.getResource("./").toExternalForm
+    for {
+      jar <- findAll(classLoader, "lib", JarFileRegex)
+    } yield {
+      println(s"Found $jar, add to compiler bootstrap")
+      settings.bootclasspath.append(jar.getAbsolutePath)
+    }
 
-    settings.bootclasspath.append(scalaLibrary.replaceFirst("file:", ""))
-    settings.bootclasspath.append(scalaReflectLibrary.replaceFirst("file:", ""))
+    val modLangScala = classLoader.getResource("./").toExternalForm
     settings.bootclasspath.append(modLangScala.replaceFirst("file:", ""))
 
     settings.usejavacp.value = true
@@ -106,6 +111,47 @@ class ScalaVerticleFactory extends VerticleFactory {
     interpreter = new IMain(settings)
     interpreter.classLoader
     interpreter.setContextClassLoader()
+  }
+
+}
+
+object ScalaVerticleFactory {
+
+  val JarFileRegex = "^(.*\\.jar)$".r
+
+  /**
+   * Find all files matching the given regular expression in the directory.
+   * Note that the search is not recursive.
+   *
+   * @param directory File denoting directory to search files in
+   * @param regex regular expression to match
+   * @return an [[scala.Array[File]] representing the collection of files matching
+   *         the regular expression
+   */
+  def findAll(directory: File, regex: Regex): Array[File] = {
+    println(s"Find $regex pattern in $directory")
+    // Protect against null return from listing files
+    val files: Array[File] = directory.listFiles(new FilenameFilter {
+      def accept(dir: File, name: String): Boolean = {
+        regex.findFirstIn(name).isDefined
+      }
+    })
+    Option(files).getOrElse(Array[File]())
+  }
+
+  /**
+   * Find all files matching the given regular expression in a path within a
+   * classloader. Note that the search is not recursive.
+   *
+   * @param classLoader class repository where to look for files
+   * @param path String representing the path within the classloader where to look for files
+   * @param regex regular expression to match
+   * @return an [[scala.Array[File]] representing the collection of files matching
+   *         the regular expression
+   */
+  def findAll(classLoader: ClassLoader, path: String, regex: Regex): Array[File] = {
+    println(s"Find $regex pattern in $classLoader")
+    findAll(new File(classLoader.getResources(path).nextElement().toURI), regex)
   }
 
 }
