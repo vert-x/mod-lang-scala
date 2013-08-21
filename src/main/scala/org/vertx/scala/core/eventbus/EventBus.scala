@@ -40,8 +40,6 @@ object EventBus {
     new EventBusHandler[T](convertFunctionToMessageHandler(h))
   }
 
-  implicit def toScalaEventBus(actual: JEventBus): EventBus = apply(actual)
-
 }
 
 class EventBus(internal: JEventBus) {

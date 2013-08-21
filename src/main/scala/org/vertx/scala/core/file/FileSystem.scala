@@ -19,7 +19,6 @@ package org.vertx.scala.core.file
 import org.vertx.java.core.{Handler, AsyncResult}
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.file.{FileProps, FileSystemProps, AsyncFile => JAsyncFile}
-import org.vertx.scala.core.FunctionConverters._
 import org.vertx.java.core.file.{FileSystem => JFileSystem}
 
 /**
@@ -32,6 +31,9 @@ object FileSystem {
 }
 
 class FileSystem(internal: JFileSystem) {
+
+  import org.vertx.scala.VertxConverters._
+  import org.vertx.scala.core.FunctionConverters._
 
   def chmod(path: String, perms: String, dirPerms: Option[String], handler: () => Unit):FileSystem ={
     internal.chmod(path, perms, dirPerms.getOrElse(null) , handler)

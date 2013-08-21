@@ -31,9 +31,7 @@ object ServerWebSocketHandler {
 
 class ServerWebSocketHandler(delegate: (ServerWebSocket) => Unit) extends Handler[JServerWebSocket] {
 
-  implicit def convertJavaToScalaWebSocket(jsocket: JServerWebSocket):ServerWebSocket = {
-    ServerWebSocket(jsocket)
-  }
+  import org.vertx.scala.VertxConverters._
 
   def handle(jsocket: JServerWebSocket) {
     delegate(jsocket)

@@ -16,24 +16,23 @@
 
 package org.vertx.scala.core.http
 
-import scala.language.implicitConversions
 import org.vertx.java.core.Handler
 import org.vertx.java.core.http.{WebSocket => JWebSocket}
+import org.vertx.scala.core.FunctionConverters._
+
 
 /**
  * @author swilliams
  * 
  */
 object WebSocketHandler {
-  def apply(delegate: Handler[WebSocket]) =
+  def apply(delegate: WebSocket => Unit) =
     new WebSocketHandler(delegate)
 }
 
 class WebSocketHandler(delegate: Handler[WebSocket]) extends Handler[JWebSocket] {
 
-  implicit def convertJavaToScalaWebSocket(jsocket: JWebSocket):WebSocket = {
-    WebSocket(jsocket)
-  }
+  import org.vertx.scala.VertxConverters._
 
   def handle(jsocket: JWebSocket) {
     delegate.handle(jsocket)
