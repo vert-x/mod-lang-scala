@@ -27,7 +27,6 @@ import org.vertx.scala.core.FunctionConverters._
  */
 object AsyncFile {
   def apply(internal:JAsyncFile) = new AsyncFile(internal)
-  implicit def toScala(internal:JAsyncFile) = new AsyncFile(internal)
 }
 
 class AsyncFile(internal:JAsyncFile) extends ReadStream with WriteStream {

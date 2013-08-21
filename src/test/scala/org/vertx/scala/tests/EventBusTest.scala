@@ -39,7 +39,7 @@ trait EventBusTestBase {
 class LocalTestVerticle extends Verticle with EventBusTestBase {
 
   import org.vertx.scala.core.eventbus.EventBus._
-  lazy val eb = vertx.eventBus
+  lazy val eb:EventBus = EventBus(vertx.eventBus)
 
   //Implicit conversion for EventBusHandler expect Message[T] => Unit, if
   // it's not the case, then the factory method is needed like below
