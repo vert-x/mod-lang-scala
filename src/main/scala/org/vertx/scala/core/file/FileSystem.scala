@@ -16,7 +16,7 @@
 
 package org.vertx.scala.core.file
 
-import org.vertx.java.core.{file, Handler, AsyncResult}
+import org.vertx.java.core.{Handler, AsyncResult}
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.file.{FileProps, FileSystemProps, AsyncFile => JAsyncFile}
 import org.vertx.scala.core.FunctionConverters._

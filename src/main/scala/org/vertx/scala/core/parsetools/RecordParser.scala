@@ -77,7 +77,6 @@ class RecordParser(jParser: JRecordParser) {
    * {@code output} Will receive whole records which have been parsed.
    */
   def newFixed(size: Int)(handler: JBuffer => Unit):RecordParser = {
-    // RecordParser(JRecordParser.newFixed(size, {output(new Buffer(it))} as Handler))
     RecordParser(JRecordParser.newFixed(size, handler))
   }
 
@@ -102,7 +101,7 @@ class RecordParser(jParser: JRecordParser) {
   def fixedSizeMode(size: Int):Unit = jParser.fixedSizeMode(size)
 
 
-  def setOutput(output: Handler[JBuffer]) {
+  def setOutput(output: JBuffer => Unit) {
     jParser.setOutput(output)
   }
 

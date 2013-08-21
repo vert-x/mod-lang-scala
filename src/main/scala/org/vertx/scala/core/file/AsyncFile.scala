@@ -17,11 +17,10 @@ package org.vertx.scala.core.file
 
 
 import org.vertx.java.core.file.{AsyncFile => JAsyncFile}
-import org.vertx.java.core.{file, AsyncResult, Handler}
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.{WriteStream, ReadStream}
-
+import org.vertx.java.core.AsyncResult
+import org.vertx.scala.core.FunctionConverters._
 /**
  * @author Edgar Chan
  * @author swilliams
@@ -38,11 +37,6 @@ class AsyncFile(internal:JAsyncFile) extends ReadStream with WriteStream {
     this
   }
 
-  def dataHandler(handler: Handler[Buffer]):AsyncFile.this.type = {
-    internal.dataHandler(handler)
-    this
-  }
-
   def pause():AsyncFile.this.type = {
     internal.pause()
     this
@@ -54,11 +48,6 @@ class AsyncFile(internal:JAsyncFile) extends ReadStream with WriteStream {
   }
 
   def endHandler(handler: () => Unit ):AsyncFile.this.type = {
-    internal.endHandler(handler)
-    this
-  }
-
-  def endHandler(handler: Handler[Void]):AsyncFile.this.type = {
     internal.endHandler(handler)
     this
   }
@@ -80,17 +69,7 @@ class AsyncFile(internal:JAsyncFile) extends ReadStream with WriteStream {
     this
   }
 
-  def drainHandler(handler: Handler[Void]):AsyncFile.this.type = {
-    internal.drainHandler(handler)
-    this
-  }
-
   def exceptionHandler(handler: (Throwable) => Unit ):AsyncFile.this.type = {
-    internal.exceptionHandler(handler)
-    this
-  }
-
-  def exceptionHandler(handler: Handler[Throwable]):AsyncFile.this.type = {
     internal.exceptionHandler(handler)
     this
   }
@@ -99,36 +78,16 @@ class AsyncFile(internal:JAsyncFile) extends ReadStream with WriteStream {
     internal.close()
   }
 
-  def close(handler:AsyncResult[Unit] => Unit):Unit = {
+  def close(handler: (AsyncResult[Unit]) => Unit):Unit = {
     internal.close(voidAsyncHandler(handler))
   }
 
-  def close(handler: Handler[AsyncResult[Void]]):Unit = {
-    internal.close(handler)
-  }
-
-
-  def write(data:Buffer, p:Int, handler:AsyncResult[Unit] => Unit ):AsyncFile.this.type = {
-    internal.write(data, p, voidAsyncHandler(handler))
+  def write(data:Buffer, p:Int, handler: () => Unit ):AsyncFile.this.type = {
+    internal.write(data, p, handler)
     this
   }
 
-  def write(buffer: Buffer, position: Int, handler: Handler[AsyncResult[Void]]):AsyncFile.this.type = {
-    internal.write(buffer, position, handler)
-    this
-  }
-
-
-  def read(buffer: Buffer, offset: Int, position: Int, length: Int, handler: AsyncResult[Buffer] => Unit):AsyncFile.this.type = {
-    internal.read(buffer, offset, position, length, new Handler[AsyncResult[Buffer]] {
-      def handle(event: AsyncResult[Buffer]) {
-        handler(event)
-      }
-    })
-    this
-  }
-
-  def read(buffer: Buffer, offset: Int, position: Int, length: Int, handler: Handler[AsyncResult[Buffer]]):AsyncFile.this.type = {
+  def read(buffer: Buffer, offset: Int, position: Int, length: Int, handler: (AsyncResult[Buffer]) => Unit):AsyncFile.this.type = {
     internal.read(buffer, offset, position, length, handler)
     this
   }
@@ -138,13 +97,9 @@ class AsyncFile(internal:JAsyncFile) extends ReadStream with WriteStream {
     this
   }
 
-  def flush(handler: AsyncResult[Unit] => Unit):AsyncFile.this.type = {
-   flush(voidAsyncHandler(handler))
+  def flush(handler: () => Unit):AsyncFile.this.type = {
+   flush(handler)
    this
   }
 
-  def flush(handler: Handler[AsyncResult[Void]]):AsyncFile.this.type = {
-    internal.flush(handler)
-    this
-  }
 }

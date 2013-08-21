@@ -20,8 +20,8 @@ import scala.collection.JavaConverters._
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
 import org.vertx.scala.core.FunctionConverters._
-import collection.mutable.{ HashMap, MultiMap, Set }
-import org.vertx.java.core.{Handler}
+import collection.mutable.MultiMap
+import org.vertx.java.core.Handler
 
 /**
  * @author swilliams
@@ -53,13 +53,11 @@ class HttpClientResponse(val internal: JHttpClientResponse) {
   }
 
   def bodyHandler(handler: Buffer => Unit):HttpClientResponse.this.type = {
-
     internal.bodyHandler(new Handler[Buffer] {
       override def handle(bf: Buffer) {
-        handler(bf);
+        handler(bf)
       }
-    });
-
+    })
     this
   }
 
@@ -73,7 +71,7 @@ class HttpClientResponse(val internal: JHttpClientResponse) {
     this
   }
 
-  def exceptionHandler(handler: Handler[Throwable]):HttpClientResponse.this.type = {
+  def exceptionHandler(handler: (Throwable) => Unit):HttpClientResponse.this.type = {
     internal.exceptionHandler(handler)
     this
   }

@@ -68,7 +68,7 @@ abstract class WebSocketBase[T](internal: JWebSocketBase[T]) {
 
   def endHandler(handler: () => Unit): T = internal.endHandler(handler)
 
-  def exceptionHandler(handler: Handler[Throwable]): T =
+  def exceptionHandler(handler: Throwable => Unit): T =
     internal.exceptionHandler(handler)
 
 }
