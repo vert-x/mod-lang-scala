@@ -69,7 +69,7 @@ class HttpServerRequest(val internal: JHttpServerRequest) {
     this
   }
 
-  def exceptionHandler(handler: Handler[Throwable]):HttpServerRequest.this.type = {
+  def exceptionHandler(handler: Throwable => Unit):HttpServerRequest.this.type = {
     internal.exceptionHandler(handler)
     this
   }

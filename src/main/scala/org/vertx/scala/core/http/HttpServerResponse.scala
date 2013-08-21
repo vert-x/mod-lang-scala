@@ -49,7 +49,7 @@ class HttpServerResponse(internal: JHttpServerResponse) {
     this
   }
 
-  def exceptionHandler(handler: Handler[Throwable]): HttpServerResponse.this.type = {
+  def exceptionHandler(handler: Throwable => Unit): HttpServerResponse.this.type = {
     internal.exceptionHandler(handler)
     this
   }
