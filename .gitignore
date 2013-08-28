@@ -20,3 +20,4 @@ classes
 .springBeans
 bin
 build
+*.pyc
