@@ -26,7 +26,7 @@ class SimpleSendFileHttpVerticle extends Verticle {
 
   override def start(future: Future[Void]):Unit = {
     start()
-    vertx.newHttpServer.requestHandler { req: HttpServerRequest =>
+    vertx.createHttpServer.requestHandler { req: HttpServerRequest =>
       val file: String = if (req.path == "/") "index.html" else req.path
       req.response.sendFile(file, "404.html")
 

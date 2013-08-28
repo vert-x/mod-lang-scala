@@ -26,7 +26,7 @@ class SimpleHelloWorldHttpVerticle extends Verticle {
 
   override def start(future: Future[Void]):Unit = {
     start()
-    vertx.newHttpServer.requestHandler { req: HttpServerRequest =>
+    vertx.createHttpServer.requestHandler { req: HttpServerRequest =>
       req.response.end("Hello World!")
 
     }.listen(8080, { ar =>

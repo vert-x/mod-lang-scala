@@ -32,6 +32,7 @@ class FileSystemTest extends TestVerticle {
 
   import org.vertx.scala.core._
 
+  lazy val sVertx = Vertx(getVertx)
   lazy val fileDir =  System.getProperty("java.io.tmpdir") + "/vertx"
   lazy val path = FileSystems.getDefault.getPath(fileDir)
 
@@ -44,7 +45,7 @@ class FileSystemTest extends TestVerticle {
 
   @Test
   def copyTest(){
-    val fs = vertx.newFileSystem
+    val fs = sVertx.fileSystem
     val from = fileDir + "/foo.tmp"
     val to = fileDir + "/bar.tmp"
     val content = "some-data"
@@ -63,7 +64,7 @@ class FileSystemTest extends TestVerticle {
 
   @Test
   def moveTest(){
-    val fs = vertx.newFileSystem
+    val fs = sVertx.fileSystem
     val from = fileDir + "/foo1.tmp"
     val to = fileDir + "/bar2.tmp"
     val content = "some-data"
@@ -86,7 +87,7 @@ class FileSystemTest extends TestVerticle {
 
   @Test
   def readDirTest(){
-    val fs = vertx.newFileSystem
+    val fs = sVertx.fileSystem
     val f1 = fileDir + "/foo.tmp"
     val f2 = fileDir + "/bar.tmp"
     val f3 = fileDir + "/baz.tmp"
@@ -108,7 +109,7 @@ class FileSystemTest extends TestVerticle {
 
   @Test
   def propTest(){
-    val fs = vertx.newFileSystem
+    val fs = sVertx.fileSystem
     val f1 = fileDir + "/baz.tmp"
     val content = "some-data"
     fs.writeFile(f1, content, () => {
@@ -122,7 +123,7 @@ class FileSystemTest extends TestVerticle {
 
   @Test
   def pumpFileTest(){
-    val fs = vertx.newFileSystem
+    val fs = sVertx.fileSystem
     val from = fileDir + "/foo.tmp"
     val to = fileDir + "/bar.tmp"
     val content = TestUtils.generateRandomBuffer(10000)

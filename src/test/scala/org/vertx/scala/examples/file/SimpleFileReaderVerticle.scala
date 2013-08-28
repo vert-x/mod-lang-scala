@@ -11,7 +11,7 @@ class SimpleFileReaderVerticle extends Verticle {
   override def start(future: Future[Void]) {
     val fileName = "afile.txt"
 
-    vertx.newFileSystem.readFile(fileName, { ar =>
+    vertx.fileSystem.readFile(fileName, { ar =>
         if (ar.succeeded()) {
           val fileContentsAsString = ar.result().toString()
         }
