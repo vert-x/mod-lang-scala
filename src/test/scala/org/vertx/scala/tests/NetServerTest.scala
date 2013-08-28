@@ -32,6 +32,8 @@ class NetServerTest extends TestVerticle{
   import org.vertx.scala.core._
   import org.vertx.scala.core.buffer.Buffer._
 
+  lazy val sVertx = Vertx(getVertx)
+
   @Test
   def echoNoSSLTest(){
     echoTest(withSSl = false)
@@ -44,8 +46,8 @@ class NetServerTest extends TestVerticle{
 
   private def echoTest(withSSl:Boolean){
 
-    val server = vertx.newNetServer
-    val client = vertx.newNetClient
+    val server = sVertx.createNetServer
+    val client = sVertx.createNetClient
 
 
     if (withSSl){
