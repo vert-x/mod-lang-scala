@@ -35,10 +35,10 @@ loadProperties("${System.getProperty('user.home')}/.gradle/gradle.properties")
 
 
 if (!hasProperty('sonatypeUsername')) {
-	ext.sonatypeUsername = ''
+  ext.sonatypeUsername = ''
 }
 if (!hasProperty('sonatypePassword')) {
-	ext.sonatypePassword = ''
+  ext.sonatypePassword = ''
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,70 +47,70 @@ if (!hasProperty('sonatypePassword')) {
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 signing {
-	required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
-	sign configurations.archives
+  required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+  sign configurations.archives
 }
 
 uploadArchives {
-	group 'build'
-	description = "Does a maven deploy of archives artifacts"
+  group 'build'
+  description = "Does a maven deploy of archives artifacts"
 
-	repositories {
-		mavenDeployer {
+  repositories {
+    mavenDeployer {
       setUniqueVersion(false)
 
-			configuration = configurations.archives
+      configuration = configurations.archives
 
-			repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-				authentication(userName: sonatypeUsername, password: sonatypePassword)
-			}
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: sonatypeUsername, password: sonatypePassword)
+      }
 
-			snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-				authentication(userName: sonatypeUsername, password: sonatypePassword)
-			}
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: sonatypeUsername, password: sonatypePassword)
+      }
 
-			if (isReleaseVersion) {
-				beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-			}
+      if (isReleaseVersion) {
+        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+      }
 
-			configurePom(pom)
-		}
-	}
+      configurePom(pom)
+    }
+  }
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // configuration methods
 
 def configurePom(def pom) {
-	pom.project {
+  pom.project {
     name rootProject.name
-		description 'Vert.x module that provides Scala support'
-		inceptionYear '2013'
-		packaging 'jar'
-		url 'http://vertx.io'
-		
-		developers {
-            developer {
-                id 'purplefox'
-                name 'Tim Fox'
-               // email 'tim@tfox.org'
-            }
-        }
+    description 'Vert.x module that provides Scala support'
+    inceptionYear '2013'
+    packaging 'jar'
+    url 'http://vertx.io'
 
-		scm {
-	        url 'https://github.com/vert-x/mod-lang-scala'
-		}
-		
-		licenses {
-			license {
-				name 'The Apache Software License, Version 2.0'
-				url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-				distribution 'repo'
-			}
-		}
+    developers {
+      developer {
+        id 'purplefox'
+        name 'Tim Fox'
+        // email 'tim@tfox.org'
+      }
+    }
 
-		properties {
-			setProperty('project.build.sourceEncoding', 'UTF8')
-		}
-	}
+    scm {
+      url 'https://github.com/vert-x/mod-lang-scala'
+    }
+
+    licenses {
+      license {
+        name 'The Apache Software License, Version 2.0'
+        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        distribution 'repo'
+      }
+    }
+
+    properties {
+      setProperty('project.build.sourceEncoding', 'UTF8')
+    }
+  }
 }
