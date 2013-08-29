@@ -49,20 +49,20 @@ package object core {
 
     def cancelTimer(id: Long):Boolean = internal.cancelTimer(id)
 
-    def newHttpServer:HttpServer = HttpServer(internal.createHttpServer)
+    def createHttpServer:HttpServer = HttpServer(internal.createHttpServer)
 
-    def newHttpServer(h: HttpServerRequest => Unit):HttpServer =
+    def createHttpServer(h: HttpServerRequest => Unit):HttpServer =
          HttpServer(internal.createHttpServer).requestHandler(h)
 
-    def newHttpClient:HttpClient = HttpClient(internal.createHttpClient)
+    def createHttpClient:HttpClient = HttpClient(internal.createHttpClient)
 
-    def newNetClient:NetClient = NetClient(internal.createNetClient)
+    def createNetClient:NetClient = NetClient(internal.createNetClient)
 
-    def newNetServer:NetServer = NetServer(internal.createNetServer)
+    def createNetServer:NetServer = NetServer(internal.createNetServer)
 
-    def newSockJSServer(httpServer: HttpServer):SockJSServer = SockJSServer(internal.createSockJSServer(httpServer.actual))
+    def createSockJSServer(httpServer: HttpServer):SockJSServer = SockJSServer(internal.createSockJSServer(httpServer.actual))
 
-    def newFileSystem:FileSystem = FileSystem(internal.fileSystem)
+    def fileSystem:FileSystem = FileSystem(internal.fileSystem)
 
     def isEventLoop:Boolean = internal.isEventLoop
 

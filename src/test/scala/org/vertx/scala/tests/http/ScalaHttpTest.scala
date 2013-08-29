@@ -32,17 +32,19 @@ class ScalaHttpTest extends TestVerticle{
 
   import org.vertx.scala.core._
 
+  lazy val sVertx = Vertx(getVertx)
+
   @Test
   def testClientDefaults() {
 
     val html = "<html><body><h1>Hello from vert.x!</h1></body></html>"
     val port = 8080
 
-    vertx.newHttpServer{
+    sVertx.createHttpServer{
       r => r.response.end(html, "utf8")
     }.listen(port, { ar: AsyncResult[HttpServer] =>
         assertTrue(ar.succeeded())
-        val client = vertx.newHttpClient.setPort(port)
+        val client = sVertx.createHttpClient.setPort(port)
         client.getNow("/"){
           h => h.bodyHandler {
                   data => {
@@ -57,7 +59,7 @@ class ScalaHttpTest extends TestVerticle{
 
   @Test
   def testListenInvalidPort() {
-    val server = vertx.newHttpServer
+    val server = sVertx.createHttpServer
 
     server.requestHandler{ r =>   }
 
@@ -71,7 +73,7 @@ class ScalaHttpTest extends TestVerticle{
 
   @Test
   def testListenInvalidHost() {
-    val server = vertx.newHttpServer;
+    val server = sVertx.createHttpServer;
     server.requestHandler { r => }
 
     server.listen(80, "iqwjdoqiwjdoiqwdiojwd", {
