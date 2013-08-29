@@ -16,148 +16,260 @@
 
 package org.vertx.scala.core.http
 
-import org.vertx.java.core.http.{HttpClient => JHttpClient}
-import org.vertx.java.core.http.{WebSocketVersion => JWebSocketVersion}
-import org.vertx.scala.core.net.ClientConfigurer
+import org.vertx.java.core.http.{ HttpClient => JHttpClient }
+import org.vertx.scala.core.{ WrappedClientSSLSupport, WrappedTCPSupport }
+import org.vertx.scala.core.Handler
+import org.vertx.scala.core.MultiMap
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.{MultiMap => JMultiMap}
+import org.vertx.scala.core.streams.WrappedExceptionSupport
 
-
-/**
- * @author swilliams
- * @author Galder Zamarreño
- */
+/** Factory for [[http.HttpClient]] instances by wrapping a Java instance. */
 object HttpClient {
-  def apply(actual: JHttpClient) =
-    new HttpClient(actual)
+  def apply(actual: JHttpClient) = new HttpClient(actual)
 }
 
+/**
+ * An HTTP client that maintains a pool of connections to a specific host, at a specific port. The client supports
+ * pipelining of requests.<p>
+ * As well as HTTP requests, the client can act as a factory for {@code WebSocket websockets}.<p>
+ * If an instance is instantiated from an event loop then the handlers
+ * of the instance will always be called on that same event loop.
+ * If an instance is instantiated from some other arbitrary Java thread (i.e. when running embedded) then
+ * and event loop will be assigned to the instance and used when any of its handlers
+ * are called.<p>
+ * Instances of HttpClient are thread-safe.<p>
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author swilliams
+ * @author Galder Zamarreño
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ */
+class HttpClient(protected[this] val internal: JHttpClient) extends WrappedTCPSupport with WrappedClientSSLSupport {
+  override type InternalType = JHttpClient
 
-class HttpClient(internal: JHttpClient) extends ClientConfigurer {
+  /**
+   * Set an exception handler
+   *
+   * @return A reference to this, so multiple invocations can be chained together.
+   */
+  def exceptionHandler(handler: Throwable => Unit): HttpClient =
+    wrap(internal.exceptionHandler(handler))
 
-  def connect(uri: String, handler: HttpClientResponse => Unit):Unit = {
-    internal.connect(uri, HttpClientResponseHandler(handler))
-  }
+  /**
+   * Set the maximum pool size<p>
+   * The client will maintain up to {@code maxConnections} HTTP connections in an internal pool<p>
+   * @return A reference to this, so multiple invocations can be chained together.
+   */
+  def setMaxPoolSize(maxConnections: Int): HttpClient =
+    wrap(internal.setMaxPoolSize(maxConnections))
 
-  def connectWebsocket(uri: String)(wsConnect: WebSocket => Unit) {
-    internal.connectWebsocket(uri, WebSocketHandler(wsConnect))
-  }
+  /**
+   * Returns the maximum number of connections in the pool
+   */
+  def getMaxPoolSize(): Int = internal.getMaxPoolSize()
 
-  def connectWebsocket(uri: String, wsVersion: JWebSocketVersion)(wsConnect: WebSocket => Unit) {
-    internal.connectWebsocket(uri, wsVersion, WebSocketHandler(wsConnect))
-  }
+  /**
+   * If {@code keepAlive} is {@code true} then, after the request has ended the connection will be returned to the pool
+   * where it can be used by another request. In this manner, many HTTP requests can be pipe-lined over an HTTP connection.
+   * Keep alive connections will not be closed until the {@link #close() close()} method is invoked.<p>
+   * If {@code keepAlive} is {@code false} then a new connection will be created for each request and it won't ever go in the pool,
+   * the connection will closed after the response has been received. Even with no keep alive,
+   * the client will not allow more than {@link #getMaxPoolSize()} connections to be created at any one time. <p>
+   * @return A reference to this, so multiple invocations can be chained together.
+   */
+  def setKeepAlive(keepAlive: Boolean): HttpClient = wrap(internal.setKeepAlive(keepAlive))
 
-  def delete(uri: String, handler: HttpClientResponse => Unit):Unit = {
-    internal.delete(uri, HttpClientResponseHandler(handler))
-  }
+  /**
+   *
+   * @return Is the client keep alive?
+   */
+  def isKeepAlive(): Boolean = internal.isKeepAlive()
 
-  def exceptionHandler(handler: (Throwable) => Unit):Unit = {
-    internal.exceptionHandler(handler)
-  }
+  /**
+   * Set the port that the client will attempt to connect to the server on to {@code port}. The default value is
+   * {@code 80}
+   * @return A reference to this, so multiple invocations can be chained together.
+   */
+  def setPort(port: Int): HttpClient = wrap(internal.setPort(port))
 
-  def get(uri: String, handler: HttpClientResponse => Unit):Unit = {
-    internal.get(uri, HttpClientResponseHandler(handler))
-  }
+  /**
+   *
+   * @return The port
+   */
+  def getPort(): Int = internal.getPort()
 
-  def getNow(uri: String, headers: JMultiMap, handler: HttpClientResponse => Unit):Unit = {
-    internal.getNow(uri, headers, HttpClientResponseHandler(handler))
-  }
+  /**
+   * Set the host that the client will attempt to connect to the server on to {@code host}. The default value is
+   * {@code localhost}
+   * @return A reference to this, so multiple invocations can be chained together.
+   */
+  def setHost(host: String): HttpClient = wrap(internal.setHost(host))
 
-  /*def getNow(uri: String, handler: HttpClientResponse => Unit):Unit = {
-    internal.getNow(uri, HttpClientResponseHandler(handler))
-  }*/
+  /**
+   *
+   * @return The host
+   */
+  def getHost(): String = internal.getHost()
 
+  /**
+   * Attempt to connect an HTML5 websocket to the specified URI<p>
+   * The connect is done asynchronously and {@code wsConnect} is called back with the websocket
+   */
+  def connectWebsocket(uri: String, wsConnect: WebSocket => Unit): HttpClient =
+    wrap(internal.connectWebsocket(uri, webSocketFnConverter(wsConnect)))
 
-  def getNow(uri: String)(handler: HttpClientResponse => Unit):Unit = {
-    internal.getNow(uri, HttpClientResponseHandler(handler))
-  }
+  /**
+   * Attempt to connect an HTML5 websocket to the specified URI<p>
+   * This version of the method allows you to specify the websockets version using the {@code wsVersion parameter}
+   * The connect is done asynchronously and {@code wsConnect} is called back with the websocket
+   */
+  def connectWebsocket(uri: String, wsVersion: WebSocketVersion, wsConnect: WebSocket => Unit): HttpClient =
+    wrap(internal.connectWebsocket(uri, wsVersion, webSocketFnConverter(wsConnect)))
 
-  def head(uri: String, handler: HttpClientResponse => Unit):Unit = {
-    internal.head(uri, HttpClientResponseHandler(handler))
-  }
+  /**
+   * Attempt to connect an HTML5 websocket to the specified URI<p>
+   * This version of the method allows you to specify the websockets version using the {@code wsVersion parameter}
+   * You can also specify a set of headers to append to the upgrade request
+   * The connect is done asynchronously and {@code wsConnect} is called back with the websocket
+   */
+  def connectWebsocket(uri: String, wsVersion: WebSocketVersion, headers: MultiMap, wsConnect: WebSocket => Unit): HttpClient =
+    wrap(internal.connectWebsocket(uri, wsVersion, headers, webSocketFnConverter(wsConnect)))
 
-  def options(uri: String, handler: HttpClientResponse => Unit):Unit = {
-    internal.options(uri, HttpClientResponseHandler(handler))
-  }
+  /**
+   * This is a quick version of the {@link #get(String, org.vertx.java.core.Handler)}
+   * method where you do not want to do anything with the request before sending.<p>
+   * Normally with any of the HTTP methods you create the request then when you are ready to send it you call
+   * {@link HttpClientRequest#end()} on it. With this method the request is immediately sent.<p>
+   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   */
+  def getNow(uri: String, responseHandler: HttpClientResponse => Unit): HttpClient =
+    wrap(internal.getNow(uri, httpClientResponseFnConverter(responseHandler)))
 
-  def patch(uri: String, handler: HttpClientResponse => Unit):Unit = {
-    internal.patch(uri, HttpClientResponseHandler(handler))
-  }
+  /**
+   * This method works in the same manner as {@link #getNow(String, org.vertx.java.core.Handler)},
+   * except that it allows you specify a set of {@code headers} that will be sent with the request.
+   */
+  def getNow(uri: String, headers: MultiMap, responseHandler: HttpClientResponse => Unit): HttpClient =
+    wrap(internal.getNow(uri, headers, httpClientResponseFnConverter(responseHandler)))
 
-  def post(uri: String, handler: HttpClientResponse => Unit):Unit = {
-    internal.post(uri, HttpClientResponseHandler(handler))
-  }
+  // TODO the following could reduce the code a lot, but would the compiler be able to optimize it?
+  // private def httpRequest(internalMethod: (String, Handler[JHttpClientResponse]) => JHttpClientRequest) ={
+  //   (uri: String, responseHandler: JHttpClientResponse=>Unit) => 
+  //     HttpClientRequest(internalMethod(uri, responseHandler))
+  // }
+  // def options = httpRequest(internal.options)
+  // def get = httpRequest(internal.get)
+  // ...
 
-  def put(uri: String, handler: HttpClientResponse => Unit):Unit = {
-    internal.put(uri, HttpClientResponseHandler(handler))
-  }
+  /**
+   * This method returns an {@link HttpClientRequest} instance which represents an HTTP OPTIONS request with the specified {@code uri}.<p>
+   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   */
+  def options(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
+    HttpClientRequest(internal.options(uri, httpClientResponseFnConverter(responseHandler)))
 
-  def trace(uri: String, handler: HttpClientResponse => Unit):Unit = {
-    internal.trace(uri, HttpClientResponseHandler(handler))
-  }
+  /**
+   * This method returns an {@link HttpClientRequest} instance which represents an HTTP GET request with the specified {@code uri}.<p>
+   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   */
+  def get(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
+    HttpClientRequest(internal.get(uri, httpClientResponseFnConverter(responseHandler)))
 
-  def request(method: String, uri: String, handler: HttpClientResponse => Unit):Unit = {
-    internal.request(method, uri, HttpClientResponseHandler(handler))
-  }
+  /**
+   * This method returns an {@link HttpClientRequest} instance which represents an HTTP HEAD request with the specified {@code uri}.<p>
+   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   */
+  def head(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
+    HttpClientRequest(internal.head(uri, httpClientResponseFnConverter(responseHandler)))
 
-  def close():Unit = internal.close()
+  /**
+   * This method returns an {@link HttpClientRequest} instance which represents an HTTP POST request with the specified {@code uri}.<p>
+   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   */
+  def post(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
+    HttpClientRequest(internal.post(uri, httpClientResponseFnConverter(responseHandler)))
 
-  def connectTimeout():Long = internal.getConnectTimeout()
+  /**
+   * This method returns an {@link HttpClientRequest} instance which represents an HTTP PUT request with the specified {@code uri}.<p>
+   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   */
+  def put(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
+    HttpClientRequest(internal.put(uri, httpClientResponseFnConverter(responseHandler)))
 
-  def keyStorePassword():String = internal.getKeyStorePassword()
+  /**
+   * This method returns an {@link HttpClientRequest} instance which represents an HTTP DELETE request with the specified {@code uri}.<p>
+   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   */
+  def delete(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
+    HttpClientRequest(internal.delete(uri, httpClientResponseFnConverter(responseHandler)))
 
-  def keyStorePath():String = internal.getKeyStorePath()
+  /**
+   * This method returns an {@link HttpClientRequest} instance which represents an HTTP TRACE request with the specified {@code uri}.<p>
+   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   */
+  def trace(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
+    HttpClientRequest(internal.trace(uri, httpClientResponseFnConverter(responseHandler)))
 
-  def keyStorePassword(keyStorePassword: String):HttpClient.this.type = {
-    internal.setKeyStorePassword(keyStorePassword)
-    this
-  }
+  /**
+   * This method returns an {@link HttpClientRequest} instance which represents an HTTP CONNECT request with the specified {@code uri}.<p>
+   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   */
+  def connect(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
+    HttpClientRequest(internal.connect(uri, httpClientResponseFnConverter(responseHandler)))
 
-  def keyStorePath(keyStorePath: String):HttpClient.this.type = {
-    internal.setKeyStorePath(keyStorePath)
-    this
-  }
+  /**
+   * This method returns an {@link HttpClientRequest} instance which represents an HTTP PATCH request with the specified {@code uri}.<p>
+   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   */
+  def patch(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
+    HttpClientRequest(internal.patch(uri, httpClientResponseFnConverter(responseHandler)))
 
-  def maxPoolSize():Int = internal.getMaxPoolSize()
+  /**
+   * This method returns an {@link HttpClientRequest} instance which represents an HTTP request with the specified {@code uri}.
+   * The specific HTTP method (e.g. GET, POST, PUT etc) is specified using the parameter {@code method}<p>
+   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   */
+  def request(method: String, uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
+    HttpClientRequest(internal.request(method, uri, httpClientResponseFnConverter(responseHandler)))
 
-  def receiveBufferSize():Int = internal.getReceiveBufferSize()
+  /**
+   * Close the HTTP client. This will cause any pooled HTTP connections to be closed.
+   */
+  def close(): Unit = internal.close()
 
-  def receiveBufferSize(receiveBufferSize: Int):HttpClient.this.type = {
-    internal.setReceiveBufferSize(receiveBufferSize)
-    this
-  }
+  /**
+   * If {@code verifyHost} is {@code true}, then the client will try to validate the remote server's certificate
+   * hostname against the requested host. Should default to 'true'.
+   * This method should only be used in SSL mode, i.e. after {@link #setSSL(boolean)} has been set to {@code true}.
+   * @return A reference to this, so multiple invocations can be chained together.
+   */
+  def setVerifyHost(verifyHost: Boolean): HttpClient = wrap(internal.setVerifyHost(verifyHost))
 
-  def sendBufferSize():Int = internal.getSendBufferSize()
+  /**
+   *
+   * @return true if this client will validate the remote server's certificate hostname against the requested host
+   */
+  def isVerifyHost(): Boolean = internal.isVerifyHost()
 
-  def sendBufferSize(sendBufferSize: Int):HttpClient.this.type = {
-    internal.setSendBufferSize(sendBufferSize)
-    this
-  }
+  /**
+   * Set the connect timeout in milliseconds.
+   * @return a reference to this so multiple method calls can be chained together
+   */
+  def setConnectTimeout(timeout: Int): HttpClient = wrap(internal.setConnectTimeout(timeout))
 
-  def trafficClass():Int = internal.getTrafficClass()
+  /**
+   *
+   * @return The connect timeout in milliseconds
+   */
+  def getConnectTimeout(): Int = internal.getConnectTimeout()
 
-  def trafficClass(trafficClass: Int):HttpClient.this.type = {
-    internal.setTrafficClass(trafficClass)
-    this
-  }
+  private def httpClientRequestFnConverter(handler: HttpClientRequest => Unit) =
+    fnToHandler(handler.compose(HttpClientRequest.apply))
 
-  def trustStorePassword():String = internal.getTrustStorePassword()
+  private def httpClientResponseFnConverter(handler: HttpClientResponse => Unit) =
+    fnToHandler(handler.compose(HttpClientResponse.apply))
 
-  def trustStorePassword(password: String):HttpClient.this.type = {
-    internal.setTrustStorePassword(password)
-    this
-  }
-
-  def trustStorePath():String = internal.getTrustStorePath()
-
-  def trustStorePath(path: String):HttpClient.this.type = {
-    internal.setTrustStorePath(path)
-    this
-  }
-
-  def setPort(port: Int) = {
-    internal.setPort(port)
-    this
-  }
+  private def webSocketFnConverter(handler: WebSocket => Unit) =
+    fnToHandler(handler.compose(WebSocket.apply))
 
 }

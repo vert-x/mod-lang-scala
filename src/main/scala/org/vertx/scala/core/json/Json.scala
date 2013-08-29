@@ -17,83 +17,134 @@ package org.vertx.scala.core.json
 
 import scala.annotation.implicitNotFound
 
-/**
- * @author Edgar Chan
- */
-
 @implicitNotFound(msg = "Cannot find add operations for type ${T}")
-trait JsonElemOps[T]{
-  def addToObj(o:JsonObject, key:String, v:T):JsonObject
-  def addToArr(a:JsonArray, v:T):JsonArray
+trait JsonElemOps[T] {
+  def addToObj(o: JsonObject, key: String, v: T): JsonObject
+  def addToArr(a: JsonArray, v: T): JsonArray
 }
 
-object JsonElemOps{
-  implicit object JsonStringElem extends JsonElemOps[String]{
-    def addToObj(o:JsonObject, key:String, v:String):JsonObject= o.putString(key,v)
-    def addToArr(a:JsonArray, v:String):JsonArray = a.addString(v)
+object JsonElemOps {
+  implicit object JsonStringElem extends JsonElemOps[String] {
+    def addToObj(o: JsonObject, key: String, v: String): JsonObject = o.putString(key, v)
+    def addToArr(a: JsonArray, v: String): JsonArray = a.addString(v)
   }
-  implicit object JsonIntElem extends JsonElemOps[Int]{
-    def addToObj(o:JsonObject, key:String, v:Int):JsonObject= o.putNumber(key,v)
-    def addToArr(a:JsonArray, v:Int):JsonArray = a.addNumber(v)
+  implicit object JsonIntElem extends JsonElemOps[Int] {
+    def addToObj(o: JsonObject, key: String, v: Int): JsonObject = o.putNumber(key, v)
+    def addToArr(a: JsonArray, v: Int): JsonArray = a.addNumber(v)
   }
-  implicit object JsonBoolElem extends JsonElemOps[Boolean]{
-    def addToObj(o:JsonObject, key:String, v:Boolean):JsonObject= o.putBoolean(key,v)
-    def addToArr(a:JsonArray, v:Boolean):JsonArray = a.addBoolean(v)
+  implicit object JsonBoolElem extends JsonElemOps[Boolean] {
+    def addToObj(o: JsonObject, key: String, v: Boolean): JsonObject = o.putBoolean(key, v)
+    def addToArr(a: JsonArray, v: Boolean): JsonArray = a.addBoolean(v)
   }
-  implicit object JsonFloatElem extends JsonElemOps[Float]{
-    def addToObj(o:JsonObject, key:String, v:Float):JsonObject= o.putNumber(key,v)
-    def addToArr(a:JsonArray, v:Float):JsonArray = a.addNumber(v)
+  implicit object JsonFloatElem extends JsonElemOps[Float] {
+    def addToObj(o: JsonObject, key: String, v: Float): JsonObject = o.putNumber(key, v)
+    def addToArr(a: JsonArray, v: Float): JsonArray = a.addNumber(v)
   }
-  implicit object JsonJsObjectElem extends JsonElemOps[JsonObject]{
-    def addToObj(o:JsonObject, key:String, v:JsonObject):JsonObject= o.putObject(key,v)
-    def addToArr(a:JsonArray, v:JsonObject):JsonArray = a.addObject(v)
+  implicit object JsonJsObjectElem extends JsonElemOps[JsonObject] {
+    def addToObj(o: JsonObject, key: String, v: JsonObject): JsonObject = o.putObject(key, v)
+    def addToArr(a: JsonArray, v: JsonObject): JsonArray = a.addObject(v)
   }
-  implicit object JsonJsArrayElem extends JsonElemOps[JsonArray]{
-    def addToObj(o:JsonObject, key:String, v:JsonArray):JsonObject= o.putArray(key,v)
-    def addToArr(a:JsonArray, v:JsonArray):JsonArray = a.addArray(v)
+  implicit object JsonJsArrayElem extends JsonElemOps[JsonArray] {
+    def addToObj(o: JsonObject, key: String, v: JsonArray): JsonObject = o.putArray(key, v)
+    def addToArr(a: JsonArray, v: JsonArray): JsonArray = a.addArray(v)
   }
-  implicit object JsonJsElem extends JsonElemOps[JsonElement]{
-    def addToObj(o:JsonObject, key:String, v:JsonElement):JsonObject= o.putElement(key,v)
-    def addToArr(a:JsonArray, v:JsonElement):JsonArray = a.addElement(v)
+  implicit object JsonJsElem extends JsonElemOps[JsonElement] {
+    def addToObj(o: JsonObject, key: String, v: JsonElement): JsonObject = o.putElement(key, v)
+    def addToArr(a: JsonArray, v: JsonElement): JsonArray = a.addElement(v)
   }
-  implicit object JsonBinaryElem extends JsonElemOps[Array[Byte]]{
-    def addToObj(o:JsonObject, key:String, v:Array[Byte]):JsonObject= o.putBinary(key,v)
-    def addToArr(a:JsonArray, v:Array[Byte]):JsonArray = a.addBinary(v)
+  implicit object JsonBinaryElem extends JsonElemOps[Array[Byte]] {
+    def addToObj(o: JsonObject, key: String, v: Array[Byte]): JsonObject = o.putBinary(key, v)
+    def addToArr(a: JsonArray, v: Array[Byte]): JsonArray = a.addBinary(v)
   }
-  implicit object JsonAnyElem extends JsonElemOps[Any]{
-    def addToObj(o:JsonObject, key:String, v:Any):JsonObject= o.putValue(key,v)
-    def addToArr(a:JsonArray, v:Any):JsonArray = a.add(v)
+  implicit object JsonAnyElem extends JsonElemOps[Any] {
+    def addToObj(o: JsonObject, key: String, v: Any): JsonObject = o.putValue(key, v)
+    def addToArr(a: JsonArray, v: Any): JsonArray = a.add(v)
   }
 }
 
+/**
+ * Helper to construct JsonObjects and JsonArrays.
+ *
+ * @author Edgar Chan
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ */
 object Json {
 
+  /**
+   * Constructs a JsonObject from a fieldName -> value pairs.
+   *
+   * @param fields The fieldName -> value pairs
+   * @return A JsonObject containing the name -> value pairs.
+   */
   def apply(fields: (String, Any)*): JsonObject = obj(fields: _*)
 
-  def apply(fields: Seq[Any]): JsonArray = arr(fields)
+  /**
+   * Creates a JsonArray from a sequence of values.
+   *
+   * @param elements The elements to put into the JsonArray.
+   * @return A JsonArray containing the provided elements.
+   */
+  def apply(elements: Seq[Any]): JsonArray = arr(elements)
 
-  def emptyObj(): JsonObject = new JsonObject()
+  /**
+   * Creates a JsonArray from an encoded JSON string.
+   *
+   * @param json The JSON string.
+   * @return The decoded JsonArray.
+   */
+  def fromArrayString(json: String): JsonArray = new JsonArray(json)
 
+  /**
+   * Creates a JsonObject from an encoded JSON string.
+   * @param json The JSON string.
+   * @return The decoded JsonObject.
+   */
+  def fromObjectString(json: String): JsonObject = new JsonObject(json)
+
+  /**
+   * Creates an empty JsonArray.
+   *
+   * @return An empty JsonArray.
+   */
   def emptyArr(): JsonArray = new JsonArray()
 
-  def addToObject[T:JsonElemOps](o:JsonObject, fieldName:String, fieldValue:T) ={
-    implicitly[JsonElemOps[T]].addToObj(o, fieldName, fieldValue)
-  }
+  /**
+   * Creates an empty JsonObject.
+   *
+   * @return An empty JsonObject.
+   */
+  def emptyObj(): JsonObject = new JsonObject()
 
-  def addToArray[T:JsonElemOps](a:JsonArray, fieldValue:T) ={
-    implicitly[JsonElemOps[T]].addToArr(a, fieldValue)
-  }
-
+  /**
+   * Constructs a JsonObject from a fieldName -> value pairs.
+   *
+   * @param fields The fieldName -> value pairs
+   * @return A JsonObject containing the name -> value pairs.
+   */
   def obj(fields: (String, Any)*): JsonObject = {
     val o = new JsonObject()
     fields.foreach(f => addToObject(o, f._1, f._2))
     o
   }
 
+  /**
+   * Creates a JsonArray from a sequence of values.
+   *
+   * @param elements The elements to put into the JsonArray.
+   * @return A JsonArray containing the provided elements.
+   */
   def arr(fields: Seq[Any]): JsonArray = {
     val a = new JsonArray()
     fields.foreach(f => addToArray(a, f))
     a
+  }
+
+  private def addToArray[T: JsonElemOps](a: JsonArray, fieldValue: T) = {
+    implicitly[JsonElemOps[T]].addToArr(a, fieldValue)
+  }
+
+  private def addToObject[T: JsonElemOps](o: JsonObject, fieldName: String, fieldValue: T) = {
+    implicitly[JsonElemOps[T]].addToObj(o, fieldName, fieldValue)
   }
 
 }

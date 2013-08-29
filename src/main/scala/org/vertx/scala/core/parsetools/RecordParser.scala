@@ -17,11 +17,12 @@
 package org.vertx.scala.core.parsetools
 
 import scala.language.implicitConversions
-import org.vertx.java.core.Handler
-import org.vertx.java.core.parsetools.{RecordParser => JRecordParser}
-import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.buffer.{Buffer => JBuffer}
 
+import org.vertx.java.core.Handler
+import org.vertx.java.core.buffer.{Buffer => JBuffer}
+import org.vertx.java.core.parsetools.{RecordParser => JRecordParser}
+import org.vertx.scala.core.FunctionConverters.fnToHandler
+import org.vertx.scala.core.buffer.Buffer
 
 /**
  * A helper class which allows you to easily parse protocols which are delimited by a sequence of bytes, or fixed
@@ -50,62 +51,33 @@ import org.vertx.java.core.buffer.{Buffer => JBuffer}
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 object RecordParser {
-  def apply(jParser: JRecordParser) =
-    new RecordParser(jParser)
+  /**
+   * Helper method to convert a latin-1 String to an array of bytes for use as a delimiter
+   * Please do not use this for non latin-1 characters
+   *
+   * @param str
+   * @return The byte[] form of the string
+   */
+  def latin1StringToBytes(str: String): Array[Byte] = JRecordParser.latin1StringToBytes(str)
 
-  def latin1StringToBytes(str: String):Array[Byte] = JRecordParser.latin1StringToBytes(str)
+  /**
+   * Create a new {@code RecordParser} instance, initially in delimited mode, and where the delimiter can be represented
+   * by the String {@code} delim endcoded in latin-1 . Don't use this if your String contains other than latin-1 characters.<p>
+   * {@code output} Will receive whole records which have been parsed.
+   */
+  def newDelimited(delim: String, handler: Buffer => Unit) = JRecordParser.newDelimited(delim, handler.compose(Buffer))
 
-  def newDelimited(delim: String, handler: JBuffer => Unit):RecordParser = {
-    RecordParser(JRecordParser.newDelimited(delim, handler))
-  }
-
-  def newDelimited(delim: Array[Byte], handler: Handler[JBuffer]):RecordParser = {
-    RecordParser(JRecordParser.newDelimited(delim, handler))
-  }
-
-  def newFixed(size: Int, handler: JBuffer => Unit):RecordParser = {
-    RecordParser(JRecordParser.newFixed(size, handler))
-  }
-
-}
-
-class RecordParser(jParser: JRecordParser) {
+  /**
+   * Create a new {@code RecordParser} instance, initially in delimited mode, and where the delimiter can be represented
+   * by the {@code byte[]} delim.<p>
+   * {@code output} Will receive whole records which have been parsed.
+   */
+  def newDelimited(delim: Array[Byte], handler: Buffer => Unit) = JRecordParser.newDelimited(delim, handler.compose(Buffer))
 
   /**
    * Create a new {@code RecordParser} instance, initially in fixed size mode, and where the record size is specified
    * by the {@code size} parameter.<p>
    * {@code output} Will receive whole records which have been parsed.
    */
-  def newFixed(size: Int)(handler: JBuffer => Unit):RecordParser = {
-    RecordParser(JRecordParser.newFixed(size, handler))
-  }
-
-  /**
-   * Flip the parser into delimited mode, and where the delimiter can be represented
-   * by the String {@code delim} endcoded in latin-1 . Don't use this if your String contains other than latin-1 characters.<p>
-   * This method can be called multiple times with different values of delim while data is being parsed.
-   */
-  def delimitedMode(delim: String):Unit = jParser.delimitedMode(delim)
-
-  /**
-   * Flip the parser into delimited mode, and where the delimiter can be represented
-   * by the delimiter {@code delim}.<p>
-   * This method can be called multiple times with different values of delim while data is being parsed.
-   */
-  def delimitedMode(delim: Array[Byte]):Unit = jParser.delimitedMode(delim)
-
-  /**
-   * Flip the parser into fixed size mode, where the record size is specified by {@code size} in bytes.<p>
-   * This method can be called multiple times with different values of size while data is being parsed.
-   */
-  def fixedSizeMode(size: Int):Unit = jParser.fixedSizeMode(size)
-
-
-  def setOutput(output: JBuffer => Unit) {
-    jParser.setOutput(output)
-  }
-
-  def handle(data: JBuffer) {
-    jParser.handle(data)
-  }
+  def newFixed(size: Int, handler: Buffer => Unit) = JRecordParser.newFixed(size, handler.compose(Buffer))
 }

@@ -16,173 +16,103 @@
 
 package org.vertx.scala.core.net
 
-import org.vertx.java.core.net.{NetClient => JNetClient}
-import org.vertx.java.core.net.{NetSocket => JNetSocket}
-import org.vertx.java.core.{TCPSupport, ClientSSLSupport, Handler, AsyncResult}
-import org.vertx.java.core.impl.DefaultFutureResult
-
-
+import org.vertx.java.core.net.{ NetClient => JNetClient }
+import org.vertx.scala.core.net.{ NetSocket => JNetSocket }
+import org.vertx.scala.core.FunctionConverters._
+import org.vertx.scala.core.WrappedTCPSupport
+import org.vertx.scala.core.WrappedClientSSLSupport
+import org.vertx.scala.core.AsyncResult
 
 /**
+ * A TCP/SSL client.<p>
+ * Multiple connections to different servers can be made using the same instance.<p>
+ * This client supports a configurable number of connection attempts and a configurable delay
+ * between attempts.<p>
+ * If an instance is instantiated from an event loop then the handlers of the instance will always
+ * be called on that same event loop. If an instance is instantiated from some other arbitrary Java
+ * thread (i.e. when using embedded) then an event loop will be assigned to the instance and used
+ * when any of its handlers are called.<p>
+ * Instances of this class are thread-safe.<p>
  *
+ * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
  * @author Edgar Chan
- * 
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
+class NetClient(protected[this] val internal: JNetClient) extends WrappedTCPSupport with WrappedClientSSLSupport {
+  override type InternalType = JNetClient
+
+  /**
+   * Attempt to open a connection to a server at the specific {@code port} and host {@code localhost}
+   * The connect is done asynchronously and on success, a
+   * {@link NetSocket} instance is supplied via the {@code connectHandler} instance.
+   *
+   * @return A reference to this so multiple method calls can be chained together.
+   */
+  def connect(port: Int, connectCallback: AsyncResult[NetSocket] => Unit): NetClient =
+    wrap(internal.connect(port, arNetSocket(connectCallback)))
+
+  /**
+   * Attempt to open a connection to a server at the specific {@code port} and {@code host}.
+   * {@code host} can be a valid host name or IP address. The connect is done asynchronously and on success, a
+   * {@link NetSocket} instance is supplied via the {@code connectHandler} instance.
+   *
+   * @return a reference to this so multiple method calls can be chained together
+   */
+  def connect(port: Int, host: String, connectHandler: AsyncResult[NetSocket] => Unit): NetClient =
+    wrap(internal.connect(port, host, arNetSocket(connectHandler)))
+
+  /**
+   * Set the number of reconnection attempts. In the event a connection attempt fails, the client will attempt
+   * to connect a further number of times, before it fails. Default value is zero.
+   */
+  def setReconnectAttempts(attempts: Int): NetClient =
+    wrap(internal.setReconnectAttempts(attempts))
+
+  /**
+   * Get the number of reconnect attempts.
+   *
+   * @return The number of reconnect attempts.
+   */
+  def getReconnectAttempts(): Int = internal.getReconnectAttempts()
+
+  /**
+   * Set the reconnect interval, in milliseconds.
+   */
+  def setReconnectInterval(interval: Long): NetClient =
+    wrap(internal.setReconnectInterval(interval))
+
+  /**
+   * Get the reconnect interval, in milliseconds.
+   *
+   * @return The reconnect interval in milliseconds.
+   */
+  def getReconnectInterval(): Long = internal.getReconnectInterval()
+
+  /**
+   * Set the connect timeout in milliseconds.
+   *
+   * @return a reference to this so multiple method calls can be chained together
+   */
+  def setConnectTimeout(timeout: Int): NetClient =
+    wrap(internal.setConnectTimeout(timeout))
+
+  /**
+   * Returns the connect timeout in milliseconds.
+   *
+   * @return The connect timeout in milliseconds.
+   */
+  def getConnectTimeout(): Int = internal.getConnectTimeout()
+
+  /**
+   * Close the client. Any sockets which have not been closed manually will be closed here.
+   */
+  def close(): Unit = internal.close()
+
+  private def arNetSocket = asyncResultConverter(NetSocket.apply) _
+}
+
+/** Factory for [[net.NetClient]] instances. */
 object NetClient {
-  def apply(actual: JNetClient) =
-    new NetClient(actual)
+  def apply(actual: JNetClient) = new NetClient(actual)
 }
-
-class NetClient(internal: JNetClient) extends ClientSSLSupport[NetClient] with TCPSupport[NetClient]{
-
-  def connect(port: Int, handler: AsyncResult[NetSocket] => Unit): NetClient = {
-    connect(port, "localhost", handler)
-  }
-
-  def connect(port: Int, host: String, handler: AsyncResult[NetSocket] => Unit):NetClient= {
-    internal.connect(port, host, new Handler[AsyncResult[JNetSocket]]() {
-      override def handle(result: AsyncResult[JNetSocket]) = {
-        if (result.succeeded)
-           handler(new DefaultFutureResult[NetSocket](NetSocket(result.result)))
-      }
-    })
-    this
-  }
-
-  def close: Unit = internal.close
-
-  def getConnectTimeout: Long = internal.getConnectTimeout
-
-  def reconnectAttempts:Int = internal.getReconnectAttempts
-
-  def reconnectInterval:Long = internal.getReconnectInterval
-
-
-  def setSSL(ssl: Boolean): NetClient = {
-    internal.setSSL(ssl)
-    this
-  }
-
-  def isSSL: Boolean = {
-    internal.isSSL
-  }
-
-  def setKeyStorePath(path: String): NetClient = {
-    internal.setKeyStorePath(path)
-    this
-  }
-
-  def getKeyStorePath: String = {
-    internal.getKeyStorePath
-  }
-
-  def setKeyStorePassword(pwd: String): NetClient = {
-    internal.setKeyStorePassword(pwd)
-    this
-  }
-
-  def getKeyStorePassword: String = {
-    internal.getKeyStorePassword
-  }
-
-  def setTrustStorePath(path: String): NetClient = {
-    internal.setTrustStorePath(path)
-    this
-  }
-
-  def getTrustStorePath: String = {
-    internal.getTrustStorePath
-  }
-
-  def setTrustStorePassword(pwd: String): NetClient = {
-    internal.setTrustStorePassword(pwd)
-    this
-  }
-
-  def getTrustStorePassword: String = {
-    internal.getTrustStorePassword
-  }
-
-  def setTrustAll(trustAll: Boolean): NetClient = {
-    internal.setTrustAll(trustAll)
-    this
-  }
-
-  def isTrustAll: Boolean = {
-    internal.isTrustAll
-  }
-
-  def setTCPNoDelay(tcpNoDelay: Boolean): NetClient = {
-    internal.isTCPNoDelay
-    this
-  }
-
-  def setSendBufferSize(size: Int): NetClient = {
-    internal.setSendBufferSize(size)
-    this
-  }
-
-  def setReceiveBufferSize(size: Int): NetClient = {
-    internal.setReceiveBufferSize(size)
-    this
-  }
-
-  def setTCPKeepAlive(keepAlive: Boolean): NetClient = {
-    internal.setTCPKeepAlive(keepAlive)
-    this
-  }
-
-  def setReuseAddress(reuse: Boolean): NetClient = {
-    internal.setReuseAddress(reuse)
-    this
-  }
-
-  def setSoLinger(linger: Int): NetClient = {
-    internal.setSoLinger(linger)
-    this
-  }
-
-  def setTrafficClass(trafficClass: Int): NetClient = {
-    internal.setTrafficClass(trafficClass)
-    this
-  }
-
-  def setUsePooledBuffers(pooledBuffers: Boolean): NetClient = {
-    internal.setUsePooledBuffers(pooledBuffers)
-    this
-  }
-
-  def isTCPNoDelay: Boolean = {
-    internal.isTCPNoDelay
-  }
-
-  def getSendBufferSize: Int = {
-    internal.getSendBufferSize
-  }
-
-  def getReceiveBufferSize: Int = {
-    internal.getReceiveBufferSize
-  }
-
-  def isTCPKeepAlive: Boolean = {
-    internal.isTCPKeepAlive
-  }
-
-  def isReuseAddress: Boolean = {
-    internal.isReuseAddress
-  }
-
-  def getSoLinger: Int = {
-    internal.getSoLinger
-  }
-
-  def getTrafficClass: Int = {
-    internal.getTrafficClass
-  }
-
-  def isUsePooledBuffers: Boolean = {
-    internal.isUsePooledBuffers
-  }
-}
-

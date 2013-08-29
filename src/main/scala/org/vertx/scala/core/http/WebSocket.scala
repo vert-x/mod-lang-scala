@@ -17,58 +17,28 @@
 package org.vertx.scala.core.http
 
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.http.{WebSocketBase => JWebSocketBase}
-import org.vertx.java.core.http.{WebSocket => JWebSocket}
+import org.vertx.java.core.http.{ WebSocketBase => JWebSocketBase }
+import org.vertx.java.core.http.{ WebSocket => JWebSocket }
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.java.core.Handler
 import scala.xml.Node
+import org.vertx.scala.VertxWrapper
+import org.vertx.scala.core.streams.WrappedReadStream
 
 /**
+ * Represents a client side WebSocket.<p>
+ * Instances of this class are not thread-safe<p>
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
  * @author Galder Zamarreño
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-object WebSocket {
-  def apply(jsocket: JWebSocket) = new WebSocket(jsocket)
+class WebSocket(protected[this] val internal: JWebSocket) extends WrappedWebSocketBase {
+  override type InternalType = JWebSocket
 }
 
-class WebSocket(internal: JWebSocket) extends WebSocketBase[JWebSocket](internal)
-
-abstract class WebSocketBase[T](internal: JWebSocketBase[T]) {
-
-  def binaryHandlerID():String = internal.binaryHandlerID
-
-  def pause(): T = internal.pause()
-
-  def resume(): T = internal.resume()
-
-  def textHandlerID(): String = internal.textHandlerID
-
-  def close() {
-    internal.close()
-  }
-
-  def setWriteQueueMaxSize(maxSize: Int): T = internal.setWriteQueueMaxSize(maxSize)
-
-  def writeBinaryFrame(data: Buffer): T = internal.writeBinaryFrame(data)
-
-  def writeBuffer(data: Buffer): T = internal.write(data)
-
-  def writeTextFrame(data: String): T = internal.writeTextFrame(data)
-
-  /**
-   * Write XML to the websocket as a text frame.
-   */
-  def writeXml(xml: Node): T = internal.writeTextFrame(xml.toString())
-
-  def writeQueueFull(): Boolean = internal.writeQueueFull()
-
-  def dataHandler(handler: Buffer => Unit): T = internal.dataHandler(handler)
-
-  def drainHandler(handler: () => Unit): T = internal.drainHandler(handler)
-
-  def endHandler(handler: () => Unit): T = internal.endHandler(handler)
-
-  def exceptionHandler(handler: Throwable => Unit): T =
-    internal.exceptionHandler(handler)
-
+/** Factory for [[http.WebSocket]] instances. */
+object WebSocket {
+  def apply(jsocket: JWebSocket) = new WebSocket(jsocket)
 }
