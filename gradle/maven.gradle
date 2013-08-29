@@ -91,9 +91,28 @@ def configurePom(def pom) {
 
     developers {
       developer {
-        id 'purplefox'
-        name 'Tim Fox'
-        // email 'tim@tfox.org'
+        id 'swilliams-vmw'
+        name 'Stuart Williams'
+      }
+      developer {
+        id 'edgarchan'
+        name 'Edgar Chan'
+      }
+      developer {
+        id 'nfmelendez'
+        name 'Nicolas Melendez'
+      }
+      developer {
+        id 'Narigo'
+        name 'Joern Bernhardt'
+      }
+      developer {
+        id 'raniejade'
+        name 'Ranie Jade Ramiso'
+      }
+      developer {
+        id 'galderz'
+        name 'Galder Zamarreño'
       }
     }
 
