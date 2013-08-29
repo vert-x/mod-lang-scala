@@ -16,63 +16,22 @@
 
 package org.vertx.scala.core.sockjs
 
-import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.sockjs.{SockJSSocket => JSockJSSocket}
-import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.streams.ReadStream
-import org.vertx.scala.core.streams.WriteStream
+import org.vertx.scala.core.streams.WrappedReadAndWriteStream
 
 /**
  * @author swilliams
- * 
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object SockJSSocket {
-  def apply(internal: JSockJSSocket) = 
+  def apply(internal: JSockJSSocket) =
     new SockJSSocket(internal)
 }
 
-class SockJSSocket(internal: JSockJSSocket) {
+class SockJSSocket(protected[this] val internal: JSockJSSocket) extends WrappedReadAndWriteStream[SockJSSocket, JSockJSSocket] {
 
-  def dataHandler(handler: Buffer => Unit): SockJSSocket.this.type = {
-    internal.dataHandler(handler)
-    this
-  }
+  def close(): Unit = internal.close()
 
-  def drainHandler(handler: () => Unit): SockJSSocket.this.type = {
-    internal.drainHandler(handler)
-    this
-  }
-
-  def endHandler(handler: () => Unit): SockJSSocket.this.type = {
-    internal.endHandler(handler)
-    this
-  }
-
-  def exceptionHandler(handler: Throwable => Unit): SockJSSocket.this.type = {
-    internal.exceptionHandler(handler)
-    this
-  }
-
-  def pause(): SockJSSocket.this.type = {
-    internal.pause()
-    this
-  }
-
-  def resume(): SockJSSocket.this.type = {
-    internal.resume()
-    this
-  }
-
-  def setWriteQueueMaxSize(maxSize: Int): SockJSSocket.this.type = {
-    internal.setWriteQueueMaxSize(maxSize)
-    this
-  }
-
-  def write(data: Buffer): SockJSSocket.this.type = {
-    internal.write(data)
-    this
-  }
-
-  def writeQueueFull():Boolean = internal.writeQueueFull()
+  def writeHandlerID(): String = internal.writeHandlerID()
 
 }

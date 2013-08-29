@@ -15,90 +15,35 @@
  */
 package org.vertx.scala.core.file
 
-
-import org.vertx.java.core.file.{AsyncFile => JAsyncFile}
+import org.vertx.java.core.file.{ AsyncFile => JAsyncFile }
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.scala.core.streams.{WriteStream, ReadStream}
+import org.vertx.scala.core.streams.{ WriteStream, ReadStream }
 import org.vertx.java.core.AsyncResult
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.scala.core.streams.WrappedReadAndWriteStream
+
 /**
  * @author Edgar Chan
  * @author swilliams
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object AsyncFile {
-  def apply(internal:JAsyncFile) = new AsyncFile(internal)
+  def apply(internal: JAsyncFile) = new AsyncFile(internal)
 }
 
-class AsyncFile(internal:JAsyncFile) extends ReadStream with WriteStream {
+class AsyncFile(protected[this] val internal: JAsyncFile) extends WrappedReadAndWriteStream[AsyncFile, JAsyncFile] {
 
-  def dataHandler(handler: (Buffer) => Unit):AsyncFile.this.type = {
-    internal.dataHandler(handler)
-    this
-  }
+  def close(): Unit = internal.close()
 
-  def pause():AsyncFile.this.type = {
-    internal.pause()
-    this
-  }
+  def close(handler: (AsyncResult[Unit]) => Unit): Unit = internal.close(voidAsyncHandler(handler))
 
-  def resume():AsyncFile.this.type = {
-    internal.resume()
-    this
-  }
+  def write(data: Buffer, p: Int, handler: () => Unit): AsyncFile = wrap(internal.write(data, p, handler))
 
-  def endHandler(handler: () => Unit ):AsyncFile.this.type = {
-    internal.endHandler(handler)
-    this
-  }
+  def read(buffer: Buffer, offset: Int, position: Int, length: Int, handler: (AsyncResult[Buffer]) => Unit): AsyncFile =
+    wrap(internal.read(buffer, offset, position, length, handler))
 
-  def write(data: Buffer):AsyncFile.this.type = {
-    internal.write(data)
-    this
-  }
+  def flush(): AsyncFile = wrap(internal.flush())
 
-  def setWriteQueueMaxSize(max: Int):AsyncFile.this.type = {
-    internal.setWriteQueueMaxSize(max)
-    this
-  }
-
-  def writeQueueFull: Boolean = internal.writeQueueFull()
-
-  def drainHandler(handler: () => Unit):AsyncFile.this.type = {
-    internal.drainHandler(handler)
-    this
-  }
-
-  def exceptionHandler(handler: (Throwable) => Unit ):AsyncFile.this.type = {
-    internal.exceptionHandler(handler)
-    this
-  }
-
-  def close():Unit = {
-    internal.close()
-  }
-
-  def close(handler: (AsyncResult[Unit]) => Unit):Unit = {
-    internal.close(voidAsyncHandler(handler))
-  }
-
-  def write(data:Buffer, p:Int, handler: () => Unit ):AsyncFile.this.type = {
-    internal.write(data, p, handler)
-    this
-  }
-
-  def read(buffer: Buffer, offset: Int, position: Int, length: Int, handler: (AsyncResult[Buffer]) => Unit):AsyncFile.this.type = {
-    internal.read(buffer, offset, position, length, handler)
-    this
-  }
-
-  def flush():AsyncFile.this.type = {
-    internal.flush()
-    this
-  }
-
-  def flush(handler: () => Unit):AsyncFile.this.type = {
-   flush(handler)
-   this
-  }
+  def flush(handler: () => Unit): AsyncFile = wrap(flush(handler))
 
 }

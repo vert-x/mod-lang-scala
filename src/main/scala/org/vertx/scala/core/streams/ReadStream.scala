@@ -21,17 +21,36 @@ import org.vertx.java.core.streams.{ReadStream => JReadStream}
 import org.vertx.java.core.Handler
 
 /**
+ * Represents a stream of data that can be read from.<p>
+ * Any class that implements this interface can be used by a {@link Pump} to pump data from it
+ * to a {@link WriteStream}.<p>
+ * This interface exposes a fluent api and the type T represents the type of the object that implements
+ * the interface to allow method chaining
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
- * 
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-trait ReadStream extends ExceptionSupport {
+trait ReadStream[T] extends ExceptionSupport[T] {
 
-  def dataHandler(handler: Buffer => Unit):ReadStream.this.type
+  /**
+   * Set a data handler. As data is read, the handler will be called with the data.
+   */
+  def dataHandler(handler: Buffer => Unit): T
 
-  def endHandler(handler: () => Unit):ReadStream.this.type
+  /**
+   * Set an end handler. Once the stream has ended, and there is no more data to be read, this handler will be called.
+   */
+  def endHandler(handler: () => Unit): T
 
-  def pause():ReadStream.this.type
+  /**
+   * Pause the {@code ReadStream}. While the stream is paused, no data will be sent to the {@code dataHandler}
+   */
+  def pause(): T
 
-  def resume():ReadStream.this.type
+  /**
+   * Resume reading. If the {@code ReadStream} has been paused, reading will recommence on it.
+   */
+  def resume(): T
 
 }

@@ -18,73 +18,33 @@ package org.vertx.scala.core.http
 
 import scala.collection.JavaConverters._
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.http.{HttpClientResponse => JHttpClientResponse}
+import org.vertx.java.core.http.{ HttpClientResponse => JHttpClientResponse }
 import org.vertx.scala.core.FunctionConverters._
 import collection.mutable.MultiMap
 import org.vertx.java.core.Handler
+import org.vertx.scala.core.streams.WrappedReadAndWriteStream
+import org.vertx.scala.core.streams.WrappedReadStream
 
 /**
  * @author swilliams
- * 
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object HttpClientResponse {
-  def apply(internal: JHttpClientResponse) = 
-    new HttpClientResponse(internal)
+  def apply(internal: JHttpClientResponse) = new HttpClientResponse(internal)
 }
 
+class HttpClientResponse(protected[this] val internal: JHttpClientResponse) extends WrappedReadStream[HttpClientResponse, JHttpClientResponse] {
 
-class HttpClientResponse(val internal: JHttpClientResponse) {
+  def cookies(): List[String] = internal.cookies().asScala.toList
 
+  def headers(): MultiMap[String, String] = internal.headers
 
-  def cookies():List[String] = {
-    asScalaBufferConverter(internal.cookies()).asScala.toList
-  }
+  def statusCode(): Int = internal.statusCode
 
-  def headers(): MultiMap[String, String] = {
-    internal.headers
-  }
+  def statusMessage(): String = internal.statusMessage
 
-  def statusCode():Int = internal.statusCode
+  def trailers(): MultiMap[String, String] = internal.trailers
 
-  def statusMessage():String = internal.statusMessage
-
-  def trailers():MultiMap[String, String] = {
-    internal.trailers
-  }
-
-  def bodyHandler(handler: Buffer => Unit):HttpClientResponse.this.type = {
-    internal.bodyHandler(new Handler[Buffer] {
-      override def handle(bf: Buffer) {
-        handler(bf)
-      }
-    })
-    this
-  }
-
-  def dataHandler(handler: Buffer => Unit):HttpClientResponse.this.type = {
-    internal.dataHandler(handler)
-    this
-  }
-
-  def endHandler(handler: () => Unit):HttpClientResponse.this.type = {
-    internal.endHandler(handler)
-    this
-  }
-
-  def exceptionHandler(handler: (Throwable) => Unit):HttpClientResponse.this.type = {
-    internal.exceptionHandler(handler)
-    this
-  }
-
-  def pause():HttpClientResponse.this.type = {
-    internal.pause()
-    this
-  }
-
-  def resume():HttpClientResponse.this.type = {
-    internal.resume()
-    this
-  }
-
+  def bodyHandler(handler: Buffer => Unit): HttpClientResponse = wrap(internal.bodyHandler(handler))
 
 }

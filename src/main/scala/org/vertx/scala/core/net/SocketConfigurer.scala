@@ -18,16 +18,16 @@ package org.vertx.scala.core.net
 
 /**
  * @author swilliams
- * 
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-trait SocketConfigurer extends ConnectionConfigurer {
+trait SocketConfigurer[T] extends ConnectionConfigurer[T] {
 
-  def listen(port: Int):SocketConfigurer.this.type
+  def listen(port: Int): T
 
-  def listen(port: Int, address: String):SocketConfigurer.this.type
+  def listen(port: Int, address: String): T
 
-  def acceptBacklog():Int
+  def acceptBacklog(): Int
 
-  def acceptBacklog(backlog: Int):SocketConfigurer.this.type
+  def acceptBacklog(backlog: Int): T
 
 }

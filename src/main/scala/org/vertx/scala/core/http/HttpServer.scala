@@ -16,129 +16,95 @@
 
 package org.vertx.scala.core.http
 
-import org.vertx.java.core.{Handler => JHandler, AsyncResult => JAsyncResult}
-import org.vertx.java.core.http.{HttpServer => JHttpServer}
-import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
-import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
+import org.vertx.java.core.{ Handler => JHandler, AsyncResult => JAsyncResult }
+import org.vertx.java.core.http.{ HttpServer => JHttpServer }
+import org.vertx.java.core.http.{ HttpServerRequest => JHttpServerRequest }
+import org.vertx.java.core.http.{ ServerWebSocket => JServerWebSocket }
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.net.SocketConfigurer
-
+import org.vertx.scala.Wrap
 
 /**
  * @author swilliams
- * 
+ *
  */
 object HttpServer {
   def apply(actual: JHttpServer) =
     new HttpServer(actual)
 }
 
-class HttpServer(val actual: JHttpServer) extends SocketConfigurer {
+class HttpServer(val actual: JHttpServer) extends SocketConfigurer[HttpServer] with Wrap {
 
-  def close():Unit = actual.close
+  def close(): Unit = actual.close
 
-  def close(handler: () => Unit):Unit = actual.close(handler)
+  def close(handler: () => Unit): Unit = actual.close(handler)
 
-  def listen(port: Int):HttpServer.this.type = {
-    actual.listen(port)
-    this
+  def listen(port: Int): HttpServer = wrap(actual.listen(port))
+
+  def listen(port: Int, handler: JAsyncResult[JHttpServer] => Unit): HttpServer = {
+    wrap(actual.listen(port, handler))
   }
 
-  def listen(port: Int, handler: JAsyncResult[JHttpServer] => Unit):HttpServer.this.type = {
-    actual.listen(port, new JHandler[JAsyncResult[JHttpServer]]() {
-      override def handle(result: JAsyncResult[JHttpServer]):Unit = {
-        handler(result)
-      }
-      })
-
-    this
+  def listen(port: Int, address: String, handler: JAsyncResult[JHttpServer] => Unit): HttpServer = {
+    wrap(actual.listen(port, address, handler))
   }
 
-  def listen(port: Int, address: String, handler: JAsyncResult[JHttpServer] => Unit):HttpServer.this.type = {
-    actual.listen(port, address, new JHandler[JAsyncResult[JHttpServer]]() {
-      override def handle(result: JAsyncResult[JHttpServer]):Unit = {
-        handler(result)
-      }
-    })
-    this
-  }
+  def listen(port: Int, address: String): HttpServer = wrap(actual.listen(port, address))
 
-
-  def listen(port: Int, address: String):HttpServer.this.type = {
-    actual.listen(port, address)
-    this
-  }
-
-  def requestHandler():JHandler[JHttpServerRequest] = {
+  def requestHandler(): JHandler[JHttpServerRequest] = {
     actual.requestHandler
   }
 
-  def requestHandler(handler: HttpServerRequest => Unit):HttpServer.this.type = {
-    actual.requestHandler(HttpServerRequestHandler(handler))
-    this
+  def requestHandler(handler: HttpServerRequest => Unit): HttpServer = {
+    wrap(actual.requestHandler(handler.compose(HttpServerRequest.apply)))
   }
 
   def websocketHandler(): JHandler[JServerWebSocket] = actual.websocketHandler
 
-  def websocketHandler(handler: ServerWebSocket => Unit):HttpServer.this.type = {
-    actual.websocketHandler(ServerWebSocketHandler(handler))
-    this
+  def websocketHandler(handler: ServerWebSocket => Unit): HttpServer = {
+    wrap(actual.websocketHandler(handler.compose(ServerWebSocket.apply)))
   }
 
-  def acceptBacklog():Int = actual.getAcceptBacklog()
+  def acceptBacklog(): Int = actual.getAcceptBacklog()
 
-  def acceptBacklog(backlog: Int):HttpServer.this.type = {
-    actual.setAcceptBacklog(backlog)
-    this
+  def acceptBacklog(backlog: Int): HttpServer = wrap(actual.setAcceptBacklog(backlog))
+
+  def keyStorePassword(): String = actual.getKeyStorePassword
+
+  def keyStorePassword(keyStorePassword: String): HttpServer = {
+    wrap(actual.setKeyStorePassword(keyStorePassword))
   }
 
-  def keyStorePassword():String = actual.getKeyStorePassword
+  def keyStorePath(): String = actual.getKeyStorePath
 
-  def keyStorePassword(keyStorePassword: String):HttpServer.this.type = {
-    actual.setKeyStorePassword(keyStorePassword)
-    this
+  def keyStorePath(keyStorePath: String): HttpServer = wrap(actual.setKeyStorePath(keyStorePath))
+
+  def receiveBufferSize(): Int = actual.getReceiveBufferSize
+
+  def receiveBufferSize(receiveBufferSize: Int): HttpServer = {
+    wrap(actual.setReceiveBufferSize(receiveBufferSize))
   }
 
-  def keyStorePath():String = actual.getKeyStorePath
+  def sendBufferSize(): Int = actual.getSendBufferSize
 
-  def keyStorePath(keyStorePath: String):HttpServer.this.type = {
-    actual.setKeyStorePath(keyStorePath)
-    this
+  def sendBufferSize(sendBufferSize: Int): HttpServer = {
+    wrap(actual.setSendBufferSize(sendBufferSize))
   }
 
-  def receiveBufferSize():Int = actual.getReceiveBufferSize
+  def trafficClass(): Int = actual.getTrafficClass
 
-  def receiveBufferSize(receiveBufferSize: Int):HttpServer.this.type = {
-    actual.setReceiveBufferSize(receiveBufferSize)
-    this
+  def trafficClass(trafficClass: Int): HttpServer = {
+    wrap(actual.setTrafficClass(trafficClass))
   }
 
-  def sendBufferSize():Int = actual.getSendBufferSize
+  def trustStorePassword(): String = actual.getTrustStorePassword
 
-  def sendBufferSize(sendBufferSize: Int):HttpServer.this.type = {
-    actual.setSendBufferSize(sendBufferSize)
-    this
+  def trustStorePassword(password: String): HttpServer = {
+    wrap(actual.setTrustStorePassword(password))
   }
 
-  def trafficClass():Int = actual.getTrafficClass
+  def trustStorePath(): String = actual.getTrustStorePath
 
-  def trafficClass(trafficClass: Int):HttpServer.this.type = {
-    actual.setTrafficClass(trafficClass)
-    this
-  }
-
-  def trustStorePassword():String = actual.getTrustStorePassword
-
-  def trustStorePassword(password: String):HttpServer.this.type = {
-    actual.setTrustStorePassword(password)
-    this
-  }
-
-  def trustStorePath():String = actual.getTrustStorePath
-
-  def trustStorePath(path: String):HttpServer.this.type = {
-    actual.setTrustStorePath(path)
-    this
-  }
+  def trustStorePath(path: String): HttpServer = wrap(actual.setTrustStorePath(path))
 
 }

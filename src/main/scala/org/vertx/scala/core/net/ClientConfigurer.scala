@@ -24,7 +24,7 @@ import org.vertx.java.core.net.{NetSocket => JNetSocket}
  * @author swilliams
  * 
  */
-trait ClientConfigurer extends ConnectionConfigurer {
+trait ClientConfigurer[T] extends ConnectionConfigurer[T] {
 
   def close():Unit
 

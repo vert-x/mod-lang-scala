@@ -18,40 +18,40 @@ package org.vertx.scala.core.net
 
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.java.core.Handler
-import org.vertx.java.core.net.{NetSocket => JNetSocket}
+import org.vertx.java.core.net.{ NetSocket => JNetSocket }
 
 /**
  * @author swilliams
- * 
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-trait ConnectionConfigurer {
+trait ConnectionConfigurer[T] {
 
-  def keyStorePassword():String
+  def keyStorePassword(): String
 
-  def keyStorePassword(keyStorePassword: String):ConnectionConfigurer.this.type
+  def keyStorePassword(keyStorePassword: String): T
 
-  def keyStorePath():String
+  def keyStorePath(): String
 
-  def keyStorePath(keyStorePath: String):ConnectionConfigurer.this.type
+  def keyStorePath(keyStorePath: String): T
 
-  def receiveBufferSize():Int
+  def receiveBufferSize(): Int
 
-  def receiveBufferSize(receiveBufferSize: Int):ConnectionConfigurer.this.type
+  def receiveBufferSize(receiveBufferSize: Int): T
 
-  def sendBufferSize():Int
+  def sendBufferSize(): Int
 
-  def sendBufferSize(sendBufferSize: Int):ConnectionConfigurer.this.type
+  def sendBufferSize(sendBufferSize: Int): T
 
-  def trafficClass():Int
+  def trafficClass(): Int
 
-  def trafficClass(trafficClass: Int):ConnectionConfigurer.this.type
+  def trafficClass(trafficClass: Int): T
 
-  def trustStorePassword():String
+  def trustStorePassword(): String
 
-  def trustStorePassword(password: String):ConnectionConfigurer.this.type
+  def trustStorePassword(password: String): T
 
-  def trustStorePath():String
+  def trustStorePath(): String
 
-  def trustStorePath(path: String):ConnectionConfigurer.this.type
+  def trustStorePath(path: String): T
 
 }

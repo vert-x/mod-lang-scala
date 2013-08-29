@@ -16,50 +16,25 @@
 package org.vertx.scala.core.streams
 
 import org.vertx.java.core.buffer.Buffer
+import org.vertx.java.core.streams.{Pump => JPump}
 
 /**
  * @author swilliams
- *
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object Pump {
-  def newPump(rs: ReadStream, ws: WriteStream) = {
-    new Pump(rs, ws)
+  def createPump(rs: ReadStream[_], ws: WriteStream[_]) = {
+    new Pump(JPump.createPump(rs, ws))
   }
-  def newPump(rs: ReadStream, ws: WriteStream, writeQueueMaxSize:Int) = {
-    def pump = new Pump(rs, ws)
-    pump.writeQueueMaxSize = writeQueueMaxSize
-    pump
+  def createPump(rs: ReadStream[_], ws: WriteStream[_], writeQueueMaxSize: Int) = {
+    new Pump(JPump.createPump(rs, ws, writeQueueMaxSize))
   }
 }
 
-class Pump(readStream: ReadStream, writeStream: WriteStream) {
+class Pump(protected[this] val internal: JPump) extends WrappedReadAndWriteStream[Pump, JPump] {
 
-  private var writeQueueMaxSize:Int = Int.MaxValue
+  def start(): Pump = wrap(internal.start())
 
-  private var bytesPumped:Int = 0
-
-  private val drainHandler:() => Unit = { () =>
-    readStream.resume()
-  }
-
-  private val dataHandler:Buffer => Unit = { data:Buffer =>
-    writeStream.write(data)
-    bytesPumped += data.length()
-    if (writeStream.writeQueueFull()) {
-      readStream.pause()
-      writeStream.drainHandler(drainHandler)
-    }
-  }
-
-  def start():Pump = {
-    readStream.dataHandler(dataHandler)
-    this
-  }
-
-  def stop():Pump = {
-    writeStream.drainHandler(null)
-    readStream.dataHandler(null)
-    this
-  }
+  def stop(): Pump = wrap(internal.stop())
 
 }

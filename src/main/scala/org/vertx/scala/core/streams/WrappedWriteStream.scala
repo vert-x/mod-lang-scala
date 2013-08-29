@@ -17,22 +17,22 @@
 package org.vertx.scala.core.streams
 
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.streams.{ReadStream => JReadStream}
-import org.vertx.java.core.streams.{ExceptionSupport => JExceptionSupport}
-import org.vertx.java.core.Handler
+import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
+import org.vertx.java.core.streams.{ WriteStream => JWriteStream }
 import org.vertx.scala.VertxWrapper
 import org.vertx.scala.core.FunctionConverters._
 
 /**
- * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-trait ExceptionSupport[T] {
+trait WrappedWriteStream[ST <: WriteStream[ST] with ExceptionSupport[ST], JT <: JWriteStream[JT] with JExceptionSupport[JT]] extends WrappedExceptionSupport[ST, JT] with WriteStream[ST] { this: ST =>
 
-  def exceptionHandler(handler: Throwable => Unit): T
+  def drainHandler(handler: () => Unit): ST = wrap(internal.drainHandler(handler))
 
-}
+  def setWriteQueueMaxSize(maxSize: Int): ST = wrap(internal.setWriteQueueMaxSize(maxSize))
 
-trait WrappedExceptionSupport[ST <: ExceptionSupport[ST], JT <: JExceptionSupport[JT]] extends VertxWrapper[ST, JT] { this: ST =>
-  def exceptionHandler(handler: Throwable => Unit): ST = wrap(internal.exceptionHandler(handler))
+  def write(data: Buffer): ST = wrap(internal.write(data))
+
+  def writeQueueFull(): Boolean = internal.writeQueueFull()
+
 }
