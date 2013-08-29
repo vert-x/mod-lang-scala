@@ -14,14 +14,18 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class RouteMatcherTest extends TestVerticle {
 
+  lazy val sVertx = Vertx(getVertx)
+
   @Test
-  def routeMatcherUsableWithHttpServer {
+  def routeMatcherUsableWithHttpServer() {
     val port1 = 8080
     val port2 = 8081
     val checks = new AtomicInteger(2)
-    def htmlFor(str: String) = s"<html><body><h1>Hello from ${str}</h1></body></html>"
-    def getNowCheck(port: Int, url: String) = {
-      val client = vertx.newHttpClient.setPort(port)
+
+    def htmlFor(str: String) = s"<html><body><h1>Hello from $str</h1></body></html>"
+
+    def assertGetNow(port: Int, url: String) {
+      val client = sVertx.createHttpClient().setPort(port)
       client.getNow("/get") { h =>
         h.bodyHandler { data =>
           assertEquals(htmlFor("/get"), data.toString)
@@ -33,16 +37,16 @@ class RouteMatcherTest extends TestVerticle {
     }
 
     val rm = new RouteMatcher
-    rm.get("/get") { r => r.response.end(htmlFor("/get")) }
+    rm.get("/get") { r => r.response().end(htmlFor("/get")) }
 
-    vertx.newHttpServer(rm).listen(port1, { ar: AsyncResult[HttpServer] =>
+    sVertx.createHttpServer(rm).listen(port1, { ar: AsyncResult[HttpServer] =>
       assertTrue(ar.succeeded())
-      getNowCheck(port1, "/get")
+      assertGetNow(port1, "/get")
     })
 
-    vertx.newHttpServer.requestHandler(rm).listen(port2, { ar: AsyncResult[HttpServer] =>
+    sVertx.createHttpServer().requestHandler(rm).listen(port2, { ar: AsyncResult[HttpServer] =>
       assertTrue(ar.succeeded())
-      getNowCheck(port2, "/get")
+      assertGetNow(port2, "/get")
     })
   }
 }

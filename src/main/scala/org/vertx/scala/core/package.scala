@@ -49,16 +49,16 @@ package object core {
 
     def cancelTimer(id: Long):Boolean = internal.cancelTimer(id)
 
-    def createHttpServer:HttpServer = HttpServer(internal.createHttpServer)
+    def createHttpServer():HttpServer = HttpServer(internal.createHttpServer)
 
     def createHttpServer(h: HttpServerRequest => Unit):HttpServer =
          HttpServer(internal.createHttpServer).requestHandler(h)
 
-    def createHttpClient:HttpClient = HttpClient(internal.createHttpClient)
+    def createHttpClient():HttpClient = HttpClient(internal.createHttpClient)
 
-    def createNetClient:NetClient = NetClient(internal.createNetClient)
+    def createNetClient():NetClient = NetClient(internal.createNetClient)
 
-    def createNetServer:NetServer = NetServer(internal.createNetServer)
+    def createNetServer():NetServer = NetServer(internal.createNetServer)
 
     def createSockJSServer(httpServer: HttpServer):SockJSServer = SockJSServer(internal.createSockJSServer(httpServer.actual))
 
