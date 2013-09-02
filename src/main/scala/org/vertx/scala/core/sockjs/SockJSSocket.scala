@@ -19,19 +19,17 @@ package org.vertx.scala.core.sockjs
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.sockjs.{SockJSSocket => JSockJSSocket}
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.streams.ReadStream
-import org.vertx.scala.core.streams.WriteStream
-
+import org.vertx.scala.core.streams.{WriteStream, ReadStream}
 /**
  * @author swilliams
- * 
+ *
  */
 object SockJSSocket {
-  def apply(internal: JSockJSSocket) = 
+  def apply(internal: JSockJSSocket) =
     new SockJSSocket(internal)
 }
 
-class SockJSSocket(internal: JSockJSSocket) {
+class SockJSSocket(internal: JSockJSSocket) extends ReadStream with WriteStream {
 
   def dataHandler(handler: Buffer => Unit): SockJSSocket.this.type = {
     internal.dataHandler(handler)
