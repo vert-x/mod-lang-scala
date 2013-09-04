@@ -20,10 +20,12 @@ import scala.collection.JavaConverters._
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{ HttpClientResponse => JHttpClientResponse }
 import org.vertx.scala.core.FunctionConverters._
-import collection.mutable.MultiMap
 import org.vertx.java.core.Handler
-import org.vertx.scala.core.streams.WrappedReadAndWriteStream
+import org.vertx.scala.core.streams.WrappedReadWriteStream
 import org.vertx.scala.core.streams.WrappedReadStream
+import org.vertx.scala.core.streams.WrappedReadStream
+import org.vertx.java.core.MultiMap
+import org.vertx.scala.core.net.NetSocket
 
 /**
  * @author swilliams
@@ -33,18 +35,22 @@ object HttpClientResponse {
   def apply(internal: JHttpClientResponse) = new HttpClientResponse(internal)
 }
 
-class HttpClientResponse(protected[this] val internal: JHttpClientResponse) extends WrappedReadStream[HttpClientResponse, JHttpClientResponse] {
+class HttpClientResponse(protected[this] val internal: JHttpClientResponse) extends JHttpClientResponse with WrappedReadStream {
+  override type InternalType = JHttpClientResponse
 
-  def cookies(): List[String] = internal.cookies().asScala.toList
-
-  def headers(): MultiMap[String, String] = internal.headers
-
-  def statusCode(): Int = internal.statusCode
-
-  def statusMessage(): String = internal.statusMessage
-
-  def trailers(): MultiMap[String, String] = internal.trailers
+  override def bodyHandler(bodyHandler: Handler[Buffer]): HttpClientResponse = wrap(internal.bodyHandler(bodyHandler))
 
   def bodyHandler(handler: Buffer => Unit): HttpClientResponse = wrap(internal.bodyHandler(handler))
+  
+  override def netSocket(): NetSocket = NetSocket(internal.netSocket())
 
+  override def cookies(): java.util.List[String] = internal.cookies()
+
+  override def headers(): MultiMap = internal.headers
+
+  override def statusCode(): Int = internal.statusCode
+
+  override def statusMessage(): String = internal.statusMessage
+
+  override def trailers(): MultiMap = internal.trailers
 }

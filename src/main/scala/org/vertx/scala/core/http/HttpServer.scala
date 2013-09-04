@@ -16,95 +16,32 @@
 
 package org.vertx.scala.core.http
 
-import org.vertx.java.core.{ Handler => JHandler, AsyncResult => JAsyncResult }
 import org.vertx.java.core.http.{ HttpServer => JHttpServer }
-import org.vertx.java.core.http.{ HttpServerRequest => JHttpServerRequest }
-import org.vertx.java.core.http.{ ServerWebSocket => JServerWebSocket }
-import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.net.SocketConfigurer
-import org.vertx.scala.Wrap
+import org.vertx.java.core.http.{ HttpServerRequest => JHttpServerRequest, ServerWebSocket => JServerWebSocket }
+import org.vertx.scala.core.{ WrappedServerSSLSupport, WrappedTCPSupport }
+import org.vertx.scala.core.WrappedServerTCPSupport
+import org.vertx.java.core.AsyncResult
+import org.vertx.java.core.Handler
+import org.vertx.scala.core.WrappedCloseable
 
 /**
  * @author swilliams
- *
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object HttpServer {
-  def apply(actual: JHttpServer) =
-    new HttpServer(actual)
+  def apply(internal: JHttpServer) = new HttpServer(internal)
 }
 
-class HttpServer(val actual: JHttpServer) extends SocketConfigurer[HttpServer] with Wrap {
+class HttpServer(protected[this] val internal: JHttpServer) extends JHttpServer with WrappedCloseable with WrappedServerTCPSupport with WrappedServerSSLSupport {
+  override type InternalType = JHttpServer
 
-  def close(): Unit = actual.close
-
-  def close(handler: () => Unit): Unit = actual.close(handler)
-
-  def listen(port: Int): HttpServer = wrap(actual.listen(port))
-
-  def listen(port: Int, handler: JAsyncResult[JHttpServer] => Unit): HttpServer = {
-    wrap(actual.listen(port, handler))
-  }
-
-  def listen(port: Int, address: String, handler: JAsyncResult[JHttpServer] => Unit): HttpServer = {
-    wrap(actual.listen(port, address, handler))
-  }
-
-  def listen(port: Int, address: String): HttpServer = wrap(actual.listen(port, address))
-
-  def requestHandler(): JHandler[JHttpServerRequest] = {
-    actual.requestHandler
-  }
-
-  def requestHandler(handler: HttpServerRequest => Unit): HttpServer = {
-    wrap(actual.requestHandler(handler.compose(HttpServerRequest.apply)))
-  }
-
-  def websocketHandler(): JHandler[JServerWebSocket] = actual.websocketHandler
-
-  def websocketHandler(handler: ServerWebSocket => Unit): HttpServer = {
-    wrap(actual.websocketHandler(handler.compose(ServerWebSocket.apply)))
-  }
-
-  def acceptBacklog(): Int = actual.getAcceptBacklog()
-
-  def acceptBacklog(backlog: Int): HttpServer = wrap(actual.setAcceptBacklog(backlog))
-
-  def keyStorePassword(): String = actual.getKeyStorePassword
-
-  def keyStorePassword(keyStorePassword: String): HttpServer = {
-    wrap(actual.setKeyStorePassword(keyStorePassword))
-  }
-
-  def keyStorePath(): String = actual.getKeyStorePath
-
-  def keyStorePath(keyStorePath: String): HttpServer = wrap(actual.setKeyStorePath(keyStorePath))
-
-  def receiveBufferSize(): Int = actual.getReceiveBufferSize
-
-  def receiveBufferSize(receiveBufferSize: Int): HttpServer = {
-    wrap(actual.setReceiveBufferSize(receiveBufferSize))
-  }
-
-  def sendBufferSize(): Int = actual.getSendBufferSize
-
-  def sendBufferSize(sendBufferSize: Int): HttpServer = {
-    wrap(actual.setSendBufferSize(sendBufferSize))
-  }
-
-  def trafficClass(): Int = actual.getTrafficClass
-
-  def trafficClass(trafficClass: Int): HttpServer = {
-    wrap(actual.setTrafficClass(trafficClass))
-  }
-
-  def trustStorePassword(): String = actual.getTrustStorePassword
-
-  def trustStorePassword(password: String): HttpServer = {
-    wrap(actual.setTrustStorePassword(password))
-  }
-
-  def trustStorePath(): String = actual.getTrustStorePath
-
-  def trustStorePath(path: String): HttpServer = wrap(actual.setTrustStorePath(path))
+  override def listen(port: Int, host: String, listenHandler: Handler[AsyncResult[JHttpServer]]): HttpServer = wrap(internal.listen(port, host, listenHandler))
+  override def listen(port: Int, host: String): HttpServer = wrap(internal.listen(port, host))
+  override def listen(port: Int, listenHandler: Handler[AsyncResult[JHttpServer]]): HttpServer = wrap(internal.listen(port, listenHandler))
+  override def listen(port: Int): HttpServer = wrap(internal.listen(port))
+  override def requestHandler(): Handler[JHttpServerRequest] = internal.requestHandler()
+  override def requestHandler(requestHandler: Handler[JHttpServerRequest]): HttpServer = wrap(internal.requestHandler(requestHandler))
+  override def websocketHandler(): Handler[JServerWebSocket] = internal.websocketHandler()
+  override def websocketHandler(wsHandler: Handler[JServerWebSocket]): HttpServer = wrap(internal.websocketHandler(wsHandler))
 
 }

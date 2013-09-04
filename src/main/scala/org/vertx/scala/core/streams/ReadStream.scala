@@ -17,7 +17,8 @@
 package org.vertx.scala.core.streams
 
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.streams.{ReadStream => JReadStream}
+import org.vertx.java.core.streams.{ ReadStream => JReadStream }
+import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
 import org.vertx.java.core.Handler
 
 /**
@@ -31,26 +32,29 @@ import org.vertx.java.core.Handler
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-trait ReadStream[T] extends ExceptionSupport[T] {
+trait ReadStream extends ExceptionSupport {
+  override type InternalType <: JReadStream[_] with JExceptionSupport[_]
 
   /**
    * Set a data handler. As data is read, the handler will be called with the data.
    */
-  def dataHandler(handler: Buffer => Unit): T
-
-  /**
-   * Set an end handler. Once the stream has ended, and there is no more data to be read, this handler will be called.
-   */
-  def endHandler(handler: () => Unit): T
+  def dataHandler(handler: Handler[Buffer]): this.type
 
   /**
    * Pause the {@code ReadStream}. While the stream is paused, no data will be sent to the {@code dataHandler}
    */
-  def pause(): T
+  def pause(): this.type
 
   /**
    * Resume reading. If the {@code ReadStream} has been paused, reading will recommence on it.
    */
-  def resume(): T
+  def resume(): this.type
 
+  /**
+   * Set an end handler. Once the stream has ended, and there is no more data to be read, this handler will be called.
+   */
+  def endHandler(endHandler: Handler[Void]): this.type
+
+  def dataHandler(handler: Buffer => Unit): this.type
+  def endHandler(handler: () => Unit): this.type
 }

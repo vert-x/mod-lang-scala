@@ -20,7 +20,8 @@ import org.vertx.java.core.buffer.Buffer
 import org.vertx.scala.core.streams.{ WriteStream, ReadStream }
 import org.vertx.java.core.AsyncResult
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.streams.WrappedReadAndWriteStream
+import org.vertx.scala.core.streams.WrappedReadWriteStream
+import org.vertx.java.core.Handler
 
 /**
  * @author Edgar Chan
@@ -31,19 +32,14 @@ object AsyncFile {
   def apply(internal: JAsyncFile) = new AsyncFile(internal)
 }
 
-class AsyncFile(protected[this] val internal: JAsyncFile) extends WrappedReadAndWriteStream[AsyncFile, JAsyncFile] {
+class AsyncFile(protected[this] val internal: JAsyncFile) extends JAsyncFile with WrappedReadWriteStream {
+  override type InternalType = JAsyncFile
 
-  def close(): Unit = internal.close()
-
-  def close(handler: (AsyncResult[Unit]) => Unit): Unit = internal.close(voidAsyncHandler(handler))
-
-  def write(data: Buffer, p: Int, handler: () => Unit): AsyncFile = wrap(internal.write(data, p, handler))
-
-  def read(buffer: Buffer, offset: Int, position: Int, length: Int, handler: (AsyncResult[Buffer]) => Unit): AsyncFile =
-    wrap(internal.read(buffer, offset, position, length, handler))
-
-  def flush(): AsyncFile = wrap(internal.flush())
-
-  def flush(handler: () => Unit): AsyncFile = wrap(flush(handler))
+  override def close(): Unit = internal.close()
+  override def close(handler: Handler[AsyncResult[Void]]): Unit = internal.close(handler)
+  override def flush(): AsyncFile = wrap(internal.flush())
+  override def flush(handler: Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.AsyncFile = internal.flush(handler)
+  override def read(buffer: Buffer, offset: Int, position: Int, length: Int, handler: Handler[AsyncResult[Buffer]]): AsyncFile = wrap(internal.read(buffer, offset, position, length, handler))
+  override def write(buffer: Buffer, position: Int, handler: Handler[AsyncResult[Void]]): AsyncFile = wrap(internal.write(buffer, position, handler))
 
 }

@@ -22,32 +22,44 @@ import java.net.InetSocketAddress
 import org.vertx.java.core.Handler
 import org.vertx.java.core.streams.{ WriteStream, ReadStream }
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.streams.WrappedReadAndWriteStream
+import org.vertx.scala.core.streams.WrappedReadWriteStream
 
 /**
- * @author swilliams
+ * Represents a socket-like interface to a TCP/SSL connection on either the
+ * client or the server side.<p>
+ * Instances of this class are created on the client side by an {@link NetClient}
+ * when a connection to a server is made, or on the server side by a {@link NetServer}
+ * when a server accepts a connection.<p>
+ * It implements both {@link ReadStream} and {@link WriteStream} so it can be used with
+ * {@link org.vertx.java.core.streams.Pump} to pump data with flow control.<p>
+ * Instances of this class are not thread-safe.<p>
  *
+ * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author swilliams
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-object NetSocket {
-  def apply(socket: JNetSocket) = new NetSocket(socket)
-}
+class NetSocket(val internal: JNetSocket) extends JNetSocket with WrappedReadWriteStream {
+  override type InternalType = JNetSocket
 
-class NetSocket(val internal: JNetSocket) extends WrappedReadAndWriteStream[NetSocket, JNetSocket] {
+  override def writeHandlerID(): String = internal.writeHandlerID
 
-  def writeHandlerID(): String = internal.writeHandlerID
+  override def write(data: String): NetSocket = wrap(internal.write(data))
 
-  def write(data: String): NetSocket = wrap(internal.write(data))
+  override def write(data: String, enc: String): NetSocket = wrap(internal.write(data, enc))
 
-  def write(data: String, enc: String): NetSocket = wrap(internal.write(data, enc))
+  override def sendFile(filename: String): NetSocket = wrap(internal.sendFile(filename))
 
-  def sendFile(filename: String): NetSocket = wrap(internal.sendFile(filename))
+  override def remoteAddress(): InetSocketAddress = internal.remoteAddress()
 
-  def remoteAddress(): InetSocketAddress = internal.remoteAddress()
+  override def localAddress(): InetSocketAddress = internal.localAddress()
 
-  def localAddress(): InetSocketAddress = internal.localAddress()
+  override def close(): Unit = internal.close()
 
-  def close(): Unit = internal.close()
-
+  override def closeHandler(handler: Handler[Void]): NetSocket = wrap(internal.closeHandler(handler))
   def closeHandler(handler: () => Unit): NetSocket = wrap(internal.closeHandler(handler))
 
+}
+
+object NetSocket {
+  def apply(socket: JNetSocket) = new NetSocket(socket)
 }

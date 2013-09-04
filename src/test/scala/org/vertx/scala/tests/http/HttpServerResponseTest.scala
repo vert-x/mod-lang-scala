@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.vertx.scala.tests.http
 
-import org.vertx.java.core.http.{HttpServerResponse => JHttpServerResponse}
-import org.vertx.java.core.{MultiMap => JMultiMap, Handler}
+import org.vertx.java.core.http.{ HttpServerResponse => JHttpServerResponse }
+import org.vertx.java.core.{ MultiMap => JMultiMap, Handler }
 import org.vertx.java.core.impl.CaseInsensitiveMultiMap
 import org.vertx.java.core.buffer.Buffer
 import java.lang.Iterable
@@ -31,8 +31,8 @@ import org.junit.Assert._
 class HttpServerResponseTest {
   // stub implementation
   class StubHttpServerResponse extends JHttpServerResponse {
-    private val headerMap:JMultiMap = new CaseInsensitiveMultiMap
-    private val trailerMap:JMultiMap = new CaseInsensitiveMultiMap
+    private val headerMap: JMultiMap = new CaseInsensitiveMultiMap
+    private val trailerMap: JMultiMap = new CaseInsensitiveMultiMap
 
     def close() {}
 
@@ -110,9 +110,9 @@ class HttpServerResponseTest {
 
     val headers = response.headers
 
-    assertTrue(headers.entryExists("content-type",  _ == "text/plain"))
-    assertTrue(headers.entryExists("some-non-standard-header", _ == "some-value"))
-    assertFalse(headers.entryExists("does-not-exist", _ == "unknown"))
+    assertEquals("text/plain", headers.get("content-type"))
+    assertEquals("some-value", headers.get("some-non-standard-header"))
+    assertEquals(0, headers.getAll("does-not-exist").size())
   }
 
   @Test
@@ -123,8 +123,8 @@ class HttpServerResponseTest {
     response.putTrailer("trailer2", "value2")
 
     val trailers = response.trailers
-    assertTrue(trailers.entryExists("trailer1", _ == "value1"))
-    assertTrue(trailers.entryExists("trailer2", _ == "value2"))
-    assertFalse(trailers.entryExists("trailer3", _ == "value3"))
+    assertEquals("value1", trailers.get("trailer1"))
+    assertEquals("value2", trailers.get("trailer2"))
+    assertNotEquals("value3", trailers.get("trailer3"))
   }
 }

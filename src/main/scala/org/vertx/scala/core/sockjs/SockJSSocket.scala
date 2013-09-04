@@ -16,22 +16,33 @@
 
 package org.vertx.scala.core.sockjs
 
-import org.vertx.java.core.sockjs.{SockJSSocket => JSockJSSocket}
-import org.vertx.scala.core.streams.WrappedReadAndWriteStream
+import org.vertx.java.core.sockjs.{ SockJSSocket => JSockJSSocket }
+import org.vertx.scala.core.streams.WrappedReadWriteStream
 
 /**
  * @author swilliams
- * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object SockJSSocket {
   def apply(internal: JSockJSSocket) =
     new SockJSSocket(internal)
 }
 
-class SockJSSocket(protected[this] val internal: JSockJSSocket) extends WrappedReadAndWriteStream[SockJSSocket, JSockJSSocket] {
+/**
+ * You interact with SockJS clients through instances of SockJS socket.
+ * <p>The API is very similar to {@link org.vertx.java.core.http.WebSocket}. It implements both
+ * {@link ReadStream} and {@link WriteStream} so it can be used with
+ * {@link org.vertx.scala.core.streams.Pump} to pump data with flow control.
+ * <p>Instances of this class are not thread-safe.
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author swilliams
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ */
+class SockJSSocket(protected[this] val internal: JSockJSSocket) extends JSockJSSocket with WrappedReadWriteStream {
+  override type InternalType = JSockJSSocket
 
-  def close(): Unit = internal.close()
+  override def close(): Unit = internal.close()
 
-  def writeHandlerID(): String = internal.writeHandlerID()
+  override def writeHandlerID(): String = internal.writeHandlerID()
 
 }

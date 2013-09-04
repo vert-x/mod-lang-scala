@@ -16,24 +16,23 @@
 
 package org.vertx.scala.core.http
 
-import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
+import org.vertx.java.core.http.{ ServerWebSocket => JServerWebSocket }
+import org.vertx.scala.core.streams.WrappedReadWriteStream
 
 /**
  * @author swilliams
  * @author Galder Zamarreño
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object ServerWebSocket {
   def apply(socket: JServerWebSocket) = new ServerWebSocket(socket)
 }
 
-class ServerWebSocket(internal: JServerWebSocket)
-    extends WebSocketBase[JServerWebSocket](internal) {
+class ServerWebSocket(protected[this] val internal: JServerWebSocket) extends JServerWebSocket with WrappedWebSocketBase {
+  override type InternalType = JServerWebSocket
 
-  def path(): String = internal.path
-
-  def reject(): ServerWebSocket = {
-    internal.reject()
-    this
-  }
-
+  override def headers(): org.vertx.java.core.MultiMap = internal.headers()
+  override def path(): String = internal.path()
+  override def query(): String = internal.query()
+  override def reject(): ServerWebSocket = wrap(internal.reject())
 }

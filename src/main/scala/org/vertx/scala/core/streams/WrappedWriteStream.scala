@@ -21,18 +21,20 @@ import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
 import org.vertx.java.core.streams.{ WriteStream => JWriteStream }
 import org.vertx.scala.VertxWrapper
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.Handler
 
 /**
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-trait WrappedWriteStream[ST <: WriteStream[ST] with ExceptionSupport[ST], JT <: JWriteStream[JT] with JExceptionSupport[JT]] extends WrappedExceptionSupport[ST, JT] with WriteStream[ST] { this: ST =>
+trait WrappedWriteStream extends WrappedExceptionSupport with WriteStream {
+  override def drainHandler(handler: Handler[Void]): this.type = wrap(internal.drainHandler(handler))
+  override def drainHandler(handler: () => Unit): this.type = drainHandler(convertFunctionToVoidHandler(handler))
 
-  def drainHandler(handler: () => Unit): ST = wrap(internal.drainHandler(handler))
+  override def setWriteQueueMaxSize(maxSize: Int): this.type = wrap(internal.setWriteQueueMaxSize(maxSize))
 
-  def setWriteQueueMaxSize(maxSize: Int): ST = wrap(internal.setWriteQueueMaxSize(maxSize))
+  override def write(data: Buffer): this.type = wrap(internal.write(data))
 
-  def write(data: Buffer): ST = wrap(internal.write(data))
+  override def writeQueueFull(): Boolean = internal.writeQueueFull()
 
-  def writeQueueFull(): Boolean = internal.writeQueueFull()
-
+  override def toJava(): InternalType = internal
 }

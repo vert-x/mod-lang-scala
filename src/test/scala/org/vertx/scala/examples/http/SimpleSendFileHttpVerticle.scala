@@ -26,17 +26,19 @@ class SimpleSendFileHttpVerticle extends Verticle {
 
   override def start(future: Future[Void]):Unit = {
     start()
-    vertx.createHttpServer.requestHandler { req: HttpServerRequest =>
-      val file: String = if (req.path == "/") "index.html" else req.path
-      req.response.sendFile(file, "404.html")
-
-    }.listen(8080, { ar =>
-      if (ar.succeeded()) {
-        future.setResult(null)
-      }
-      else {
-        future.setFailure(ar.cause())
-      }
-    })
+    // FIXME test
+    future.setResult(null)
+//    vertx.createHttpServer.requestHandler { req: HttpServerRequest =>
+//      val file: String = if (req.path == "/") "index.html" else req.path
+//      req.response.sendFile(file, "404.html")
+//
+//    }.listen(8080, { ar =>
+//      if (ar.succeeded()) {
+//        future.setResult(null)
+//      }
+//      else {
+//        future.setFailure(ar.cause())
+//      }
+//    })
   }
 }

@@ -9,16 +9,18 @@ import org.vertx.java.core.buffer.Buffer
 class SimpleFileReaderVerticle extends Verticle {
 
   override def start(future: Future[Void]) {
-    val fileName = "afile.txt"
-
-    vertx.fileSystem.readFile(fileName, { ar =>
-        if (ar.succeeded()) {
-          val fileContentsAsString = ar.result().toString()
-        }
-        else {
-          future.setFailure(ar.cause())
-        }
-      })
+    // FIXME test
+    future.setResult(null)
+//    val fileName = "afile.txt"
+//
+//    vertx.fileSystem.readFile(fileName, { ar =>
+//        if (ar.succeeded()) {
+//          val fileContentsAsString = ar.result().toString()
+//        }
+//        else {
+//          future.setFailure(ar.cause())
+//        }
+//      })
   }
 
 }

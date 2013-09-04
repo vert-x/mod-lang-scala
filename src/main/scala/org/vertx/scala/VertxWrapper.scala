@@ -7,8 +7,9 @@ import org.vertx.java.core.Handler
  *
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-trait VertxWrapper[ST, JT] extends Wrap { this: ST =>
+trait VertxWrapper extends Wrap {
+  type InternalType
+  protected[this] val internal: InternalType
 
-  protected[this] val internal: JT
-
+  def toJava(): InternalType = internal
 }

@@ -20,75 +20,65 @@ import org.vertx.java.core.Handler
 import org.vertx.java.core.http.{ RouteMatcher => JRouteMatcher }
 import org.vertx.java.core.http.{ HttpServerRequest => JHttpServerRequest }
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.scala.Wrap
 
 /**
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class RouteMatcher(internal: JRouteMatcher = new JRouteMatcher()) extends Handler[HttpServerRequest] with (HttpServerRequest => Unit) {
+class RouteMatcher(val internal: JRouteMatcher = new JRouteMatcher()) extends Handler[HttpServerRequest] with (HttpServerRequest => Unit) with Wrap {
 
-  def all(uri: String)(handler: JHttpServerRequest => Unit) = internal.all(uri, handler)
+  def all(uri: String)(handler: JHttpServerRequest => Unit) = wrap(internal.all(uri, handler))
 
-  def allWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) {
-    internal.allWithRegEx(regex, handler)
-  }
+  def allWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) = wrap(internal.allWithRegEx(regex, handler))
 
-  def apply(request: HttpServerRequest): Unit = handle(request)
+  def apply(request: HttpServerRequest) = wrap(handle(request))
 
-  def connect(uri: String)(handler: JHttpServerRequest => Unit) = internal.connect(uri, handler)
+  def connect(uri: String)(handler: JHttpServerRequest => Unit) = wrap(internal.connect(uri, handler))
 
-  def connectWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) {
-    internal.connectWithRegEx(regex, handler)
-  }
+  def connectWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) =
+    wrap(internal.connectWithRegEx(regex, handler))
 
-  def delete(uri: String)(handler: JHttpServerRequest => Unit) = internal.delete(uri, handler)
+  def delete(uri: String)(handler: JHttpServerRequest => Unit) = wrap(internal.delete(uri, handler))
 
-  def deleteWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) {
-    internal.deleteWithRegEx(regex, handler)
-  }
+  def deleteWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) =
+    wrap(internal.deleteWithRegEx(regex, handler))
 
   def get(uri: String)(handler: JHttpServerRequest => Unit) = internal.get(uri, handler)
 
-  def getWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) {
-    internal.getWithRegEx(regex, handler)
-  }
+  def getWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) =
+    wrap(internal.getWithRegEx(regex, handler))
 
-  def handle(request: JHttpServerRequest): Unit = internal.handle(request)
+  def handle(request: HttpServerRequest): Unit = internal.handle(request.internal)
 
-  def head(uri: String)(handler: JHttpServerRequest => Unit) = internal.head(uri, handler)
+  def head(uri: String)(handler: JHttpServerRequest => Unit) = wrap(internal.head(uri, handler))
 
-  def headWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) {
-    internal.headWithRegEx(regex, handler)
-  }
+  def headWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) =
+    wrap(internal.headWithRegEx(regex, handler))
 
-  def options(uri: String)(handler: JHttpServerRequest => Unit) = internal.options(uri, handler)
+  def options(uri: String)(handler: JHttpServerRequest => Unit) = wrap(internal.options(uri, handler))
 
-  def optionsWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) {
-    internal.optionsWithRegEx(regex, handler)
-  }
+  def optionsWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) =
+    wrap(internal.optionsWithRegEx(regex, handler))
 
-  def patch(uri: String)(handler: JHttpServerRequest => Unit) = internal.patch(uri, handler)
+  def patch(uri: String)(handler: JHttpServerRequest => Unit) = wrap(internal.patch(uri, handler))
 
-  def patchWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) {
-    internal.patchWithRegEx(regex, handler)
-  }
+  def patchWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) =
+    wrap(internal.patchWithRegEx(regex, handler))
 
-  def post(uri: String)(handler: JHttpServerRequest => Unit) = internal.post(uri, handler)
+  def post(uri: String)(handler: JHttpServerRequest => Unit) = wrap(internal.post(uri, handler))
 
-  def postWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) {
-    internal.postWithRegEx(regex, handler)
-  }
+  def postWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) =
+    wrap(internal.postWithRegEx(regex, handler))
 
-  def put(uri: String)(handler: JHttpServerRequest => Unit) = internal.put(uri, handler)
+  def put(uri: String)(handler: JHttpServerRequest => Unit) = wrap(internal.put(uri, handler))
 
-  def putWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) {
-    internal.putWithRegEx(regex, handler)
-  }
+  def putWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) =
+    wrap(internal.putWithRegEx(regex, handler))
 
-  def trace(uri: String)(handler: JHttpServerRequest => Unit) = internal.trace(uri, handler)
+  def trace(uri: String)(handler: JHttpServerRequest => Unit) = wrap(internal.trace(uri, handler))
 
-  def traceWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) {
-    internal.traceWithRegEx(regex, handler)
-  }
+  def traceWithRegEx(regex: String)(handler: JHttpServerRequest => Unit) =
+    wrap(internal.traceWithRegEx(regex, handler))
 
 }

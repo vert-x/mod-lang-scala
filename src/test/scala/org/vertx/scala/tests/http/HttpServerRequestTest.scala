@@ -13,103 +13,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.vertx.scala.tests.http
 
-import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest, HttpServerResponse, HttpServerFileUpload, HttpVersion}
-import org.vertx.java.core.{MultiMap => JMultiMap, Handler}
+import org.vertx.java.core.http.{ HttpServerRequest => JHttpServerRequest, HttpServerResponse, HttpServerFileUpload, HttpVersion }
+import org.vertx.java.core.{ MultiMap => JMultiMap, Handler }
 import org.vertx.java.core.impl.CaseInsensitiveMultiMap
 import org.vertx.java.core.buffer.Buffer
-import java.net.{URI, InetSocketAddress}
+import java.net.{ URI, InetSocketAddress }
 import javax.security.cert.X509Certificate
 import org.vertx.java.core.net.NetSocket
 import java.util
 import org.junit.Test
-import org.junit.Assert._
 import org.vertx.scala.core.http.HttpServerRequest
+import org.vertx.scala.core.http.HttpClient
+import org.vertx.scala.core.http.HttpServer
+import org.vertx.scala.VertxConverters._
+import org.vertx.testtools.TestVerticle
+import org.vertx.testtools.VertxAssert._
 
 /**
  * @author Ranie Jade Ramiso
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class HttpServerRequestTest {
-  class StubHttpServerRequest extends JHttpServerRequest {
-    val headerMap = new CaseInsensitiveMultiMap
-    val paramMap = new CaseInsensitiveMultiMap
+class HttpServerRequestTest extends TestVerticle {
 
-    def absoluteURI(): URI = ???
-
-    def bodyHandler(bodyHandler: Handler[Buffer]): JHttpServerRequest = ???
-
-    def formAttributes(): JMultiMap = ???
-
-    def headers(): JMultiMap = headerMap
-
-    def method(): String = ???
-
-    def netSocket(): NetSocket = ???
-
-    def params(): JMultiMap = paramMap
-
-    def path(): String = ???
-
-    def peerCertificateChain(): Array[X509Certificate] = ???
-
-    def query(): String = ???
-
-    def remoteAddress(): InetSocketAddress = ???
-
-    def response(): HttpServerResponse = ???
-
-    def uploadHandler(uploadHandler: Handler[HttpServerFileUpload]): JHttpServerRequest = ???
-
-    def uri(): String = ???
-
-    def version(): HttpVersion = ???
-
-    def dataHandler(handler: Handler[Buffer]): JHttpServerRequest = ???
-
-    def endHandler(endHandler: Handler[Void]): JHttpServerRequest = ???
-
-    def pause(): JHttpServerRequest = ???
-
-    def resume(): JHttpServerRequest = ???
-
-    def exceptionHandler(handler: Handler[Throwable]): JHttpServerRequest = ???
-
-    def expectMultiPart(expect: Boolean): JHttpServerRequest = ???
+  private def createHttpServer(handler: HttpServerRequest => Unit) = {
+    vertx.createHttpServer.requestHandler(new Handler[JHttpServerRequest]() {
+      def handle(event: JHttpServerRequest) = handler(HttpServerRequest(event))
+    }).listen(8080)
   }
 
   @Test
   def httpHeaderShouldExistTest() {
-    val internalRequest = new StubHttpServerRequest
+    createHttpServer { internalRequest =>
+      // add some headers to the internal multimap
+      internalRequest.headers.add("header1", "value1")
+      internalRequest.headers.add("header2", "value2")
 
-    // add some headers to the internal multimap
-    internalRequest.headers.add("header1", "value1")
-    internalRequest.headers.add("header2", "value2")
+      val request = new HttpServerRequest(internalRequest)
 
-    val request = new HttpServerRequest(internalRequest)
+      val headers = request.headers
 
-    val headers = request.headers
-
-    assertTrue(headers.entryExists("header1", _ == "value1"))
-    assertTrue(headers.entryExists("header2", _ == "value2"))
-    assertFalse(headers.entryExists("header2", _ == "value1"))
+      assertTrue(headers.contains("header1"))
+      assertEquals("value1", headers.get("header1"))
+      assertTrue(headers.contains("header2"))
+      assertEquals("value2", headers.get("header2"))
+      assertEquals(1, headers.getAll("header2").size())
+      testComplete()
+    }
   }
 
   @Test
   def httpParamShouldExistTest() {
-    val internalRequest = new StubHttpServerRequest
+    createHttpServer { internalRequest =>
 
-    // add some headers to the internal multimap
-    internalRequest.params.add("param1", "value1")
-    internalRequest.params.add("param2", "value2")
+      // add some headers to the internal multimap
+      internalRequest.params.add("param1", "value1")
+      internalRequest.params.add("param2", "value2")
 
-    val request = new HttpServerRequest(internalRequest)
+      val request = new HttpServerRequest(internalRequest)
 
-    val headers = request.params
+      val headers = request.params
 
-    assertTrue(headers.entryExists("param1", _ == "value1"))
-    assertTrue(headers.entryExists("param2", _ == "value2"))
-    assertFalse(headers.entryExists("param2", _ == "value1"))
+      assertTrue(headers.contains("param1"))
+      assertEquals("value1", headers.get("param1"))
+      assertTrue(headers.contains("param2"))
+      assertEquals("value2", headers.get("param2"))
+      assertEquals(1, headers.getAll("param2").size())
+    }
   }
 }

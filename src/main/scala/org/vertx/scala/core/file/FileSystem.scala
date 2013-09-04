@@ -16,308 +16,83 @@
 
 package org.vertx.scala.core.file
 
-import org.vertx.java.core.{Handler, AsyncResult}
+import org.vertx.java.core.{ Handler, AsyncResult }
 import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.file.{FileProps, FileSystemProps, AsyncFile => JAsyncFile}
-import org.vertx.java.core.file.{FileSystem => JFileSystem}
+import org.vertx.java.core.file.{ FileProps, FileSystemProps, AsyncFile => JAsyncFile }
+import org.vertx.java.core.file.{ FileSystem => JFileSystem }
+import org.vertx.scala.VertxWrapper
 
 /**
  * @author swilliams
- * 
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object FileSystem {
-  def apply(actual: JFileSystem) =
-    new FileSystem(actual)
+  def apply(actual: JFileSystem) = new FileSystem(actual)
 }
 
-class FileSystem(internal: JFileSystem) {
-
-  import org.vertx.scala.VertxConverters._
-  import org.vertx.scala.core.FunctionConverters._
-
-  def chmod(path: String, perms: String, dirPerms: Option[String], handler: () => Unit):FileSystem ={
-    internal.chmod(path, perms, dirPerms.getOrElse(null) , handler)
-    this
-  }
-
-  def chmodSync(path: String, perms: String, dirPerms: Option[String]):FileSystem = {
-    internal.chmodSync(path, perms, dirPerms.getOrElse(null))
-    this
-  }
-
-
-  def copySync(from: String, to: String, recursive: Boolean = false):FileSystem = {
-    internal.copySync(from, to, recursive)
-    this
-  }
-
-  def copySync(path: String, perms: String, handler: () => Unit):FileSystem = {
-    internal.createFile(path, perms, handler)
-    this
-  }
-
-  def createFile(path: String, handler: () => Unit):FileSystem ={
-    internal.createFile(path, handler)
-    this
-  }
-
-
-  def createFileSync(path: String, perms: String = null):FileSystem = {
-    internal.createFileSync(path, perms)
-    this
-  }
-
-  def delete(path: String, recursive: Boolean, handler: () => Unit):FileSystem = {
-    internal.delete(path, recursive, handler)
-    this
-  }
-
-  def delete(path: String, handler: () => Unit):FileSystem = {
-    delete(path, false, handler)
-    this
-  }
-
-  def deleteSync(path: String):FileSystem = {
-    internal.deleteSync(path)
-    this
-  }
-
-  def deleteSync(path: String, recursive: Boolean):FileSystem = {
-    internal.deleteSync(path, recursive)
-    this
-  }
-
-  def exists(path: String, handler: (AsyncResult[java.lang.Boolean]) => Unit):FileSystem = {
-    internal.exists(path, handler)
-    this
-  }
-
-  def existsSync(path: String):Boolean =
-    internal.existsSync(path)
-
-
-  def fsProps(path: String, handler: (AsyncResult[FileSystemProps]) => Unit):FileSystem = {
-    internal.fsProps(path, handler)
-    this
-  }
-
-
-  def fsPropsSync(path: String):FileSystemProps =
-    internal.fsPropsSync(path)
-
-  def link(link: String, existing: String, handler: () => Unit):FileSystem = {
-    internal.link(link, existing, handler)
-    this
-  }
-
-  def linkSync(link: String, existing: String):FileSystem = {
-    internal.linkSync(link, existing)
-    this
-  }
-
-  def lprops(path: String, handler: (AsyncResult[FileProps]) => Unit):FileSystem = {
-    internal.lprops(path, handler)
-    this
-  }
-
-  def lpropsSync(path: String):FileProps =
-    internal.lpropsSync(path)
-
-  def mkdir(path: String, createParents: Boolean, handler: () => Unit):FileSystem = {
-    internal.mkdir(path, createParents, handler)
-    this
-  }
-
-  def mkdir(path: String, perms: String, createParents: Boolean, handler: () => Unit):FileSystem = {
-    internal.mkdir(path, perms, createParents, handler)
-    this
-  }
-
-  def mkdir(path: String, perms: String, handler: () => Unit):FileSystem = {
-    internal.mkdir(path, perms, handler)
-    this
-  }
-
-  def mkdir(path: String, handler: () => Unit):FileSystem = {
-    internal.mkdir(path, handler)
-    this
-  }
-
-  def mkdirSync(path: String):FileSystem = {
-    internal.mkdirSync(path)
-    this
-  }
-
-  def mkdirSync(path: String, createParents: Boolean):FileSystem = {
-    internal.mkdirSync(path, createParents)
-    this
-  }
-
-  def mkdirSync(path: String, perms: String):FileSystem = {
-    internal.mkdirSync(path, perms)
-    this
-  }
-
-  def mkdirSync(path: String, perms: String, createParents: Boolean):FileSystem = {
-    internal.mkdirSync(path, perms, createParents)
-    this
-  }
-
-
-  def moveSync(from: String, to: String):FileSystem = {
-    internal.moveSync(from, to)
-    this
-  }
-
-
-  def openSync(path: String):AsyncFile = {
-    internal.openSync(path)
-  }
-
-  def openSync(path: String, perms: String):AsyncFile = {
-    internal.openSync(path, perms)
-  }
-
-  def openSync(path: String, perms: String, createNew: Boolean):AsyncFile =  {
-    internal.openSync(path, perms, createNew)
-  }
-
-  def openSync(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean):AsyncFile =
-    internal.openSync(path, perms, read, write, createNew)
-
-  def openSync(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, flush: Boolean):AsyncFile =
-    internal.openSync(path, perms, read, write, createNew, flush)
-
-
-  def propsSync(path: String):FileProps = internal.propsSync(path)
-
-
-  def readDirSync(path: String):Array[String] = internal.readDirSync(path)
-
-  def readDirSync(path: String, filter: String):Array[String] = internal.readDirSync(path, filter)
-
-
-  def readFile(path: String, handler: (AsyncResult[Buffer]) => Unit):FileSystem = {
-    internal.readFile(path, handler)
-    this
-  }
-
-
-  def readFileSync(path: String):Buffer =
-    internal.readFileSync(path)
-
-  def readSymlink(link: String, handler: (AsyncResult[String]) => Unit):FileSystem = {
-    internal.readSymlink(link, handler)
-    this
-  }
-
-  def readSymlink(link: String):String = internal.readSymlinkSync(link)
-
-
-  def symlink(link: String, existing: String, handler: () => Unit):FileSystem = {
-    internal.symlink(link, existing, handler)
-    this
-  }
-
-  def symlinkSync(link: String, existing: String):FileSystem = {
-    internal.symlinkSync(link, existing)
-    this
-  }
-
-  def truncate(path: String, len: Int, handler: () => Unit):FileSystem = {
-    internal.truncate(path, len, handler)
-    this
-  }
-
-  def truncateSync(path: String, len: Int):FileSystem = {
-    internal.truncateSync(path, len)
-    this
-  }
-
-  def unlink(link: String, handler: () => Unit):FileSystem = {
-    internal.unlink(link, handler)
-    this
-  }
-
-  def unlinkSync(link: String):FileSystem =  {
-    internal.unlinkSync(link)
-    this
-  }
-
-  def writeFileSync(path: String, data: Buffer):FileSystem = {
-    internal.writeFileSync(path, data)
-    this
-  }
-
-
-  private def toAsync[T](h: AsyncResult[AsyncFile] => T)( f: JAsyncFile => AsyncFile ) = asyncHandler(h, f)
-  private val wrapAsync = toAsync( _:AsyncResult[AsyncFile] => Unit)(j => AsyncFile.apply(j))
-
-
-  def open(path: String, handler: (AsyncResult[AsyncFile]) => Unit):FileSystem ={
-    internal.open(path, wrapAsync(handler))
-    this
-  }
-
-  def open(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, flush: Boolean, handler: (AsyncResult[AsyncFile]) => Unit):FileSystem = {
-    internal.open(path, perms, read, write, createNew, flush, wrapAsync(handler))
-    this
-  }
-
-  def open(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, handler: (AsyncResult[AsyncFile]) => Unit):FileSystem = {
-    internal.open(path, perms, read, write, createNew, wrapAsync(handler))
-    this
-  }
-
-  def open(path: String, perms: String, createNew: Boolean, handler: (AsyncResult[AsyncFile]) => Unit):FileSystem = {
-    internal.open(path, perms, createNew, wrapAsync(handler))
-    this
-  }
-
-  def open(path: String, perms: String, handler: (AsyncResult[AsyncFile]) => Unit):FileSystem = {
-    internal.open(path, perms, wrapAsync(handler))
-    this
-  }
-
-
-  def props(path: String, handler: (AsyncResult[FileProps]) => Unit):FileSystem ={
-    internal.props(path, handler)
-    this
-  }
-
-
-  def readDir(path: String, filter: String, handler: (AsyncResult[Array[String]]) => Unit):FileSystem ={
-    internal.readDir(path, filter, handler)
-    this
-  }
-
-  def readDir(path: String, handler: (AsyncResult[Array[String]]) => Unit):FileSystem ={
-    internal.readDir(path, handler)
-    this
-  }
-
-  def move(from: String, to: String, handler: AsyncResult[Unit] => Unit):FileSystem ={
-    internal.move(from, to, voidAsyncHandler(handler))
-    this
-  }
-
-  def copy(from: String, to: String, handler: AsyncResult[Unit] => Unit):FileSystem ={
-    internal.copy(from, to, voidAsyncHandler(handler))
-    this
-  }
-
-  def writeFile(path: String, data: Buffer, handler: () => FileSystem):FileSystem ={
-    internal.writeFile(path, data, new Handler[AsyncResult[Void]]() {
-      override def handle(result: AsyncResult[Void]) = {
-        handler()
-      }
-    })
-    this
-  }
-
-  def writeFile(path:String, data:String, handler: () => FileSystem):FileSystem={
-    writeFile(path, new org.vertx.java.core.buffer.Buffer(data), handler)
-    this
-  }
-
+class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem with VertxWrapper {
+  override type InternalType = JFileSystem
+
+  override def chmod(x$1: String, x$2: String, x$3: String, x$4: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def chmod(x$1: String, x$2: String, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def chmodSync(x$1: String, x$2: String, x$3: String): org.vertx.java.core.file.FileSystem = ???
+  override def chmodSync(x$1: String, x$2: String): org.vertx.java.core.file.FileSystem = ???
+  override def copy(x$1: String, x$2: String, x$3: Boolean, x$4: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def copy(x$1: String, x$2: String, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def copySync(x$1: String, x$2: String, x$3: Boolean): org.vertx.java.core.file.FileSystem = ???
+  override def copySync(x$1: String, x$2: String): org.vertx.java.core.file.FileSystem = ???
+  override def createFile(x$1: String, x$2: String, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def createFile(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def createFileSync(x$1: String, x$2: String): org.vertx.java.core.file.FileSystem = ???
+  override def createFileSync(x$1: String): org.vertx.java.core.file.FileSystem = ???
+  override def delete(x$1: String, x$2: Boolean, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def delete(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def deleteSync(x$1: String, x$2: Boolean): org.vertx.java.core.file.FileSystem = ???
+  override def deleteSync(x$1: String): org.vertx.java.core.file.FileSystem = ???
+  override def exists(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[java.lang.Boolean]]): org.vertx.java.core.file.FileSystem = ???
+  override def existsSync(x$1: String): Boolean = ???
+  override def fsProps(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[org.vertx.java.core.file.FileSystemProps]]): org.vertx.java.core.file.FileSystem = ???
+  override def fsPropsSync(x$1: String): org.vertx.java.core.file.FileSystemProps = ???
+  override def link(x$1: String, x$2: String, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def linkSync(x$1: String, x$2: String): org.vertx.java.core.file.FileSystem = ???
+  override def lprops(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[org.vertx.java.core.file.FileProps]]): org.vertx.java.core.file.FileSystem = ???
+  override def lpropsSync(x$1: String): org.vertx.java.core.file.FileProps = ???
+  override def mkdir(x$1: String, x$2: String, x$3: Boolean, x$4: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def mkdir(x$1: String, x$2: String, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def mkdir(x$1: String, x$2: Boolean, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def mkdir(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def mkdirSync(x$1: String, x$2: String, x$3: Boolean): org.vertx.java.core.file.FileSystem = ???
+  override def mkdirSync(x$1: String, x$2: String): org.vertx.java.core.file.FileSystem = ???
+  override def mkdirSync(x$1: String, x$2: Boolean): org.vertx.java.core.file.FileSystem = ???
+  override def mkdirSync(x$1: String): org.vertx.java.core.file.FileSystem = ???
+  override def move(x$1: String, x$2: String, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def moveSync(x$1: String, x$2: String): org.vertx.java.core.file.FileSystem = ???
+  override def open(x$1: String, x$2: String, x$3: Boolean, x$4: Boolean, x$5: Boolean, x$6: Boolean, x$7: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[org.vertx.java.core.file.AsyncFile]]): org.vertx.java.core.file.FileSystem = ???
+  override def open(x$1: String, x$2: String, x$3: Boolean, x$4: Boolean, x$5: Boolean, x$6: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[org.vertx.java.core.file.AsyncFile]]): org.vertx.java.core.file.FileSystem = ???
+  override def open(x$1: String, x$2: String, x$3: Boolean, x$4: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[org.vertx.java.core.file.AsyncFile]]): org.vertx.java.core.file.FileSystem = ???
+  override def open(x$1: String, x$2: String, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[org.vertx.java.core.file.AsyncFile]]): org.vertx.java.core.file.FileSystem = ???
+  override def open(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[org.vertx.java.core.file.AsyncFile]]): org.vertx.java.core.file.FileSystem = ???
+  override def openSync(x$1: String, x$2: String, x$3: Boolean, x$4: Boolean, x$5: Boolean, x$6: Boolean): org.vertx.java.core.file.AsyncFile = ???
+  override def openSync(x$1: String, x$2: String, x$3: Boolean, x$4: Boolean, x$5: Boolean): org.vertx.java.core.file.AsyncFile = ???
+  override def openSync(x$1: String, x$2: String, x$3: Boolean): org.vertx.java.core.file.AsyncFile = ???
+  override def openSync(x$1: String, x$2: String): org.vertx.java.core.file.AsyncFile = ???
+  override def openSync(x$1: String): org.vertx.java.core.file.AsyncFile = ???
+  override def props(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[org.vertx.java.core.file.FileProps]]): org.vertx.java.core.file.FileSystem = ???
+  override def propsSync(x$1: String): org.vertx.java.core.file.FileProps = ???
+  override def readDir(x$1: String, x$2: String, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Array[String]]]): org.vertx.java.core.file.FileSystem = ???
+  override def readDir(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Array[String]]]): org.vertx.java.core.file.FileSystem = ???
+  override def readDirSync(x$1: String, x$2: String): Array[String] = ???
+  override def readDirSync(x$1: String): Array[String] = ???
+  override def readFile(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[org.vertx.java.core.buffer.Buffer]]): org.vertx.java.core.file.FileSystem = ???
+  override def readFileSync(x$1: String): org.vertx.java.core.buffer.Buffer = ???
+  override def readSymlink(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[String]]): org.vertx.java.core.file.FileSystem = ???
+  override def readSymlinkSync(x$1: String): String = ???
+  override def symlink(x$1: String, x$2: String, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def symlinkSync(x$1: String, x$2: String): org.vertx.java.core.file.FileSystem = ???
+  override def truncate(x$1: String, x$2: Long, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def truncateSync(x$1: String, x$2: Long): org.vertx.java.core.file.FileSystem = ???
+  override def unlink(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def unlinkSync(x$1: String): org.vertx.java.core.file.FileSystem = ???
+  override def writeFile(x$1: String, x$2: org.vertx.java.core.buffer.Buffer, x$3: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[Void]]): org.vertx.java.core.file.FileSystem = ???
+  override def writeFileSync(x$1: String, x$2: org.vertx.java.core.buffer.Buffer): org.vertx.java.core.file.FileSystem = ???
 }

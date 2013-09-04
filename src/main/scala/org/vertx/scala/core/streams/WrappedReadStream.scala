@@ -5,19 +5,21 @@ import org.vertx.java.core.streams.{ ReadStream => JReadStream }
 import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
 import org.vertx.scala.VertxWrapper
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.Handler
 
 /**
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-trait WrappedReadStream[ST <: ReadStream[ST] with ExceptionSupport[ST], JT <: JReadStream[JT] with JExceptionSupport[JT]] extends WrappedExceptionSupport[ST, JT] with ReadStream[ST] { this: ST =>
+trait WrappedReadStream extends WrappedExceptionSupport with ReadStream {
+  override def dataHandler(handler: Handler[Buffer]): this.type = wrap(internal.dataHandler(handler))
+  override def dataHandler(handler: Buffer => Unit): this.type = dataHandler(convertFunctionToParameterisedHandler(handler))
 
-  override def dataHandler(handler: Buffer => Unit): ST = wrap(internal.dataHandler(handler))
+  override def endHandler(handler: Handler[Void]): this.type = wrap(internal.endHandler(handler))
+  override def endHandler(handler: () => Unit): this.type = endHandler(convertFunctionToVoidHandler(handler))
 
-  override def endHandler(handler: () => Unit): ST = wrap(internal.endHandler(handler))
+  override def pause(): this.type = wrap(internal.pause())
 
-  override def pause(): ST = wrap(internal.pause())
+  override def resume(): this.type = wrap(internal.resume())
 
-  override def resume(): ST = wrap(internal.resume())
-
-  def toJava(): JReadStream[JT] = internal
+  override def toJava(): InternalType = internal
 }
