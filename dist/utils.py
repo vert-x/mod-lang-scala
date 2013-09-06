@@ -13,7 +13,7 @@ import sys
 import readline
 import shutil
 import random
-#settings_file = '%s/.escalante' % os.getenv('HOME')
+#settings_file = '%s/.mod-lang-scala' % os.getenv('HOME')
 
 ### Known config keys
 maven_pom_xml_namespace = "http://maven.apache.org/POM/4.0.0"
@@ -237,7 +237,7 @@ class Git(object):
 
             push_urls = map(remove_noise, filter(push, cleaned))
             return len(push_urls) == 1 and \
-                   push_urls[0] == 'git@github.com:escalante/sbt-escalante.git'
+                   push_urls[0] == 'git@github.com:vert-x/mod-lang-scala.git'
 
     def clean_branches(self, raw_branch_list):
         return map(self.clean, filter(self.non_empty, raw_branch_list))
@@ -304,7 +304,7 @@ class Git(object):
 
 
 class DryRun(object):
-    location_root = "%s/%s" % (os.getenv("HOME"), "escalante-release-dry-run")
+    location_root = "%s/%s" % (os.getenv("HOME"), "mod-lang-scala-release-dry-run")
 
     def find_version(self, url):
         return os.path.split(url)[1]
