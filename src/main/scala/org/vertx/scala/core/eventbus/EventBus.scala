@@ -20,8 +20,36 @@ import org.vertx.java.core.{ AsyncResult, Handler }
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.eventbus.{ EventBus => JEventBus }
 import org.vertx.java.core.eventbus.{ Message => JMessage }
-import org.vertx.scala.core.json.{JsonObject, JsonArray}
+import org.vertx.scala.core.json.{ JsonObject, JsonArray }
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.scala.VertxWrapper
+import scala.collection.concurrent.Map
+import java.util.concurrent.ConcurrentHashMap
+
+class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
+  override type InternalType = JEventBus
+
+  val handlers: Map[_ <: Message[_] => Unit, Handler[_]] = Map.empty()
+
+  def publish[T: MessageType](address: String, value: T): EventBus =
+    implicitly[MessageType[T]].publish(this, address, value)
+
+  def send[T: MessageType](address: String, value: T): EventBus =
+    implicitly[MessageType[T]].send(this, address, value)
+
+  def send[T: MessageType, RT <: Message[RT]](address: String, value: T, handler: RT => Unit): EventBus = {
+    val mappedHandler = handlers.getOrElseUpdate(handler, convertFunctionToParameterisedHandler(handler))
+    implicitly[MessageType[T]].send(this, address, value, mappedHandler)
+  }
+
+  def close(x$1: AsyncResult[Void] => Unit): Unit = ???
+
+  def registerHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = wrap(internal.registerHandler(x$1, x$2))
+  def registerHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit, x$3: AsyncResult[Void] => Unit): EventBus = ???
+  def registerLocalHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = ???
+  def unregisterHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = ???
+  def unregisterHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit, x$3: AsyncResult[Void] => Unit): EventBus = ???
+}
 
 /*
  * @author swilliams
@@ -29,100 +57,4 @@ import org.vertx.scala.core.FunctionConverters._
  */
 object EventBus {
   def apply(actual: JEventBus) = new EventBus(actual)
-
-  class EventBusHandler[M](val jHandler: Handler[JMessage[M]]) {
-    def unRegisterMe(jBus: JEventBus, address: String, resultHandler: AsyncResult[Unit] => Unit) {
-      jBus.unregisterHandler(address, jHandler, voidAsyncHandler(resultHandler))
-    }
-  }
-
-  implicit def toBusHandler[T](h: Message[T] => Unit): EventBusHandler[T] = {
-    new EventBusHandler[T](convertFunctionToMessageHandler(h))
-  }
-
-}
-
-class EventBus(internal: JEventBus) {
-
-  def registerHandler[T](address: String)(handler: EventBus.EventBusHandler[T], resultHandler: AsyncResult[Unit] => Unit = { ares => }): EventBus = {
-    internal.registerHandler(address, handler.jHandler, voidAsyncHandler(resultHandler))
-    this
-  }
-
-  def registerLocalHandler[T](address: String)(handler: EventBus.EventBusHandler[T]): EventBus = {
-    internal.registerLocalHandler(address, handler.jHandler)
-    this
-  }
-
-  def unregisterHandler[T](address: String)(handler: EventBus.EventBusHandler[T], resultHandler: AsyncResult[Unit] => Unit = { ares => }): EventBus = {
-    handler.unRegisterMe(internal, address, resultHandler)
-    this
-  }
-
-  def send[T](address: String, message: T)(handler: Message[T] => Unit): EventBus = {
-    message match {
-      case str: String =>
-        internal.send(address, str, handler)
-      case boo: Boolean =>
-        internal.send(address, boo, handler)
-      case bff: Buffer =>
-        internal.send(address, bff, handler)
-      case byt: Byte =>
-        internal.send(address, Byte.box(byt), handler)
-      case bya: Array[Byte] =>
-        internal.send(address, bya, handler)
-      case chr: Char =>
-        internal.send(address, Char.box(chr), handler)
-      case dbl: Double =>
-        internal.send(address, dbl, handler)
-      case flt: Float =>
-        internal.send(address, Float.box(flt), handler)
-      case int: Int =>
-        internal.send(address, Int.box(int), handler)
-      case jsa: JsonArray =>
-        internal.send(address, jsa, handler)
-      case jso: JsonObject =>
-        internal.send(address, jso, handler)
-      case lng: Long =>
-        internal.send(address, Long.box(lng), handler)
-      case srt: Short =>
-        internal.send(address, Short.box(srt), handler)
-      case _ => throw new IllegalArgumentException("Invalid message " + message.getClass)
-    }
-    this
-  }
-
-  def publish[T](address: String, message: T): EventBus = {
-    message match {
-      case str: String =>
-        internal.publish(address, str)
-      case boo: Boolean =>
-        internal.publish(address, boo)
-      case bff: Buffer =>
-        internal.publish(address, bff)
-      case byt: Byte =>
-        internal.publish(address, Byte.box(byt))
-      case bya: Array[Byte] =>
-        internal.publish(address, bya)
-      case chr: Char =>
-        internal.publish(address, Char.box(chr))
-      case dbl: Double =>
-        internal.publish(address, dbl)
-      case flt: Float =>
-        internal.publish(address, Float.box(flt))
-      case int: Int =>
-        internal.publish(address, Int.box(int))
-      case jsa: JsonArray =>
-        internal.publish(address, jsa)
-      case jso: JsonObject =>
-        internal.publish(address, jso)
-      case lng: Long =>
-        internal.publish(address, Long.box(lng))
-      case srt: Short =>
-        internal.publish(address, Short.box(srt))
-      case _ => throw new IllegalArgumentException("Invalid message " + message.getClass)
-    }
-    this
-  }
-
 }
