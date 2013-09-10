@@ -17,6 +17,28 @@
 apply plugin: 'maven'
 apply plugin: 'signing'
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// custom maven tasks
+
+task sourceJar(type: Jar) {
+  description = 'Builds a source jar artifact suitable for maven deployment.'
+  classifier = 'sources'
+  from sourceSets.main.scala
+}
+
+task javadocJar(type: Jar) {
+  description = 'Builds a javadoc jar artifact suitable for maven deployment.'
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+javadocJar.dependsOn javadoc
+
+build.dependsOn sourceJar, javadocJar
+
+artifacts {
+  archives sourceJar, javadocJar
+}
+
 def loadProperties(String sourceFileName) {
   def config = new Properties()
   def propFile = new File(sourceFileName)
