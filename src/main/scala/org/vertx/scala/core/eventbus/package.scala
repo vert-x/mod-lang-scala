@@ -2,25 +2,147 @@ package org.vertx.scala.core
 
 import org.vertx.java.core.eventbus.{ EventBus => JEventBus }
 import org.vertx.java.core.Handler
+import org.vertx.java.core.buffer.{ Buffer => JBuffer }
+import org.vertx.scala.core.buffer.Buffer
+import org.vertx.java.core.json.JsonObject
+import org.vertx.java.core.json.JsonArray
+import org.vertx.java.core.eventbus.{ EventBus => JEventBus }
+import org.vertx.java.core.eventbus.{ Message => JMessage }
+import org.vertx.scala.core.FunctionConverters._
 
 /**
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 package object eventbus {
-  trait MessageType[T] {
-    def publish(eventBus: EventBus, address: String, message: T): EventBus
-    def send(eventBus: EventBus, address: String, message: T): EventBus
-    def send[RT: EventBusType](eventBus: EventBus, address: String, message: T, replyHandler: RT => Unit): EventBus
-
-    def wrap(eventBus: EventBus, x: => Unit): EventBus = {
-      x
-      eventBus
-    } 
+  sealed trait MessageData {
+    type InternalType
+    val data: InternalType
+    def send(eb: JEventBus, address: String)
+    def send[X](eb: JEventBus, address: String, resultHandler: Handler[JMessage[X]])
+    def publish(eb: JEventBus, address: String)
+    def reply[A](msg: JMessage[A])
+    def reply[A, B](msg: JMessage[A], resultHandler: Handler[JMessage[B]])
   }
 
-  implicit object StringElem extends MessageType[String] {
-    def publish(eventBus: EventBus, address: String, message: String): EventBus = wrap(eventBus, eventBus.toJava.publish(address, message))
-    def send(eventBus: EventBus, address: String, message: String): EventBus = wrap(eventBus, eventBus.toJava.send(address, message))
-    def send[RT: EventBusType](eventBus: EventBus, address: String, message: String, replyHandler: Handler[_]): EventBus = wrap(eventBus, eventBus.toJava.send(address, message, replyHandler))
-  } 
+  sealed trait JMessageData extends MessageData {
+    def toScalaMessageData(): MessageData
+  }
+
+  implicit class StringData(val data: String) extends MessageData {
+    type InternalType = String
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data, handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
+
+  implicit class JsonObjectData(val data: JsonObject) extends MessageData {
+    type InternalType = JsonObject
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data, handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
+
+  implicit class JsonArrayData(val data: JsonArray) extends MessageData {
+    type InternalType = JsonArray
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data, handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
+
+  implicit class BufferData(val data: Buffer) extends MessageData {
+    type InternalType = Buffer
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data.internal, handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
+
+  implicit class JBufferData(val data: JBuffer) extends JMessageData {
+    type InternalType = JBuffer
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data.internal, handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+    def toScalaMessageData(): BufferData = BufferData(data)
+  }
+
+  implicit class ByteArrayData(val data: Array[Byte]) extends MessageData {
+    type InternalType = Array[Byte]
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data, handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
+
+  implicit class IntegerData(val data: Integer) extends MessageData {
+    type InternalType = Integer
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data, handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
+
+  implicit class LongData(val data: Long) extends MessageData {
+    type InternalType = Long
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, Long.box(data), handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
+
+  implicit class ShortData(val data: Short) extends MessageData {
+    type InternalType = Short
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, Short.box(data), handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
+
+  implicit class CharacterData(val data: Character) extends MessageData {
+    type InternalType = Character
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data, handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
+
+  implicit class BooleanData(val data: Boolean) extends MessageData {
+    type InternalType = Boolean
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data, handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
+
+  implicit class FloatData(val data: Float) extends MessageData {
+    type InternalType = Float
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, Float.box(data), handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
+
+  implicit class DoubleData(val data: Double) extends MessageData {
+    type InternalType = Double
+    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data, handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
+    def reply[A](msg: JMessage[A]) = msg.reply(data)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+  }
 }

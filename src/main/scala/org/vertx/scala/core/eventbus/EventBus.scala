@@ -13,42 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.vertx.scala.core.eventbus
 
-import org.vertx.java.core.{ AsyncResult, Handler }
-import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.eventbus.{ EventBus => JEventBus }
-import org.vertx.java.core.eventbus.{ Message => JMessage }
-import org.vertx.scala.core.json.{ JsonObject, JsonArray }
-import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.VertxWrapper
 import scala.collection.concurrent.Map
-import java.util.concurrent.ConcurrentHashMap
 
+import org.vertx.java.core.{ AsyncResult, Handler }
+import org.vertx.java.core.eventbus.{ EventBus => JEventBus, Message => JMessage }
+import org.vertx.scala.VertxWrapper
+import org.vertx.scala.core.FunctionConverters.convertFunctionToParameterisedHandler
+
+/**
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ */
 class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
   override type InternalType = JEventBus
 
-  val handlers: Map[_ <: Message[_] => Unit, Handler[_]] = Map.empty()
+  val handlers: Map[Message[MessageData] => Unit, Handler[_ <: JMessage[_]]] = Map.empty()
 
-  def publish[T: MessageType](address: String, value: T): EventBus =
-    implicitly[MessageType[T]].publish(this, address, value)
+  sealed private trait SendOrPublish
+  private case class Publish(address: String, value: MessageData) extends SendOrPublish
+  private case class Send[X](address: String, value: MessageData, replyHandler: Option[Handler[JMessage[X]]]) extends SendOrPublish
 
-  def send[T: MessageType](address: String, value: T): EventBus =
-    implicitly[MessageType[T]].send(this, address, value)
+  def publish[T <% MessageData](address: String, value: T): EventBus =
+    sendOrPublish(Publish(address, value))
 
-  def send[T: MessageType, RT <: Message[RT]](address: String, value: T, handler: RT => Unit): EventBus = {
-    val mappedHandler = handlers.getOrElseUpdate(handler, convertFunctionToParameterisedHandler(handler))
-    implicitly[MessageType[T]].send(this, address, value, mappedHandler)
+  def send[T <% MessageData](address: String, value: T): EventBus =
+    sendOrPublish(Send(address, value, None))
+
+  def send[T <% MessageData](address: String, value: T, handler: Message[MessageData] => Unit): EventBus = {
+    val mappedHandler = convertFunctionToParameterisedHandler(handler compose { sth: JMessage[T] => Message.apply(sth) })
+    handlers.getOrElseUpdate(handler, mappedHandler)
+    sendOrPublish(Send(address, value, Some(mappedHandler)))
   }
 
   def close(x$1: AsyncResult[Void] => Unit): Unit = ???
 
-  def registerHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = wrap(internal.registerHandler(x$1, x$2))
-  def registerHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit, x$3: AsyncResult[Void] => Unit): EventBus = ???
-  def registerLocalHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = ???
-  def unregisterHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = ???
-  def unregisterHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit, x$3: AsyncResult[Void] => Unit): EventBus = ???
+  //  def registerHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = wrap(internal.registerHandler(x$1, x$2))
+  //  def registerHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit, x$3: AsyncResult[Void] => Unit): EventBus = ???
+  //  def registerLocalHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = ???
+  //  def unregisterHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = ???
+  //  def unregisterHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit, x$3: AsyncResult[Void] => Unit): EventBus = ???
+
+  private def sendOrPublish(cmd: SendOrPublish): EventBus = {
+    cmd match {
+      case Publish(address, value) => value.publish(internal, address)
+      case Send(address, value, None) => value.send(internal, address)
+      case Send(address, value, Some(handler)) => value.send(internal, address, handler)
+    }
+    this
+  }
 }
 
 /*
