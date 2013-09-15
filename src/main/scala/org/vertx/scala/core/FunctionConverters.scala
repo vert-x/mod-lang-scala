@@ -46,12 +46,6 @@ trait FunctionConverters {
     override def handle(event: AsyncResult[T]) = func(event)
   }
 
-  implicit def convertFunctionToMessageHandler[T](func: Message[T] => Unit): Handler[JMessage[T]] = new Handler[JMessage[T]] {
-    def handle(event: JMessage[T]) {
-      func(Message(event))
-    }
-  }
-
   def convertScalaFnToJavaHandler[JT, ST](map: JT => ST)(fn: ST => Unit): Handler[JT] =
     convertFunctionToParameterisedHandler(fn.compose(map))
 
