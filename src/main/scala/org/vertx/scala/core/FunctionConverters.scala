@@ -30,6 +30,10 @@ import org.vertx.scala.VertxWrapper
  */
 trait FunctionConverters {
 
+  implicit def convertToUnitToVoidHandler(fn: => Unit): Handler[Void] = new Handler[Void]() {
+    override def handle(event: Void) = fn
+  }
+
   implicit def convertFunctionToVoidHandler(func: () => Unit): Handler[Void] = new Handler[Void]() {
     override def handle(event: Void) = func()
   }

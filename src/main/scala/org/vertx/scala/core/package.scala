@@ -26,6 +26,9 @@ import org.vertx.scala.core.net.{ NetServer, NetClient }
 import org.vertx.scala.core.sockjs.SockJSServer
 import org.vertx.scala.core.file.FileSystem
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.shareddata.SharedData
+import org.vertx.java.core.Context
+import org.vertx.java.core.Handler
 
 package object core {
 
@@ -37,31 +40,101 @@ package object core {
 
   implicit class Vertx(val internal: JVertx) extends AnyVal {
 
-    def eventBus: EventBus = EventBus(internal.eventBus)
+    /**
+     * Create a TCP/SSL server
+     */
+    def createNetServer(): NetServer = NetServer(internal.createNetServer())
 
+    /**
+     * Create a TCP/SSL client
+     */
+    def createNetClient(): NetClient = NetClient(internal.createNetClient())
+
+    /**
+     * Create an HTTP/HTTPS server
+     */
+    def createHttpServer(): HttpServer = HttpServer(internal.createHttpServer())
+
+    /**
+     * Create a HTTP/HTTPS client
+     */
+    def createHttpClient(): HttpClient = HttpClient(internal.createHttpClient())
+
+    /**
+     * Create a SockJS server that wraps an HTTP server
+     */
+    def createSockJSServer(httpServer: HttpServer): SockJSServer = SockJSServer(internal.createSockJSServer(httpServer))
+
+    /**
+     * The File system object
+     */
+    def fileSystem(): FileSystem = FileSystem(internal.fileSystem())
+
+    /**
+     * The event bus
+     */
+    def eventBus(): EventBus = EventBus(internal.eventBus())
+
+    /**
+     * The shared data object
+     */
+    def sharedData(): SharedData = internal.sharedData()
+
+    /**
+     * Set a one-shot timer to fire after {@code delay} milliseconds, at which point {@code handler} will be called with
+     * the id of the timer.
+     * @return the unique ID of the timer
+     */
+    def setTimer(delay: Long, handler: Long => Unit): Long = {
+      internal.setTimer(delay, convertFunctionToParameterisedHandler(handler.compose {
+        l: java.lang.Long => Long.box(l)
+      }))
+    }
+
+    /**
+     * Set a periodic timer to fire every {@code delay} milliseconds, at which point {@code handler} will be called with
+     * the id of the timer.
+     * @return the unique ID of the timer
+     */
+    def setPeriodic(delay: Long, handler: Long => Unit): Long = {
+      internal.setPeriodic(delay, convertFunctionToParameterisedHandler(handler.compose {
+        l: java.lang.Long => Long.box(l)
+      }))
+    }
+
+    /**
+     * Cancel the timer with the specified {@code id}. Returns {@code} true if the timer was successfully cancelled, or
+     * {@code false} if the timer does not exist.
+     */
     def cancelTimer(id: Long): Boolean = internal.cancelTimer(id)
 
-    def createHttpServer(): HttpServer = HttpServer(internal.createHttpServer)
+    /**
+     * @return The current context
+     */
+    def currentContext(): Context = internal.currentContext()
 
-    def createHttpClient(): HttpClient = HttpClient(internal.createHttpClient)
+    /**
+     * Put the handler on the event queue for the current loop (or worker context) so it will be run asynchronously ASAP after this event has
+     * been processed
+     */
+    def runOnContext(action: => Unit): Unit = internal.runOnContext(convertToUnitToVoidHandler(action))
 
-    def createNetClient(): NetClient = NetClient(internal.createNetClient)
+    /**
+     * Is the current thread an event loop thread?
+     * @return true if current thread is an event loop thread
+     */
+    def isEventLoop(): Boolean = internal.isEventLoop()
 
-    def createNetServer(): NetServer = NetServer(internal.createNetServer)
+    /**
+     * Is the current thread an worker thread?
+     * @return true if current thread is an worker thread
+     */
+    def isWorker(): Boolean = internal.isWorker()
 
-    def fileSystem: FileSystem = FileSystem(internal.fileSystem)
-
-    def isEventLoop: Boolean = internal.isEventLoop
-
-    def isWorker: Boolean = internal.isWorker
-
-    def runOnLoop(handler: () => Unit): Unit = internal.runOnLoop(handler)
-
-    def periodic(delay: Long)(handler: (java.lang.Long) => Unit): Unit = internal.setPeriodic(delay, handler)
-
-    def timer(delay: Long)(handler: (java.lang.Long) => Unit): Unit = internal.setTimer(delay, handler)
-
-    def sharedData: SharedData = SharedData(internal.sharedData)
+    /**
+     * Stop the eventbus and any resource managed by the eventbus.
+     */
+    def stop(): Unit = internal.stop()
 
   }
 
