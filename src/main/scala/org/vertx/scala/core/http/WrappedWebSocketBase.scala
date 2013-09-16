@@ -5,7 +5,7 @@ import org.vertx.scala.core.streams.WrappedReadWriteStream
 import org.vertx.java.core.Handler
 
 trait WrappedWebSocketBase extends WrappedReadWriteStream {
-  override type InternalType <: WebSocketBase[_]
+  override type InternalType <: WebSocketBase[InternalType]
 
   def binaryHandlerID(): String = internal.binaryHandlerID()
   def close(): Unit = internal.close()

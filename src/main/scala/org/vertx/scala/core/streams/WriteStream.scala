@@ -61,5 +61,9 @@ trait WriteStream extends ExceptionSupport {
    */
   def drainHandler(handler: Handler[Void]): this.type
 
+  /**
+   * Set a drain handler on the stream. If the write queue is full, then the handler will be called when the write
+   * queue has been reduced to maxSize / 2. See {@link Pump} for an example of this being used.
+   */
   def drainHandler(handler: () => Unit): this.type
 }

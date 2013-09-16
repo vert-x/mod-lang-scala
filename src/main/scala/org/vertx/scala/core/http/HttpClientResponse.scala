@@ -16,15 +16,16 @@
 
 package org.vertx.scala.core.http
 
+// FIXME Get rid of Java types
 import scala.collection.JavaConverters._
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{ HttpClientResponse => JHttpClientResponse }
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.Handler
+import org.vertx.scala.core.Handler
 import org.vertx.scala.core.streams.WrappedReadWriteStream
 import org.vertx.scala.core.streams.WrappedReadStream
 import org.vertx.scala.core.streams.WrappedReadStream
-import org.vertx.java.core.MultiMap
+import org.vertx.scala.core.MultiMap
 import org.vertx.scala.core.net.NetSocket
 
 /**

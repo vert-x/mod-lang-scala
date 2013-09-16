@@ -32,6 +32,10 @@ import org.vertx.java.core.Handler
 
 package object core {
 
+  type AsyncResult[T] = org.vertx.java.core.AsyncResult[T]
+  type Handler[T] = org.vertx.java.core.Handler[T]
+  type MultiMap = org.vertx.java.core.MultiMap
+
   def newVertx() = new Vertx(JVertxFactory.newVertx())
 
   def newVertx(port: Int, hostname: String) = new Vertx(JVertxFactory.newVertx(port, hostname))

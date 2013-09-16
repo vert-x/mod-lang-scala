@@ -30,8 +30,7 @@ import org.vertx.scala.core.WrappedClientSSLSupport
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object NetClient {
-  def apply(actual: JNetClient) =
-    new NetClient(actual)
+  def apply(actual: JNetClient) = new NetClient(actual)
 }
 
 class NetClient(protected[this] val internal: JNetClient) extends JNetClient with WrappedTCPSupport with WrappedClientSSLSupport {

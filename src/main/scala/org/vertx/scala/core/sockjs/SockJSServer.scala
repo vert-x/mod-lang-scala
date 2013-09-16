@@ -30,8 +30,7 @@ import org.vertx.scala.VertxWrapper
  * @author swilliams
  */
 object SockJSServer {
-  def apply(internal: JSockJSServer) =
-    new SockJSServer(internal)
+  def apply(internal: JSockJSServer) = new SockJSServer(internal)
 }
 
 /**

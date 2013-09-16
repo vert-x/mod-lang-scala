@@ -16,51 +16,57 @@
 
 package org.vertx.scala.core.http
 
-import org.vertx.java.core.http.{HttpClient => JHttpClient}
-import org.vertx.scala.core.{WrappedClientSSLSupport, WrappedTCPSupport}
+// FIXME Java types
+import org.vertx.java.core.http.{ HttpClient => JHttpClient }
+import org.vertx.java.core.http.{ HttpClientResponse => JHttpClientResponse }
+import org.vertx.java.core.http.{ WebSocket => JWebSocket }
+import org.vertx.scala.core.{ WrappedClientSSLSupport, WrappedTCPSupport }
+import org.vertx.scala.core.Handler
+import org.vertx.scala.core.MultiMap
 
 /**
  * @author swilliams
  * @author Galder Zamarreño
  */
 object HttpClient {
-
-  def apply(actual: JHttpClient) =
-    new HttpClient(actual)
+  def apply(actual: JHttpClient) = new HttpClient(actual)
 }
 
+/**
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ */
 class HttpClient(protected[this] val internal: JHttpClient) extends JHttpClient with WrappedTCPSupport with WrappedClientSSLSupport {
   override type InternalType = JHttpClient
 
-  // Members declared in org.vertx.java.core.http.HttpClient
+  // Members declared in HttpClient
   def close(): Unit = ???
-  def connect(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClientRequest = ???
-  def connectWebsocket(x$1: String, x$2: org.vertx.java.core.http.WebSocketVersion, x$3: org.vertx.java.core.MultiMap, x$4: org.vertx.java.core.Handler[org.vertx.java.core.http.WebSocket]): org.vertx.java.core.http.HttpClient = ???
-  def connectWebsocket(x$1: String, x$2: org.vertx.java.core.http.WebSocketVersion, x$3: org.vertx.java.core.Handler[org.vertx.java.core.http.WebSocket]): org.vertx.java.core.http.HttpClient = ???
-  def connectWebsocket(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.http.WebSocket]): org.vertx.java.core.http.HttpClient = ???
-  def delete(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClientRequest = ???
-  def exceptionHandler(x$1: org.vertx.java.core.Handler[Throwable]): org.vertx.java.core.http.HttpClient = ???
-  def get(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClientRequest = ???
+  def connect(x$1: String, x$2: Handler[JHttpClientResponse]): HttpClientRequest = ???
+  def connectWebsocket(x$1: String, x$2: WebSocketVersion, x$3: MultiMap, x$4: Handler[JWebSocket]): HttpClient = ???
+  def connectWebsocket(x$1: String, x$2: WebSocketVersion, x$3: Handler[JWebSocket]): HttpClient = ???
+  def connectWebsocket(x$1: String, x$2: Handler[JWebSocket]): HttpClient = ???
+  def delete(x$1: String, x$2: Handler[JHttpClientResponse]): HttpClientRequest = ???
+  def exceptionHandler(x$1: Handler[Throwable]): HttpClient = ???
+  def get(x$1: String, x$2: Handler[JHttpClientResponse]): HttpClientRequest = ???
   def getConnectTimeout(): Int = ???
   def getHost(): String = ???
   def getMaxPoolSize(): Int = ???
-  def getNow(x$1: String, x$2: org.vertx.java.core.MultiMap, x$3: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClient = ???
-  def getNow(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClient = ???
+  def getNow(x$1: String, x$2: MultiMap, x$3: Handler[JHttpClientResponse]): HttpClient = ???
+  def getNow(x$1: String, x$2: Handler[JHttpClientResponse]): HttpClient = ???
   def getPort(): Int = ???
-  def head(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClientRequest = ???
+  def head(x$1: String, x$2: Handler[JHttpClientResponse]): HttpClientRequest = ???
   def isKeepAlive(): Boolean = ???
   def isVerifyHost(): Boolean = ???
-  def options(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClientRequest = ???
-  def patch(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClientRequest = ???
-  def post(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClientRequest = ???
-  def put(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClientRequest = ???
-  def request(x$1: String, x$2: String, x$3: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClientRequest = ???
-  def setConnectTimeout(x$1: Int): org.vertx.java.core.http.HttpClient = ???
-  def setHost(x$1: String): org.vertx.java.core.http.HttpClient = ???
-  def setKeepAlive(x$1: Boolean): org.vertx.java.core.http.HttpClient = ???
-  def setMaxPoolSize(x$1: Int): org.vertx.java.core.http.HttpClient = ???
-  def setPort(x$1: Int): org.vertx.java.core.http.HttpClient = ???
-  def setVerifyHost(x$1: Boolean): org.vertx.java.core.http.HttpClient = ???
-  def trace(x$1: String, x$2: org.vertx.java.core.Handler[org.vertx.java.core.http.HttpClientResponse]): org.vertx.java.core.http.HttpClientRequest = ???
+  def options(x$1: String, x$2: Handler[JHttpClientResponse]): HttpClientRequest = ???
+  def patch(x$1: String, x$2: Handler[JHttpClientResponse]): HttpClientRequest = ???
+  def post(x$1: String, x$2: Handler[JHttpClientResponse]): HttpClientRequest = ???
+  def put(x$1: String, x$2: Handler[JHttpClientResponse]): HttpClientRequest = ???
+  def request(x$1: String, x$2: String, x$3: Handler[JHttpClientResponse]): HttpClientRequest = ???
+  def setConnectTimeout(x$1: Int): HttpClient = ???
+  def setHost(x$1: String): HttpClient = ???
+  def setKeepAlive(x$1: Boolean): HttpClient = ???
+  def setMaxPoolSize(x$1: Int): HttpClient = ???
+  def setPort(x$1: Int): HttpClient = ???
+  def setVerifyHost(x$1: Boolean): HttpClient = ???
+  def trace(x$1: String, x$2: Handler[JHttpClientResponse]): HttpClientRequest = ???
 
 }

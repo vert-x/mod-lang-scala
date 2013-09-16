@@ -16,15 +16,14 @@
 
 package org.vertx.scala.core.http
 
+// FIXME Get rid of Java types
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.http.{ HttpServerRequest => JHttpServerRequest }
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.WrappedReadStream
-import org.vertx.java.core.MultiMap
+import org.vertx.scala.core.MultiMap
 import org.vertx.scala.core.net.NetSocket
-import org.vertx.java.core.Handler
-import org.vertx.java.core.http.HttpServerFileUpload
-import org.vertx.java.core.http.HttpVersion
+import org.vertx.scala.core.Handler
 
 /**
  * Represents a server-side HTTP request.<p>
@@ -82,6 +81,5 @@ class HttpServerRequest(val internal: JHttpServerRequest) extends JHttpServerReq
 }
 
 object HttpServerRequest {
-  def apply(internal: JHttpServerRequest) =
-    new HttpServerRequest(internal)
+  def apply(internal: JHttpServerRequest) = new HttpServerRequest(internal)
 }
