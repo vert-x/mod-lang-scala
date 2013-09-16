@@ -16,89 +16,81 @@
 
 package org.vertx.scala
 
-import org.vertx.java.core.{Vertx => JVertx}
-import org.vertx.java.core.{VertxFactory => JVertxFactory}
+import org.vertx.java.core.{ Vertx => JVertx }
+import org.vertx.java.core.{ VertxFactory => JVertxFactory }
 import org.vertx.java.core.AsyncResult
-import org.vertx.java.core.{Future => JFuture}
+import org.vertx.java.core.{ Future => JFuture }
 import org.vertx.scala.core.eventbus.EventBus
-import org.vertx.scala.core.http.{HttpClient, HttpServerRequest, HttpServer}
-import org.vertx.scala.core.net.{NetServer, NetClient}
+import org.vertx.scala.core.http.{ HttpClient, HttpServerRequest, HttpServer }
+import org.vertx.scala.core.net.{ NetServer, NetClient }
 import org.vertx.scala.core.sockjs.SockJSServer
 import org.vertx.scala.core.file.FileSystem
 import org.vertx.scala.core.FunctionConverters._
 
 package object core {
 
-  def newVertx() =
-    new Vertx(JVertxFactory.newVertx())
+  def newVertx() = new Vertx(JVertxFactory.newVertx())
 
-  def newVertx(port: Int, hostname: String) =
-    new Vertx(JVertxFactory.newVertx(port, hostname))
+  def newVertx(port: Int, hostname: String) = new Vertx(JVertxFactory.newVertx(port, hostname))
 
-  def newVertx(hostname: String) =
-    new Vertx(JVertxFactory.newVertx(hostname))
-
-
+  def newVertx(hostname: String) = new Vertx(JVertxFactory.newVertx(hostname))
 
   implicit class Vertx(val internal: JVertx) extends AnyVal {
 
-  // TODO no vals allowed in value classes. do we need to make it val?
-  // val eventBus:EventBus = EventBus(internal.eventBus)
+    def eventBus: EventBus = EventBus(internal.eventBus)
 
-    def eventBus:EventBus = EventBus(internal.eventBus)
+    def cancelTimer(id: Long): Boolean = internal.cancelTimer(id)
 
-    def cancelTimer(id: Long):Boolean = internal.cancelTimer(id)
+    def createHttpServer(): HttpServer = HttpServer(internal.createHttpServer)
 
-    def createHttpServer():HttpServer = HttpServer(internal.createHttpServer)
+    def createHttpClient(): HttpClient = HttpClient(internal.createHttpClient)
 
-    def createHttpClient():HttpClient = HttpClient(internal.createHttpClient)
+    def createNetClient(): NetClient = NetClient(internal.createNetClient)
 
-    def createNetClient():NetClient = NetClient(internal.createNetClient)
+    def createNetServer(): NetServer = NetServer(internal.createNetServer)
 
-    def createNetServer():NetServer = NetServer(internal.createNetServer)
+    def fileSystem: FileSystem = FileSystem(internal.fileSystem)
 
-    def fileSystem:FileSystem = FileSystem(internal.fileSystem)
+    def isEventLoop: Boolean = internal.isEventLoop
 
-    def isEventLoop:Boolean = internal.isEventLoop
+    def isWorker: Boolean = internal.isWorker
 
-    def isWorker:Boolean = internal.isWorker
+    def runOnLoop(handler: () => Unit): Unit = internal.runOnLoop(handler)
 
-    def runOnLoop(handler: () => Unit):Unit = internal.runOnLoop(handler)
+    def periodic(delay: Long)(handler: (java.lang.Long) => Unit): Unit = internal.setPeriodic(delay, handler)
 
-    def periodic(delay: Long)(handler: (java.lang.Long) => Unit):Unit = internal.setPeriodic(delay, handler)
+    def timer(delay: Long)(handler: (java.lang.Long) => Unit): Unit = internal.setTimer(delay, handler)
 
-    def timer(delay: Long)(handler: (java.lang.Long) => Unit):Unit = internal.setTimer(delay, handler)
-
-    def sharedData:SharedData = SharedData(internal.sharedData)
+    def sharedData: SharedData = SharedData(internal.sharedData)
 
   }
 
   implicit class Future[T](internal: JFuture[T]) extends AsyncResult[T] {
 
-    def complete():Boolean = internal.complete()
+    def complete(): Boolean = internal.complete()
 
-    def setHandler(handler: AsyncResult[T] => Unit):Future[T] = {
+    def setHandler(handler: AsyncResult[T] => Unit): Future[T] = {
       internal.setHandler(handler)
       this
     }
 
-    def setFailure(cause: Throwable):Future[T] = {
+    def setFailure(cause: Throwable): Future[T] = {
       internal.setFailure(cause)
       this
     }
 
-    def setResult(result: T):Future[T] = {
+    def setResult(result: T): Future[T] = {
       internal.setResult(result)
       this
     }
 
-    override def result():T = internal.result()
+    override def result(): T = internal.result()
 
-    override def cause():Throwable = internal.cause()
+    override def cause(): Throwable = internal.cause()
 
-    override def succeeded():Boolean = internal.succeeded()
+    override def succeeded(): Boolean = internal.succeeded()
 
-    override def failed():Boolean = internal.failed()
+    override def failed(): Boolean = internal.failed()
 
   }
 
