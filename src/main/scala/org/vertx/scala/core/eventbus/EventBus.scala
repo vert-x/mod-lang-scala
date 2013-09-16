@@ -28,7 +28,7 @@ import org.vertx.scala.core.FunctionConverters.convertFunctionToParameterisedHan
 class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
   override type InternalType = JEventBus
 
-  val handlers: Map[Message[MessageData] => Unit, Handler[_ <: JMessage[_]]] = Map.empty()
+  private val handlers: Map[Any, Handler[_ <: JMessage[_]]] = Map.empty()
 
   sealed private trait SendOrPublish
   private case class Publish(address: String, value: MessageData) extends SendOrPublish
@@ -40,19 +40,41 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
   def send[T <% MessageData](address: String, value: T): EventBus =
     sendOrPublish(Send(address, value, None))
 
-  def send[T <% MessageData](address: String, value: T, handler: Message[MessageData] => Unit): EventBus = {
-    val mappedHandler = convertFunctionToParameterisedHandler(handler compose { sth: JMessage[T] => Message.apply(sth) })
-    handlers.getOrElseUpdate(handler, mappedHandler)
-    sendOrPublish(Send(address, value, Some(mappedHandler)))
+  def send[T <% MessageData](address: String, value: T, handler: Message[T] => Unit): EventBus = {
+    sendOrPublish(Send(address, value, Some(mapHandler(handler))))
   }
 
-  def close(x$1: AsyncResult[Void] => Unit): Unit = ???
+  def close(doneHandler: AsyncResult[Void] => Unit): Unit = internal.close(doneHandler)
 
-  //  def registerHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = wrap(internal.registerHandler(x$1, x$2))
-  //  def registerHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit, x$3: AsyncResult[Void] => Unit): EventBus = ???
-  //  def registerLocalHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = ???
-  //  def unregisterHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit): EventBus = ???
-  //  def unregisterHandler[T: MessageType, HT <: Message[T]](x$1: String, x$2: HT => Unit, x$3: AsyncResult[Void] => Unit): EventBus = ???
+  def registerHandler[T <% MessageData](address: String, handler: Message[T] => Unit): EventBus =
+    registerHandler(address, handler, _ => {})
+
+  def registerHandler[T <% MessageData](address: String, handler: Message[T] => Unit, resultHandler: AsyncResult[Void] => Unit): EventBus = wrap({
+    val mappedHandler = handlers.getOrElseUpdate(handler, mapHandler(handler))
+    internal.registerHandler(address, mappedHandler, resultHandler)
+  })
+
+  def registerLocalHandler[T <% MessageData](address: String, handler: Message[T] => Unit): EventBus = wrap({
+    val mappedHandler = handlers.getOrElseUpdate(handler, mapHandler(handler))
+    internal.registerLocalHandler(address, mappedHandler)
+  })
+
+  def unregisterHandler[T <% MessageData](address: String, handler: Message[T] => Unit): EventBus = {
+    unregisterHandler(address, handler, _ => {})
+  }
+
+  def unregisterHandler[T <% MessageData](address: String, handler: Message[T] => Unit, resultHandler: AsyncResult[Void] => Unit): EventBus = wrap({
+    handlers.remove(handler) match {
+      case Some(mappedHandler) => internal.unregisterHandler(address, mappedHandler, resultHandler)
+      case None =>
+        // FIXME handler not registered locally -> has to be on some other node, how to deal with that? 
+        internal.unregisterHandler(address, mapHandler(handler))
+    }
+  })
+
+  private def mapHandler[T <% MessageData](handler: Message[T] => Unit): Handler[JMessage[T]] = {
+    convertFunctionToParameterisedHandler(handler compose { (sth: JMessage[T]) => Message.apply(sth) })
+  }
 
   private def sendOrPublish(cmd: SendOrPublish): EventBus = {
     cmd match {
