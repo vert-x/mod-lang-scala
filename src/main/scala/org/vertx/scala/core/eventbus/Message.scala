@@ -20,6 +20,7 @@ import org.vertx.java.core.eventbus.{Message => JMessage}
 import org.vertx.scala.core.FunctionConverters.convertFunctionToParameterisedHandler
 
 class Message[+T <% MessageData](internal: JMessage[T], body: MessageData) {
+  def body: T = internal.body()
   def reply(value: MessageData) = value.reply(internal)
   def reply[B](value: MessageData, handler: JMessage[B] => Unit) = value.reply(internal, convertFunctionToParameterisedHandler(handler))
 }
