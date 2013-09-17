@@ -56,5 +56,5 @@ trait ReadStream extends ExceptionSupport {
   def endHandler(endHandler: Handler[Void]): this.type
 
   def dataHandler(handler: Buffer => Unit): this.type
-  def endHandler(handler: () => Unit): this.type
+  def endHandler(handler: => Unit): this.type
 }

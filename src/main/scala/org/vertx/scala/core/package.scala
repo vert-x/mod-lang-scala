@@ -90,7 +90,7 @@ package object core {
      * @return the unique ID of the timer
      */
     def setTimer(delay: Long, handler: Long => Unit): Long = {
-      internal.setTimer(delay, convertFunctionToParameterisedHandler(handler.compose {
+      internal.setTimer(delay, fnToHandler(handler.compose {
         l: java.lang.Long => Long.box(l)
       }))
     }
@@ -101,7 +101,7 @@ package object core {
      * @return the unique ID of the timer
      */
     def setPeriodic(delay: Long, handler: Long => Unit): Long = {
-      internal.setPeriodic(delay, convertFunctionToParameterisedHandler(handler.compose {
+      internal.setPeriodic(delay, fnToHandler(handler.compose {
         l: java.lang.Long => Long.box(l)
       }))
     }
@@ -121,7 +121,7 @@ package object core {
      * Put the handler on the event queue for the current loop (or worker context) so it will be run asynchronously ASAP after this event has
      * been processed
      */
-    def runOnContext(action: => Unit): Unit = internal.runOnContext(convertToUnitToVoidHandler(action))
+    def runOnContext(action: => Unit): Unit = internal.runOnContext(lazyToVoidHandler(action))
 
     /**
      * Is the current thread an event loop thread?

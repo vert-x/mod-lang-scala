@@ -1,14 +1,11 @@
 package org.vertx.scala.core
 
-import org.vertx.java.core.eventbus.{ EventBus => JEventBus }
-import org.vertx.java.core.Handler
-import org.vertx.java.core.buffer.{ Buffer => JBuffer }
+import org.vertx.java.core.buffer.{Buffer => JBuffer}
+import org.vertx.java.core.eventbus.{EventBus => JEventBus}
+import org.vertx.java.core.eventbus.{Message => JMessage}
+import org.vertx.scala.core.json.JsonArray
+import org.vertx.scala.core.json.JsonObject
 import org.vertx.scala.core.buffer.Buffer
-import org.vertx.java.core.json.JsonObject
-import org.vertx.java.core.json.JsonArray
-import org.vertx.java.core.eventbus.{ EventBus => JEventBus }
-import org.vertx.java.core.eventbus.{ Message => JMessage }
-import org.vertx.scala.core.FunctionConverters._
 
 /**
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
@@ -26,6 +23,22 @@ package object eventbus {
 
   sealed trait JMessageData extends MessageData {
     def toScalaMessageData(): MessageData
+  }
+
+  def anyToMessageData(any: Any): MessageData = any match {
+    case sth: String => StringData(sth)
+    case sth: JsonArray => JsonArrayData(sth)
+    case sth: JsonObject => JsonObjectData(sth)
+    case sth: Buffer => BufferData(sth)
+    case sth: Array[Byte] => ByteArrayData(sth)
+    case sth: Boolean => BooleanData(sth)
+    case sth: Integer => IntegerData(sth)
+    case sth: Long=> LongData(sth)
+    case sth: Short => ShortData(sth)
+    case sth: Float => FloatData(sth)
+    case sth: Double => DoubleData(sth)
+    case sth: Character => CharacterData(sth)
+    case x => throw new IllegalArgumentException("Cannot convert type of " + x + " to MessageData!")
   }
 
   implicit class StringData(val data: String) extends MessageData {

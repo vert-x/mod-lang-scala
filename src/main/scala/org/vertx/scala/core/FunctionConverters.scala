@@ -16,9 +16,7 @@
 package org.vertx.scala.core
 
 import scala.language.implicitConversions
-import org.vertx.java.core.AsyncResult
 import org.vertx.java.core.AsyncResultHandler
-import org.vertx.java.core.Handler
 import org.vertx.java.core.eventbus.{ Message => JMessage }
 import org.vertx.scala.core.eventbus.Message
 import org.vertx.java.core.impl.DefaultFutureResult
@@ -26,19 +24,15 @@ import org.vertx.scala.VertxWrapper
 
 /**
  * @author swilliams
- *
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 trait FunctionConverters {
 
-  implicit def convertToUnitToVoidHandler(fn: => Unit): Handler[Void] = new Handler[Void]() {
-    override def handle(event: Void) = fn
+  implicit def lazyToVoidHandler(func: => Unit): Handler[Void] = new Handler[Void]() {
+    override def handle(event: Void) = func
   }
 
-  implicit def convertFunctionToVoidHandler(func: () => Unit): Handler[Void] = new Handler[Void]() {
-    override def handle(event: Void) = func()
-  }
-
-  implicit def convertFunctionToParameterisedHandler[T](func: T => Unit): Handler[T] = new Handler[T]() {
+  implicit def fnToHandler[T](func: T => Unit): Handler[T] = new Handler[T]() {
     override def handle(event: T) = func(event)
   }
 
@@ -49,9 +43,6 @@ trait FunctionConverters {
   implicit def convertFunctionToParameterisedAsyncHandler[T](func: AsyncResult[T] => Unit): AsyncResultHandler[T] = new AsyncResultHandler[T]() {
     override def handle(event: AsyncResult[T]) = func(event)
   }
-
-  def convertScalaFnToJavaHandler[JT, ST](map: JT => ST)(fn: ST => Unit): Handler[JT] =
-    convertFunctionToParameterisedHandler(fn.compose(map))
 
   def asyncHandler[A, B, C](handler: AsyncResult[A] => B, f: C => A): Handler[AsyncResult[C]] = {
     new Handler[AsyncResult[C]] {

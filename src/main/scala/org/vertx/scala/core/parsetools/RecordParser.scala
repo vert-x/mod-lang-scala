@@ -21,7 +21,7 @@ import scala.language.implicitConversions
 import org.vertx.java.core.Handler
 import org.vertx.java.core.buffer.{Buffer => JBuffer}
 import org.vertx.java.core.parsetools.{RecordParser => JRecordParser}
-import org.vertx.scala.core.FunctionConverters.convertFunctionToParameterisedHandler
+import org.vertx.scala.core.FunctionConverters.fnToHandler
 import org.vertx.scala.core.buffer.Buffer
 
 /**

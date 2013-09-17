@@ -16,13 +16,24 @@
 
 package org.vertx.scala.core.eventbus
 
-import org.vertx.java.core.eventbus.{Message => JMessage}
-import org.vertx.scala.core.FunctionConverters.convertFunctionToParameterisedHandler
+import org.vertx.java.core.eventbus.{ Message => JMessage }
+import org.vertx.scala.core.FunctionConverters.fnToHandler
 
-class Message[+T <% MessageData](internal: JMessage[T], body: MessageData) {
-  def body: T = internal.body()
+class Message[+T](internal: JMessage[T]) extends JMessage[T] {
+
+  /**
+   * The body of the message.
+   */
+  def body[X <: MessageData] = anyToMessageData(internal.body())
+
+  /**
+   * The reply address (if any)
+   */
+  def replyAddress: Option[String] = Option(internal.replyAddress())
+
   def reply(value: MessageData) = value.reply(internal)
-  def reply[B](value: MessageData, handler: JMessage[B] => Unit) = value.reply(internal, convertFunctionToParameterisedHandler(handler))
+
+  def reply[B](value: MessageData, handler: JMessage[B] => Unit) = value.reply(internal, fnToHandler(handler))
 }
 
 /**
@@ -30,5 +41,5 @@ class Message[+T <% MessageData](internal: JMessage[T], body: MessageData) {
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object Message {
-  def apply[X <% MessageData](jmessage: JMessage[X]): Message[X] = new Message(jmessage, jmessage.body)
+  def apply[X](jmessage: JMessage[X]): Message[X] = new Message(jmessage)
 }

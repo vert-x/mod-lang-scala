@@ -12,10 +12,12 @@ import org.vertx.java.core.Handler
  */
 trait WrappedReadStream extends WrappedExceptionSupport with ReadStream {
   override def dataHandler(handler: Handler[Buffer]): this.type = wrap(internal.dataHandler(handler))
-  override def dataHandler(handler: Buffer => Unit): this.type = dataHandler(convertFunctionToParameterisedHandler(handler))
+
+  override def dataHandler(handler: Buffer => Unit): this.type = dataHandler(fnToHandler(handler))
 
   override def endHandler(handler: Handler[Void]): this.type = wrap(internal.endHandler(handler))
-  override def endHandler(handler: () => Unit): this.type = endHandler(convertFunctionToVoidHandler(handler))
+
+  override def endHandler(handler: => Unit): this.type = endHandler(lazyToVoidHandler(handler))
 
   override def pause(): this.type = wrap(internal.pause())
 

@@ -28,7 +28,8 @@ import org.vertx.java.core.Handler
  */
 trait WrappedWriteStream extends WrappedExceptionSupport with WriteStream {
   override def drainHandler(handler: Handler[Void]): this.type = wrap(internal.drainHandler(handler))
-  override def drainHandler(handler: () => Unit): this.type = drainHandler(convertFunctionToVoidHandler(handler))
+
+  override def drainHandler(handler: => Unit): this.type = drainHandler(lazyToVoidHandler(handler))
 
   override def setWriteQueueMaxSize(maxSize: Int): this.type = wrap(internal.setWriteQueueMaxSize(maxSize))
 

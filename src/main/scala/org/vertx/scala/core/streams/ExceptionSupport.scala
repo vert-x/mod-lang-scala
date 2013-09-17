@@ -46,6 +46,6 @@ trait ExceptionSupport {
 trait WrappedExceptionSupport extends ExceptionSupport with VertxWrapper {
   type InternalType <: JExceptionSupport[_]
   override def exceptionHandler(handler: Handler[Throwable]): this.type = wrap(internal.exceptionHandler(handler))
-  override def exceptionHandler(handler: Throwable => Unit): this.type = exceptionHandler(convertFunctionToParameterisedHandler(handler))
+  override def exceptionHandler(handler: Throwable => Unit): this.type = exceptionHandler(fnToHandler(handler))
   override def toJava(): InternalType = internal
 }
