@@ -18,6 +18,7 @@ package org.vertx.scala.core.streams
 import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.streams.{ Pump => JPump }
 import org.vertx.scala.Wrap
+import org.vertx.scala.VertxWrapper
 
 /**
  * Pumps data from a {@link ReadStream} to a {@link WriteStream} and performs flow control where necessary to
@@ -40,23 +41,36 @@ import org.vertx.scala.Wrap
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object Pump {
+
   /**
    * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream}
    */
-  def createPump[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream) = {
-    new Pump(JPump.createPump(rs.toJava(), ws.toJava()))
-  }
+  def apply[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream) = createPump(rs, ws)
 
   /**
    * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream} and
    * {@code writeQueueMaxSize}
    */
-  def createPump[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream, writeQueueMaxSize: Int) = {
+  def apply[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream, writeQueueMaxSize: Int) =
+    createPump(rs, ws, writeQueueMaxSize)
+
+  /**
+   * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream}
+   */
+  def createPump[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream) =
+    new Pump(JPump.createPump(rs.toJava(), ws.toJava()))
+
+  /**
+   * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream} and
+   * {@code writeQueueMaxSize}
+   */
+  def createPump[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream, writeQueueMaxSize: Int) =
     new Pump(JPump.createPump(rs.toJava(), ws.toJava(), writeQueueMaxSize))
-  }
+
 }
 
-class Pump(protected[this] val internal: JPump) extends Wrap {
+class Pump(protected val internal: JPump) extends VertxWrapper {
+  override type InternalType = JPump
 
   /**
    * Set the write queue max size to {@code maxSize}
