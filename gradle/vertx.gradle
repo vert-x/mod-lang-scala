@@ -168,3 +168,8 @@ plugins.withType(IdeaPlugin) {
     }
   }
 }
+
+tasks.withType(ScalaCompile) {
+    scalaCompileOptions.useAnt = false
+}
+
