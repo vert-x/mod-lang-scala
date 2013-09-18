@@ -1,3 +1,11 @@
+import org.vertx.java.core.AsyncResult
+import org.vertx.java.core.AsyncResultHandler
+import org.vertx.java.platform.PlatformLocator
+import org.vertx.java.platform.impl.ModuleClassLoader
+
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+
 /*
  * Copyright 2012 the original author or authors.
  *
@@ -13,19 +21,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.vertx.java.core.AsyncResult
-import org.vertx.java.core.AsyncResultHandler
-import org.vertx.java.platform.PlatformLocator
-
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-
 
 apply plugin: 'java'
+apply plugin: 'groovy'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
-apply plugin: 'scala'
 
+// We  have to explicitly load props from the user home dir - on CI we set
+// GRADLE_USER_HOME to a different dir to avoid problems with concurrent builds corrupting
+// a shared Maven local and using Gradle wrapper concurrently
+loadProperties("${System.getProperty('user.home')}/.gradle/gradle.properties")
 
 apply from: "gradle/maven.gradle"
 
@@ -38,7 +43,6 @@ sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
 project.ext.moduleName = "$modowner~$modname~$version"
-
 
 configurations {
   provided
@@ -57,8 +61,6 @@ repositories {
 }
 
 dependencies {
-  compile "org.scala-lang:scala-library:$scalaVersion"
-  compile "org.scala-lang:scala-compiler:$scalaVersion"
   provided "io.vertx:vertx-core:$vertxVersion"
   provided "io.vertx:vertx-platform:$vertxVersion"
   testCompile "junit:junit:$junitVersion"
@@ -82,6 +84,7 @@ buildscript {
   dependencies {
     classpath "io.vertx:vertx-core:$vertxVersion"
     classpath "io.vertx:vertx-platform:$vertxVersion"
+    classpath files(['src/main/resources'])
   }
 }
 
@@ -95,7 +98,6 @@ task copyMod( type:Copy, dependsOn: 'classes', description: 'Assemble the module
   into "build/mods/$moduleName"
   from compileJava
   from 'src/main/resources'
-  from compileScala
   into( 'lib' ) {
     from configurations.compile
   }
@@ -103,29 +105,35 @@ task copyMod( type:Copy, dependsOn: 'classes', description: 'Assemble the module
 
 task modZip( type: Zip, dependsOn: 'pullInDeps', description: 'Package the module .zip file') {
   group = 'vert.x'
+  classifier = "mod"
   description = "Assembles a vert.x module"
   destinationDir = project.file('build/libs')
   archiveName = "${modname}-${version}" + ".zip"
   from copyMod
 }
 
-artifacts {
-  archives modZip
+task sourceJar(type: Jar) {
+  description = 'Builds a source jar artifact suitable for maven deployment.'
+  classifier = 'sources'
+  from sourceSets.main.java
 }
+
+task javadocJar(type: Jar) {
+  description = 'Builds a javadoc jar artifact suitable for maven deployment.'
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+javadocJar.dependsOn javadoc
+
+build.dependsOn sourceJar, javadocJar
+
+artifacts {
+  archives sourceJar, javadocJar, modZip
+}
+
 
 test {
   dependsOn copyMod
-
-  if (System.getenv("JENKINS_URL") != null) {
-    // When on Jenkins we need to point at the provisioned MongoDB instance
-    systemProperty 'vertx.scala.username', 'cloudbees'
-    systemProperty 'vertx.scala.password', 'cca3b410a04657061acc5d7ed4593a52'
-    systemProperty 'vertx.scala.host', 'alex.mongohq.com'
-    systemProperty 'vertx.scala.port', '10018'
-    systemProperty 'vertx.scala.database', '0vaZnY5bN8I2LRGIrnp2Dw'
-  }
-
-  systemProperty 'vertx.loadWithPlatformCL', 'false'
 
   // Make sure tests are always run!
   outputs.upToDateWhen { false }
@@ -134,10 +142,42 @@ test {
   testLogging.showStandardStreams = true
 
   testLogging { exceptionFormat "full" }
+
+  systemProperty 'vertx.mods', "build/mods"
+}
+
+task runModIDEA(dependsOn: copyMod, description: 'Run the module from the resources in IntelliJ') << {
+  def classpath = [ new URL('file:src/main/resources/'), new URL('file:src/test/resources/'),
+      new URL("file:out/production/${project.name}/"), new URL("file:out/test/${project.name}/")] as URL[]
+  runModWithClasspath(classpath)
+}
+
+task runModEclipse(dependsOn: copyMod, description: 'Run the module from the resources in Eclipse') << {
+  def classpath = [ new URL('file:src/main/resources/'), new URL('file:src/test/resources/'), new URL('file:bin/')] as URL[]
+  runModWithClasspath(classpath)
+}
+
+def runModWithClasspath(URL[] classpath) {
+  setSysProps()
+  def pm = PlatformLocator.factory.createPlatformManager()
+  def latch = new CountDownLatch(1)
+  pm.deployModuleFromClasspath(moduleName, null, 1, classpath, new
+  AsyncResultHandler<String>() {
+    public void handle(AsyncResult<String> asyncResult) {
+      if (asyncResult.succeeded()) {
+        println "CTRL-C to stop server"
+      } else {
+        println "Failed to deploy module"
+        asyncResult.cause().printStackTrace()
+        latch.countDown()
+      }
+    }
+  });
+  latch.await(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 }
 
 task runMod(dependsOn: copyMod, description: 'Run the module using all the build dependencies (not using installed vertx') << {
-  System.setProperty("vertx.loadWithPlatformCL", "false")
+  setSysProps()
   def pm = PlatformLocator.factory.createPlatformManager()
   def latch = new CountDownLatch(1)
   pm.deployModule(moduleName, null, 1, new AsyncResultHandler<String>() {
@@ -156,12 +196,37 @@ task runMod(dependsOn: copyMod, description: 'Run the module using all the build
 
 task pullInDeps(dependsOn: copyMod, description: 'Pull in all the module dependencies for the module into the nested mods directory') << {
   if (pullInDeps == 'true') {
+    setSysProps()
     def pm = PlatformLocator.factory.createPlatformManager()
+    def latch = new CountDownLatch(1)
     println "Pulling in dependencies for module $moduleName. Please wait"
-    if (pm.pullInDependencies(moduleName)) {
-      println "Dependencies pulled into mods directory of module"
-    } else {
-      println "Failed to pull in dependencies"
+    pm.pullInDependencies(moduleName, new AsyncResultHandler<Void>() {
+      public void handle(AsyncResult<Void> asyncResult) {
+        if (asyncResult.succeeded()) {
+          println "Dependencies pulled in successfully"
+          latch.countDown()
+        } else {
+          println "Failed to pull in dependencies"
+          asyncResult.cause().printStackTrace()
+          latch.countDown()
+        }
+      }
+    })
+    latch.await(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+  }
+}
+
+def setSysProps() {
+  System.setProperty("vertx.mods", "build/mods")
+}
+
+def loadProperties(String sourceFileName) {
+  def config = new Properties()
+  def propFile = new File(sourceFileName)
+  if (propFile.canRead()) {
+    config.load(new FileInputStream(propFile))
+    for (Map.Entry property in config) {
+      project.ext[property.key] = property.value;
     }
   }
 }
