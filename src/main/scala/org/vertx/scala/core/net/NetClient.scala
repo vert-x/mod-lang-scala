@@ -17,33 +17,102 @@
 package org.vertx.scala.core.net
 
 import org.vertx.java.core.net.{ NetClient => JNetClient }
-import org.vertx.java.core.net.{ NetSocket => JNetSocket }
-import org.vertx.java.core.{ TCPSupport, ClientSSLSupport, Handler, AsyncResult }
-import org.vertx.java.core.impl.DefaultFutureResult
+import org.vertx.scala.core.net.{ NetSocket => JNetSocket }
+import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.WrappedTCPSupport
 import org.vertx.scala.core.WrappedClientSSLSupport
+import org.vertx.scala.core.AsyncResult
 
 /**
+ * A TCP/SSL client.<p>
+ * Multiple connections to different servers can be made using the same instance.<p>
+ * This client supports a configurable number of connection attempts and a configurable delay
+ * between attempts.<p>
+ * If an instance is instantiated from an event loop then the handlers of the instance will always
+ * be called on that same event loop. If an instance is instantiated from some other arbitrary Java
+ * thread (i.e. when using embedded) then an event loop will be assigned to the instance and used
+ * when any of its handlers are called.<p>
+ * Instances of this class are thread-safe.<p>
  *
+ * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
  * @author Edgar Chan
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-object NetClient {
-  def apply(actual: JNetClient) = new NetClient(actual)
-}
-
-class NetClient(protected[this] val internal: JNetClient) extends JNetClient with WrappedTCPSupport with WrappedClientSSLSupport {
+class NetClient(protected[this] val internal: JNetClient) extends WrappedTCPSupport with WrappedClientSSLSupport {
   override type InternalType = JNetClient
 
-  override def close(): Unit = internal.close()
-  override def connect(port: Int, host: String, connectHandler: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[org.vertx.java.core.net.NetSocket]]): this.type = wrap(internal.connect(port, host, connectHandler))
-  override def connect(port: Int, connectCallback: org.vertx.java.core.Handler[org.vertx.java.core.AsyncResult[org.vertx.java.core.net.NetSocket]]): this.type = wrap(internal.connect(port, connectCallback))
-  override def getConnectTimeout(): Int = internal.getConnectTimeout()
-  override def getReconnectAttempts(): Int = internal.getReconnectAttempts()
-  override def getReconnectInterval(): Long = internal.getReconnectInterval()
-  override def setConnectTimeout(timeout: Int): this.type = wrap(internal.setConnectTimeout(timeout))
-  override def setReconnectAttempts(attempts: Int): this.type = wrap(internal.setReconnectAttempts(attempts))
-  override def setReconnectInterval(interval: Long): this.type = wrap(internal.setReconnectInterval(interval))
+  /**
+   * Attempt to open a connection to a server at the specific {@code port} and host {@code localhost}
+   * The connect is done asynchronously and on success, a
+   * {@link NetSocket} instance is supplied via the {@code connectHandler} instance.
+   *
+   * @return A reference to this so multiple method calls can be chained together.
+   */
+  def connect(port: Int, connectCallback: AsyncResult[NetSocket] => Unit): NetClient =
+    wrap(internal.connect(port, arNetSocket(connectCallback)))
 
+  /**
+   * Attempt to open a connection to a server at the specific {@code port} and {@code host}.
+   * {@code host} can be a valid host name or IP address. The connect is done asynchronously and on success, a
+   * {@link NetSocket} instance is supplied via the {@code connectHandler} instance.
+   *
+   * @return a reference to this so multiple method calls can be chained together
+   */
+  def connect(port: Int, host: String, connectHandler: AsyncResult[NetSocket] => Unit): NetClient =
+    wrap(internal.connect(port, host, arNetSocket(connectHandler)))
+
+  /**
+   * Set the number of reconnection attempts. In the event a connection attempt fails, the client will attempt
+   * to connect a further number of times, before it fails. Default value is zero.
+   */
+  def setReconnectAttempts(attempts: Int): NetClient =
+    wrap(internal.setReconnectAttempts(attempts))
+
+  /**
+   * Get the number of reconnect attempts.
+   *
+   * @return The number of reconnect attempts.
+   */
+  def getReconnectAttempts(): Int = internal.getReconnectAttempts()
+
+  /**
+   * Set the reconnect interval, in milliseconds.
+   */
+  def setReconnectInterval(interval: Long): NetClient =
+    wrap(internal.setReconnectInterval(interval))
+
+  /**
+   * Get the reconnect interval, in milliseconds.
+   *
+   * @return The reconnect interval in milliseconds.
+   */
+  def getReconnectInterval(): Long = internal.getReconnectInterval()
+
+  /**
+   * Set the connect timeout in milliseconds.
+   *
+   * @return a reference to this so multiple method calls can be chained together
+   */
+  def setConnectTimeout(timeout: Int): NetClient =
+    wrap(internal.setConnectTimeout(timeout))
+
+  /**
+   * Returns the connect timeout in milliseconds.
+   *
+   * @return The connect timeout in milliseconds.
+   */
+  def getConnectTimeout(): Int = internal.getConnectTimeout()
+
+  /**
+   * Close the client. Any sockets which have not been closed manually will be closed here.
+   */
+  def close(): Unit = internal.close()
+
+  private def arNetSocket = asyncResultConverter(NetSocket.apply) _
+}
+
+/** Factory for [[net.NetClient]] instances. */
+object NetClient {
+  def apply(actual: JNetClient) = new NetClient(actual)
 }

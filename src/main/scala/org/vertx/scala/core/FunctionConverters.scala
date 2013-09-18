@@ -36,12 +36,32 @@ trait FunctionConverters {
     override def handle(event: T) = func(event)
   }
 
+  implicit def messageFnToJMessageHandler[T](func: Message[T] => Unit): Handler[JMessage[T]] = new Handler[JMessage[T]]() {
+    override def handle(event: JMessage[T]) = func.compose(Message.apply).apply(event)
+  }
+
+  implicit def handlerToFn[T](handler: Handler[T]): T => Unit = (event: T) => handler.handle(event)
+
   implicit def convertFunctionToVoidAsyncHandler(func: () => Unit): AsyncResultHandler[Void] = new AsyncResultHandler[Void]() {
     override def handle(event: AsyncResult[Void]) = func()
   }
 
   implicit def convertFunctionToParameterisedAsyncHandler[T](func: AsyncResult[T] => Unit): AsyncResultHandler[T] = new AsyncResultHandler[T]() {
     override def handle(event: AsyncResult[T]) = func(event)
+  }
+
+  def asyncResultConverter[ST, JT](mapFn: JT => ST)(handler: AsyncResult[ST] => Unit): Handler[AsyncResult[JT]] = {
+    new Handler[AsyncResult[JT]]() {
+      def handle(ar: AsyncResult[JT]) = {
+        val scalaAr = new AsyncResult[ST]() {
+          override def result(): ST = mapFn(ar.result())
+          override def cause() = ar.cause()
+          override def succeeded() = ar.succeeded()
+          override def failed() = ar.failed()
+        }
+        handler(scalaAr)
+      }
+    }
   }
 
   def asyncHandler[A, B, C](handler: AsyncResult[A] => B, f: C => A): Handler[AsyncResult[C]] = {

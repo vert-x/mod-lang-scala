@@ -26,14 +26,19 @@ import org.vertx.scala.VertxWrapper
 import org.vertx.scala.core.streams.WrappedReadStream
 
 /**
+ * Represents a client side WebSocket.<p>
+ * Instances of this class are not thread-safe<p>
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
  * @author Galder Zamarreño
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-object WebSocket {
-  def apply(jsocket: JWebSocket) = new WebSocket(jsocket)
+class WebSocket(protected[this] val internal: JWebSocket) extends WrappedWebSocketBase {
+  override type InternalType = JWebSocket
 }
 
-class WebSocket(protected[this] val internal: JWebSocket) extends JWebSocket with WrappedWebSocketBase {
-  override type InternalType = JWebSocket
+/** Factory for [[http.WebSocket]] instances. */
+object WebSocket {
+  def apply(jsocket: JWebSocket) = new WebSocket(jsocket)
 }

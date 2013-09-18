@@ -16,30 +16,40 @@
 
 package org.vertx.scala.core.file
 
-import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.file.{ FileSystem => JFileSystem }
 import org.vertx.scala.core.{ Handler, AsyncResult }
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.VertxWrapper
+import org.vertx.scala.core.AsyncResult
+import org.vertx.scala.core.buffer._
 
 /**
+ * Contains a broad set of operations for manipulating files.<p>
+ * An asynchronous and a synchronous version of each operation is provided.<p>
+ * The asynchronous versions take a handler which is called when the operation completes or an error occurs.<p>
+ * The synchronous versions return the results, or throw exceptions directly.<p>
+ * It is highly recommended the asynchronous versions are used unless you are sure the operation
+ * will not block for a significant period of time.<p>
+ * Instances of FileSystem are thread-safe.<p>
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem with VertxWrapper {
+class FileSystem(protected val internal: JFileSystem) extends VertxWrapper {
   override type InternalType = JFileSystem
 
   /**
    * Copy a file from the path {@code from} to path {@code to}, asynchronously.<p>
    * The copy will fail if the destination already exists.<p>
    */
-  override def copy(from: String, to: String, handler: AsyncResult[Void] => Unit): FileSystem =
+  def copy(from: String, to: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.copy(from, to, handler))
 
   /**
    * Synchronous version of {@link #copy(String, String, Handler)}
    */
-  override def copySync(from: String, to: String): FileSystem =
+  def copySync(from: String, to: String): FileSystem =
     wrap(internal.copySync(from, to))
 
   /**
@@ -48,39 +58,39 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * will be copied recursively to the destination {@code to}.<p>
    * The copy will fail if the destination if the destination already exists.<p>
    */
-  override def copy(from: String, to: String, recursive: Boolean, handler: Handler[AsyncResult[Void]]): FileSystem =
+  def copy(from: String, to: String, recursive: Boolean, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.copy(from, to, recursive, handler))
 
   /**
    * Synchronous version of {@link #copy(String, String, boolean, Handler)}
    */
-  override def copySync(from: String, to: String, recursive: Boolean): FileSystem =
+  def copySync(from: String, to: String, recursive: Boolean): FileSystem =
     wrap(internal.copySync(from, to, recursive))
 
   /**
    * Move a file from the path {@code from} to path {@code to}, asynchronously.<p>
    * The move will fail if the destination already exists.<p>
    */
-  override def move(from: String, to: String, handler: AsyncResult[Void] => Unit): FileSystem =
+  def move(from: String, to: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.move(from, to, handler))
 
   /**
    * Synchronous version of {@link #move(String, String, Handler)}
    */
-  override def moveSync(from: String, to: String): FileSystem =
+  def moveSync(from: String, to: String): FileSystem =
     wrap(internal.moveSync(from, to))
 
   /**
    * Truncate the file represented by {@code path} to length {@code len} in bytes, asynchronously.<p>
    * The operation will fail if the file does not exist or {@code len} is less than {@code zero}.
    */
-  override def truncate(path: String, len: Long, handler: AsyncResult[Void] => Unit): FileSystem =
+  def truncate(path: String, len: Long, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.truncate(path, len, handler))
 
   /**
    * Synchronous version of {@link #truncate(String, long, Handler)}
    */
-  override def truncateSync(path: String, len: Long): FileSystem =
+  def truncateSync(path: String, len: Long): FileSystem =
     wrap(internal.truncateSync(path, len))
 
   /**
@@ -88,13 +98,13 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * The permission String takes the form rwxr-x--- as
    * specified <a href="http://download.oracle.com/javase/7/docs/api/java/nio/file/attribute/PosixFilePermissions.html">here</a>.<p>
    */
-  override def chmod(path: String, perms: String, handler: AsyncResult[Void] => Unit): FileSystem =
+  def chmod(path: String, perms: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.chmod(path, perms, handler))
 
   /**
    * Synchronous version of {@link #chmod(String, String, Handler) }
    */
-  override def chmodSync(path: String, perms: String): FileSystem =
+  def chmodSync(path: String, perms: String): FileSystem =
     wrap(internal.chmodSync(path, perms))
 
   /**
@@ -104,99 +114,99 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * If the file is directory then all contents will also have their permissions changed recursively. Any directory permissions will
    * be set to {@code dirPerms}, whilst any normal file permissions will be set to {@code perms}.<p>
    */
-  override def chmod(path: String, perms: String, dirPerms: String, handler: AsyncResult[Void] => Unit): FileSystem =
+  def chmod(path: String, perms: String, dirPerms: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.chmod(path, perms, dirPerms, handler))
 
   /**
    * Synchronous version of {@link #chmod(String, String, String, Handler)}
    */
-  override def chmodSync(path: String, perms: String, dirPerms: String): FileSystem =
+  def chmodSync(path: String, perms: String, dirPerms: String): FileSystem =
     wrap(internal.chmodSync(path, perms, dirPerms))
 
   /**
    * Obtain properties for the file represented by {@code path}, asynchronously.
    * If the file is a link, the link will be followed.
    */
-  override def props(path: String, handler: AsyncResult[FileProps] => Unit): FileSystem =
-    wrap(internal.props(path, handler))
+  def props(path: String, handler: AsyncResult[FileProps] => Unit): FileSystem =
+    wrap(internal.props(path, arFilePropsConverter(handler)))
 
   /**
    * Synchronous version of {@link #props(String, Handler)}
    */
-  override def propsSync(path: String): FileProps =
+  def propsSync(path: String): FileProps =
     FileProps(internal.propsSync(path))
 
   /**
    * Obtain properties for the link represented by {@code path}, asynchronously.
    * The link will not be followed.
    */
-  override def lprops(path: String, handler: AsyncResult[FileProps] => Unit): FileSystem =
-    wrap(internal.lprops(path, handler))
+  def lprops(path: String, handler: AsyncResult[FileProps] => Unit): FileSystem =
+    wrap(internal.lprops(path, arFilePropsConverter(handler)))
 
   /**
    * Synchronous version of {@link #lprops(String, Handler)}
    */
-  override def lpropsSync(path: String): FileProps =
+  def lpropsSync(path: String): FileProps =
     FileProps(internal.lpropsSync(path))
 
   /**
    * Create a hard link on the file system from {@code link} to {@code existing}, asynchronously.
    */
-  override def link(link: String, existing: String, handler: AsyncResult[Void] => Unit): FileSystem =
+  def link(link: String, existing: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.link(link, existing, handler))
 
   /**
    * Synchronous version of {@link #link(String, String, Handler)}
    */
-  override def linkSync(link: String, existing: String): FileSystem =
+  def linkSync(link: String, existing: String): FileSystem =
     wrap(internal.linkSync(link, existing))
 
   /**
    * Create a symbolic link on the file system from {@code link} to {@code existing}, asynchronously.
    */
-  override def symlink(link: String, existing: String, handler: AsyncResult[Void] => Unit): FileSystem =
+  def symlink(link: String, existing: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.symlink(link, existing, handler))
 
   /**
    * Synchronous version of {@link #link(String, String, Handler)}
    */
-  override def symlinkSync(link: String, existing: String): FileSystem =
+  def symlinkSync(link: String, existing: String): FileSystem =
     wrap(internal.symlinkSync(link, existing))
 
   /**
    * Unlinks the link on the file system represented by the path {@code link}, asynchronously.
    */
-  override def unlink(link: String, handler: AsyncResult[Void] => Unit): FileSystem =
+  def unlink(link: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.unlink(link, handler))
 
   /**
    * Synchronous version of {@link #unlink(String, Handler)}
    */
-  override def unlinkSync(link: String): FileSystem =
+  def unlinkSync(link: String): FileSystem =
     wrap(internal.unlinkSync(link))
 
   /**
    * Returns the path representing the file that the symbolic link specified by {@code link} points to, asynchronously.
    */
-  override def readSymlink(link: String, handler: AsyncResult[String] => Unit): FileSystem =
+  def readSymlink(link: String, handler: AsyncResult[String] => Unit): FileSystem =
     wrap(internal.readSymlink(link, handler))
 
   /**
    * Synchronous version of {@link #readSymlink(String, Handler)}
    */
-  override def readSymlinkSync(link: String): String =
+  def readSymlinkSync(link: String): String =
     internal.readSymlinkSync(link)
 
   /**
    * Deletes the file represented by the specified {@code path}, asynchronously.
    */
-  override def delete(path: String, handler: Handler[AsyncResult[Void]]): FileSystem =
+  def delete(path: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.delete(path, handler))
 
   /**
    * Synchronous version of {@link #delete(String, Handler)}
    */
-  override def deleteSync(path: String): FileSystem =
+  def deleteSync(path: String): FileSystem =
     wrap(internal.deleteSync(path))
 
   /**
@@ -204,26 +214,26 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * If the path represents a directory and {@code recursive = true} then the directory and its contents will be
    * deleted recursively.
    */
-  override def delete(path: String, recursive: Boolean, handler: AsyncResult[Void] => Unit): FileSystem =
+  def delete(path: String, recursive: Boolean, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.delete(path, recursive, handler))
 
   /**
    * Synchronous version of {@link #delete(String, boolean, Handler)}
    */
-  override def deleteSync(path: String, recursive: Boolean): FileSystem =
+  def deleteSync(path: String, recursive: Boolean): FileSystem =
     wrap(internal.deleteSync(path, recursive))
 
   /**
    * Create the directory represented by {@code path}, asynchronously.<p>
    * The operation will fail if the directory already exists.
    */
-  override def mkdir(path: String, handler: Handler[AsyncResult[Void]]): FileSystem =
+  def mkdir(path: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.mkdir(path, handler))
 
   /**
    * Synchronous version of {@link #mkdir(String, Handler)}
    */
-  override def mkdirSync(path: String): FileSystem =
+  def mkdirSync(path: String): FileSystem =
     wrap(internal.mkdirSync(path))
 
   /**
@@ -232,13 +242,13 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * will also be created.<p>
    * The operation will fail if the directory already exists.
    */
-  override def mkdir(path: String, createParents: Boolean, handler: AsyncResult[Void] => Unit): FileSystem =
+  def mkdir(path: String, createParents: Boolean, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.mkdir(path, createParents, handler))
 
   /**
    * Synchronous version of {@link #mkdir(String, boolean, Handler)}
    */
-  override def mkdirSync(path: String, createParents: Boolean): FileSystem =
+  def mkdirSync(path: String, createParents: Boolean): FileSystem =
     wrap(internal.mkdirSync(path, createParents))
 
   /**
@@ -248,13 +258,13 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * in <a href="http://download.oracle.com/javase/7/docs/api/java/nio/file/attribute/PosixFilePermissions.html">here</a>.<p>
    * The operation will fail if the directory already exists.
    */
-  override def mkdir(path: String, perms: String, handler: AsyncResult[Void] => Unit): FileSystem =
+  def mkdir(path: String, perms: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.mkdir(path, perms, handler))
 
   /**
    * Synchronous version of {@link #mkdir(String, String, Handler)}
    */
-  override def mkdirSync(path: String, perms: String): FileSystem =
+  def mkdirSync(path: String, perms: String): FileSystem =
     wrap(internal.mkdirSync(path, perms))
 
   /**
@@ -266,26 +276,26 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * will also be created.<p>
    * The operation will fail if the directory already exists.<p>
    */
-  override def mkdir(path: String, perms: String, createParents: Boolean, handler: AsyncResult[Void] => Unit): FileSystem =
+  def mkdir(path: String, perms: String, createParents: Boolean, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.mkdir(path, perms, createParents, handler))
 
   /**
    * Synchronous version of {@link #mkdir(String, String, boolean, Handler)}
    */
-  override def mkdirSync(path: String, perms: String, createParents: Boolean): FileSystem =
+  def mkdirSync(path: String, perms: String, createParents: Boolean): FileSystem =
     wrap(internal.mkdirSync(path, perms, createParents))
 
   /**
    * Read the contents of the directory specified by {@code path}, asynchronously.<p>
    * The result is an array of String representing the paths of the files inside the directory.
    */
-  override def readDir(path: String, handler: AsyncResult[Array[String]] => Unit): FileSystem =
+  def readDir(path: String, handler: AsyncResult[Array[String]] => Unit): FileSystem =
     wrap(internal.readDir(path, handler))
 
   /**
    * Synchronous version of {@link #readDir(String, Handler)}
    */
-  override def readDirSync(path: String): Array[String] = internal.readDirSync(path)
+  def readDirSync(path: String): Array[String] = internal.readDirSync(path)
 
   /**
    * Read the contents of the directory specified by {@code path}, asynchronously.<p>
@@ -293,51 +303,51 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * match  @{filter}will be returned.<p>
    * The result is an array of String representing the paths of the files inside the directory.
    */
-  override def readDir(path: String, filter: String, handler: AsyncResult[Array[String]] => Unit): FileSystem =
+  def readDir(path: String, filter: String, handler: AsyncResult[Array[String]] => Unit): FileSystem =
     wrap(internal.readDir(path, filter, handler))
 
   /**
    * Synchronous version of {@link #readDir(String, String, Handler)}
    */
-  override def readDirSync(path: String, filter: String): Array[String] = internal.readDirSync(path, filter)
+  def readDirSync(path: String, filter: String): Array[String] = internal.readDirSync(path, filter)
 
   /**
    * Reads the entire file as represented by the path {@code path} as a {@link Buffer}, asynchronously.<p>
    * Do not user this method to read very large files or you risk running out of available RAM.
    */
-  override def readFile(path: String, handler: AsyncResult[org.vertx.java.core.buffer.Buffer] => Unit): FileSystem =
-    wrap(internal.readFile(path, handler))
+  def readFile(path: String, handler: AsyncResult[Buffer] => Unit): FileSystem =
+    wrap(internal.readFile(path, arBufferConverter(handler)))
 
   /**
    * Synchronous version of {@link #readFile(String, Handler)}
    */
-  override def readFileSync(path: String): org.vertx.java.core.buffer.Buffer = internal.readFileSync(path)
+  def readFileSync(path: String): Buffer = internal.readFileSync(path)
 
   /**
    * Creates the file, and writes the specified {@code Buffer data} to the file represented by the path {@code path},
    * asynchronously.
    */
-  override def writeFile(path: String, data: org.vertx.java.core.buffer.Buffer, handler: AsyncResult[Void] => Unit): FileSystem =
-    wrap(internal.writeFile(path, data, handler))
+  def writeFile(path: String, data: Buffer, handler: AsyncResult[Void] => Unit): FileSystem =
+    wrap(internal.writeFile(path, data.toJava, handler))
 
   /**
    * Synchronous version of {@link #writeFile(String, Buffer, Handler)}
    */
-  override def writeFileSync(path: String, data: org.vertx.java.core.buffer.Buffer): FileSystem =
-    wrap(internal.writeFileSync(path, data))
+  def writeFileSync(path: String, data: Buffer): FileSystem =
+    wrap(internal.writeFileSync(path, data.toJava))
 
   /**
    * Open the file represented by {@code path}, asynchronously.<p>
    * The file is opened for both reading and writing. If the file does not already exist it will be created.
    * Write operations will not automatically flush to storage.
    */
-  override def open(path: String, handler: AsyncResult[AsyncFile] => Unit): FileSystem =
-    wrap(internal.open(path, handler))
+  def open(path: String, handler: AsyncResult[AsyncFile] => Unit): FileSystem =
+    wrap(internal.open(path, arAsyncFileConverter(handler)))
 
   /**
    * Synchronous version of {@link #open(String, Handler)}
    */
-  override def openSync(path: String): AsyncFile =
+  def openSync(path: String): AsyncFile =
     AsyncFile(internal.openSync(path))
 
   /**
@@ -346,13 +356,13 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * permissions as specified by {@code perms}.
    * Write operations will not automatically flush to storage.
    */
-  override def open(path: String, perms: String, handler: AsyncResult[AsyncFile] => Unit): FileSystem =
-    wrap(internal.open(path, perms, handler))
+  def open(path: String, perms: String, handler: AsyncResult[AsyncFile] => Unit): FileSystem =
+    wrap(internal.open(path, perms, arAsyncFileConverter(handler)))
 
   /**
    * Synchronous version of {@link #open(String, String, Handler)}
    */
-  override def openSync(path: String, perms: String): AsyncFile =
+  def openSync(path: String, perms: String): AsyncFile =
     AsyncFile(internal.openSync(path, perms))
 
   /**
@@ -362,13 +372,13 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * the operation will fail.
    * Write operations will not automatically flush to storage.
    */
-  override def open(path: String, perms: String, createNew: Boolean, handler: Handler[AsyncResult[AsyncFile]]): FileSystem =
-    wrap(internal.open(path, perms, createNew, handler))
+  def open(path: String, perms: String, createNew: Boolean, handler: AsyncResult[AsyncFile] => Unit): FileSystem =
+    wrap(internal.open(path, perms, createNew, arAsyncFileConverter(handler)))
 
   /**
    * Synchronous version of {@link #open(String, String, boolean, Handler)}
    */
-  override def openSync(path: String, perms: String, createNew: Boolean): AsyncFile =
+  def openSync(path: String, perms: String, createNew: Boolean): AsyncFile =
     AsyncFile(internal.openSync(path, perms, createNew))
 
   /**
@@ -380,13 +390,13 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * the operation will fail.<p>
    * Write operations will not automatically flush to storage.
    */
-  override def open(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, handler: AsyncResult[AsyncFile] => Unit): FileSystem =
-    wrap(internal.open(path, perms, read, write, createNew, handler))
+  def open(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, handler: AsyncResult[AsyncFile] => Unit): FileSystem =
+    wrap(internal.open(path, perms, read, write, createNew, arAsyncFileConverter(handler)))
 
   /**
    * Synchronous version of {@link #open(String, String, boolean, boolean, boolean, Handler)}
    */
-  override def openSync(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean): AsyncFile =
+  def openSync(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean): AsyncFile =
     AsyncFile(internal.openSync(path, perms, read, write, createNew))
 
   /**
@@ -399,65 +409,76 @@ class FileSystem(protected[this] val internal: JFileSystem) extends JFileSystem 
    * If {@code flush} is {@code true} then all writes will be automatically flushed through OS buffers to the underlying
    * storage on each write.
    */
-  override def open(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, flush: Boolean, handler: Handler[AsyncResult[AsyncFile]]): FileSystem =
-    wrap(internal.open(path, perms, read, write, createNew, flush, handler))
+  def open(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, flush: Boolean, handler: AsyncResult[AsyncFile] => Unit): FileSystem =
+    wrap(internal.open(path, perms, read, write, createNew, flush, arAsyncFileConverter(handler)))
 
   /**
    * Synchronous version of {@link #open(String, String, boolean, boolean, boolean, boolean, Handler)}
    */
-  override def openSync(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, flush: Boolean): AsyncFile =
+  def openSync(path: String, perms: String, read: Boolean, write: Boolean, createNew: Boolean, flush: Boolean): AsyncFile =
     AsyncFile(internal.openSync(path, perms, read, write, createNew, flush))
 
   /**
    * Creates an empty file with the specified {@code path}, asynchronously.
    */
-  override def createFile(path: String, handler: AsyncResult[Void] => Unit): FileSystem =
+  def createFile(path: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.createFile(path, handler))
 
   /**
    * Synchronous version of {@link #createFile(String, Handler)}
    */
-  override def createFileSync(path: String): FileSystem =
+  def createFileSync(path: String): FileSystem =
     wrap(internal.createFileSync(path))
 
   /**
    * Creates an empty file with the specified {@code path} and permissions {@code perms}, asynchronously.
    */
-  override def createFile(path: String, perms: String, handler: Handler[AsyncResult[Void]]): FileSystem =
+  def createFile(path: String, perms: String, handler: AsyncResult[Void] => Unit): FileSystem =
     wrap(internal.createFile(path, perms, handler))
 
   /**
    * Synchronous version of {@link #createFile(String, String, Handler)}
    */
-  override def createFileSync(path: String, perms: String): FileSystem =
+  def createFileSync(path: String, perms: String): FileSystem =
     wrap(internal.createFileSync(path, perms))
 
   /**
    * Determines whether the file as specified by the path {@code path} exists, asynchronously.
    */
-  override def exists(path: String, handler: AsyncResult[java.lang.Boolean] => Unit): FileSystem =
-    wrap(internal.exists(path, handler))
+  def exists(path: String, handler: AsyncResult[Boolean] => Unit): FileSystem =
+    wrap(internal.exists(path, asyncResultConverter((x: java.lang.Boolean) => x.booleanValue)(handler)))
 
   /**
    * Synchronous version of {@link #exists(String, Handler)}
    */
-  override def existsSync(path: String): Boolean =
-    internal.existsSync(path)
+  def existsSync(path: String): Boolean = internal.existsSync(path)
 
   /**
    * Returns properties of the file-system being used by the specified {@code path}, asynchronously.
    */
-  override def fsProps(path: String, handler: AsyncResult[FileSystemProps] => Unit): FileSystem =
-    wrap(internal.fsProps(path, handler))
+  def fsProps(path: String, handler: AsyncResult[FileSystemProps] => Unit): FileSystem =
+    wrap(internal.fsProps(path, arFileSystemPropsConverter(handler)))
 
   /**
    * Synchronous version of {@link #fsProps(String, Handler)}
    */
-  override def fsPropsSync(path: String): FileSystemProps =
-    FileSystemProps(internal.fsPropsSync(path))
+  def fsPropsSync(path: String): FileSystemProps = FileSystemProps(internal.fsPropsSync(path))
+
+  private def arFilePropsConverter(handler: AsyncResult[FileProps] => Unit) =
+    asyncResultConverter(FileProps.apply)(handler)
+
+  private def arFileSystemPropsConverter(handler: AsyncResult[FileSystemProps] => Unit) =
+    asyncResultConverter(FileSystemProps.apply)(handler)
+
+  private def arAsyncFileConverter(handler: AsyncResult[AsyncFile] => Unit) =
+    asyncResultConverter(AsyncFile.apply)(handler)
+
+  private def arBufferConverter(handler: AsyncResult[Buffer] => Unit) =
+    asyncResultConverter(createBuffer)(handler)
 
 }
 
+/** Factory for [[file.FileSystem]] instances. */
 object FileSystem {
   def apply(internal: JFileSystem) = new FileSystem(internal)
 }

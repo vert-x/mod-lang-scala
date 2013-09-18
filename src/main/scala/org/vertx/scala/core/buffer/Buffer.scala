@@ -35,4 +35,6 @@ package object buffer {
 
     override def toString(): String = internal.toString()
   }
+
+  def createBuffer(internal: JBuffer) = Buffer(internal)
 }

@@ -1,6 +1,5 @@
 package org.vertx.scala.core.file
 
-// FIXME java types
 import org.vertx.java.core.file.{ FileSystemProps => JFileSystemProps }
 import org.vertx.scala.VertxWrapper
 
@@ -9,8 +8,9 @@ import org.vertx.scala.VertxWrapper
  * Instances of FileSystemProps are thread-safe.<p>
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class FileSystemProps(protected[this] val internal: JFileSystemProps) extends JFileSystemProps with VertxWrapper {
+class FileSystemProps(protected[this] val internal: JFileSystemProps) extends VertxWrapper {
   override type InternalType = JFileSystemProps
 
   /**
@@ -30,6 +30,7 @@ class FileSystemProps(protected[this] val internal: JFileSystemProps) extends JF
 
 }
 
+/** Factory for [[file.FileSystemProps]] instances. */
 object FileSystemProps {
   def apply(internal: JFileSystemProps) = new FileSystemProps(internal)
 }

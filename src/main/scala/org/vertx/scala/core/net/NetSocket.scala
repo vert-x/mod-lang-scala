@@ -38,25 +38,55 @@ import org.vertx.scala.core.streams.WrappedReadWriteStream
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class NetSocket(val internal: JNetSocket) extends JNetSocket with WrappedReadWriteStream {
+class NetSocket(val internal: JNetSocket) extends WrappedReadWriteStream {
   override type InternalType = JNetSocket
 
-  override def writeHandlerID(): String = internal.writeHandlerID
+  /**
+   * When a {@code NetSocket} is created it automatically registers an event handler with the event bus, the ID of that
+   * handler is given by {@code writeHandlerID}.<p>
+   * Given this ID, a different event loop can send a buffer to that event handler using the event bus and
+   * that buffer will be received by this instance in its own event loop and written to the underlying connection. This
+   * allows you to write data to other connections which are owned by different event loops.
+   */
+  def writeHandlerID(): String = internal.writeHandlerID
 
-  override def write(data: String): NetSocket = wrap(internal.write(data))
+  /**
+   * Write a {@link String} to the connection, encoded in UTF-8.
+   * @return A reference to this, so multiple method calls can be chained.
+   */
+  def write(data: String): NetSocket = wrap(internal.write(data))
 
-  override def write(data: String, enc: String): NetSocket = wrap(internal.write(data, enc))
+  /**
+   * Write a {@link String} to the connection, encoded using the encoding {@code enc}.
+   * @return A reference to this, so multiple method calls can be chained.
+   */
+  def write(data: String, enc: String): NetSocket = wrap(internal.write(data, enc))
 
-  override def sendFile(filename: String): NetSocket = wrap(internal.sendFile(filename))
+  /**
+   * Tell the kernel to stream a file as specified by {@code filename} directly from disk to the outgoing connection,
+   * bypassing userspace altogether (where supported by the underlying operating system. This is a very efficient way to stream files.
+   */
+  def sendFile(filename: String): NetSocket = wrap(internal.sendFile(filename))
 
-  override def remoteAddress(): InetSocketAddress = internal.remoteAddress()
+  /**
+   * Return the remote address for this socket
+   */
+  def remoteAddress(): InetSocketAddress = internal.remoteAddress()
 
-  override def localAddress(): InetSocketAddress = internal.localAddress()
+  /**
+   * Return the local address for this socket
+   */
+  def localAddress(): InetSocketAddress = internal.localAddress()
 
-  override def close(): Unit = internal.close()
+  /**
+   * Close the NetSocket
+   */
+  def close(): Unit = internal.close()
 
-  override def closeHandler(handler: Handler[Void]): NetSocket = wrap(internal.closeHandler(handler))
-  def closeHandler(handler: () => Unit): NetSocket = wrap(internal.closeHandler(handler))
+  /**
+   * Set a handler that will be called when the NetSocket is closed
+   */
+  def closeHandler(handler: => Unit): NetSocket = wrap(internal.closeHandler(handler))
 
 }
 

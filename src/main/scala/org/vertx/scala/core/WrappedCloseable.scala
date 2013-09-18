@@ -1,7 +1,5 @@
 package org.vertx.scala.core
 
-import org.vertx.java.core.Handler
-import org.vertx.java.core.AsyncResult
 import org.vertx.scala.VertxWrapper
 
 trait WrappedCloseable extends VertxWrapper {

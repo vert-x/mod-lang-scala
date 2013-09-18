@@ -17,9 +17,9 @@
 package org.vertx.scala.core.eventbus
 
 import org.vertx.java.core.eventbus.{ Message => JMessage }
-import org.vertx.scala.core.FunctionConverters.fnToHandler
+import org.vertx.scala.core.FunctionConverters._
 
-class Message[+T](internal: JMessage[T]) extends JMessage[T] {
+class Message[T](internal: JMessage[T]) {
 
   /**
    * The body of the message.
@@ -27,13 +27,39 @@ class Message[+T](internal: JMessage[T]) extends JMessage[T] {
   def body[X <: MessageData] = anyToMessageData(internal.body())
 
   /**
-   * The reply address (if any)
+   * The reply address (if any).
+   *
+   * @return An optional String containing the reply address.
    */
-  def replyAddress: Option[String] = Option(internal.replyAddress())
+  def replyAddress(): Option[String] = Option(internal.replyAddress())
 
+  /**
+   * Reply to this message. If the message was sent specifying a reply handler, that handler will be
+   * called when it has received a reply. If the message wasn't sent specifying a receipt handler
+   * this method does nothing.
+   */
+  def reply() = internal.reply()
+
+  /**
+   * Reply to this message. If the message was sent specifying a reply handler, that handler will be
+   * called when it has received a reply. If the message wasn't sent specifying a receipt handler
+   * this method does nothing.
+   *
+   * @param value Some data to send with the reply.
+   */
   def reply(value: MessageData) = value.reply(internal)
 
-  def reply[B](value: MessageData, handler: JMessage[B] => Unit) = value.reply(internal, fnToHandler(handler))
+  /**
+   * The same as {@code reply(MessageData)} but you can specify handler for the reply - i.e.
+   * to receive the reply to the reply.
+   */
+  def reply[B](value: MessageData, handler: Message[B] => Unit) = value.reply(internal, fnToHandler(handler.compose(Message.apply)))
+
+  /**
+   * The same as {@code reply()} but you can specify handler for the reply - i.e.
+   * to receive the reply to the reply.
+   */
+  def reply[B](handler: Message[B] => Unit) = internal.reply(messageFnToJMessageHandler(handler))
 }
 
 /**

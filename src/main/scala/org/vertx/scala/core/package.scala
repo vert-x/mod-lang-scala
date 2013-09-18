@@ -67,7 +67,7 @@ package object core {
     /**
      * Create a SockJS server that wraps an HTTP server
      */
-    def createSockJSServer(httpServer: HttpServer): SockJSServer = SockJSServer(internal.createSockJSServer(httpServer))
+    def createSockJSServer(httpServer: HttpServer): SockJSServer = SockJSServer(internal.createSockJSServer(httpServer.toJava))
 
     /**
      * The File system object

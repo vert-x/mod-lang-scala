@@ -16,8 +16,7 @@ package org.vertx.scala.core.http
  * limitations under the License.
  */
 
-// FIXME Java types and Java code
-import org.vertx.java.core.buffer.Buffer
+import org.vertx.scala.core.buffer.Buffer
 import org.vertx.scala.core.Handler
 import org.vertx.scala.core.MultiMap
 import org.vertx.java.core.http.{ HttpClientRequest => JHttpClientRequest }
@@ -43,74 +42,77 @@ import scala.collection.JavaConverters._
  * <p>
  * <pre>
  *
- * HttpClientRequest req = httpClient.post("/some-url", new Handler<HttpClientResponse>() {
- *   public void handle(HttpClientResponse response) {
- *     System.out.println("Got response: " + response.statusCode):
- *   }
- * }):
+ * val req = httpClient.post("/some-url", { (response: HttpClientResponse) =>
+ *   println("Got response: " + response.statusCode)
+ * })
  *
  * req.headers().put("some-header", "hello")
  *     .put("Content-Length", 5)
- *     .write(new Buffer(new byte[]{1, 2, 3, 4, 5}))
- *     .write(new Buffer(new byte[]{6, 7, 8, 9, 10}))
- *     .end():
+ *     .write(new Buffer(Array[Byte](1, 2, 3, 4, 5)))
+ *     .write(new Buffer(Array[Byte](6, 7, 8, 9, 10)))
+ *     .end()
  *
  * </pre>
- * Instances of HttpClientRequest are not thread-safe
+ * Instances of HttpClientRequest are not thread-safe.
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class HttpClientRequest(protected[this] val internal: JHttpClientRequest) extends JHttpClientRequest with WrappedWriteStream {
+class HttpClientRequest(protected[this] val internal: JHttpClientRequest) extends WrappedWriteStream {
   override type InternalType = JHttpClientRequest
 
   /**
-   * If chunked is true then the request will be set into HTTP chunked mode
-   * @param chunked
+   * If chunked is true then the request will be set into HTTP chunked mode.
+   *
+   * @param chunked True if you want the request to be in chunked mode.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def setChunked(chunked: Boolean): HttpClientRequest = wrap(internal.setChunked(chunked))
+  def setChunked(chunked: Boolean): HttpClientRequest = wrap(internal.setChunked(chunked))
 
   /**
+   * Checks whether the request is chunked.
    *
-   * @return Is the request chunked?
+   * @return True if the request is chunked.
    */
-  override def isChunked(): Boolean = internal.isChunked()
+  def isChunked(): Boolean = internal.isChunked()
 
   /**
-   * @return The HTTP headers
+   * Returns the HTTP headers.
+   * @return The HTTP headers.
    */
-  override def headers(): MultiMap = internal.headers()
+  def headers(): MultiMap = internal.headers()
 
   /**
-   * Put an HTTP header - fluent API
+   * Put an HTTP header - fluent API.
+   *
    * @param name The header name
    * @param value The header value
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def putHeader(name: String, value: String): HttpClientRequest = wrap(internal.putHeader(name, value))
+  def putHeader(name: String, value: String): HttpClientRequest = wrap(internal.putHeader(name, value))
 
   /**
-   * Put an HTTP header - fluent API
+   * Put an HTTP header - fluent API.
+   *
    * @param name The header name
    * @param values The header values
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def putHeader(name: String, values: java.lang.Iterable[String]): HttpClientRequest = wrap(internal.putHeader(name, values))
+  def putHeader(name: String, values: java.lang.Iterable[String]): HttpClientRequest = wrap(internal.putHeader(name, values))
 
   /**
    * Write a {@link String} to the request body, encoded in UTF-8.
    *
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def write(chunk: String): HttpClientRequest = wrap(internal.write(chunk))
+  def write(chunk: String): HttpClientRequest = wrap(internal.write(chunk))
 
   /**
    * Write a {@link String} to the request body, encoded using the encoding {@code enc}.
    *
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def write(chunk: String, enc: String): HttpClientRequest = wrap(internal.write(chunk, enc))
+  def write(chunk: String, enc: String): HttpClientRequest = wrap(internal.write(chunk, enc))
 
   /**
    * If you send an HTTP request with the header {@code Expect} set to the value {@code 100-continue}
@@ -120,32 +122,32 @@ class HttpClientRequest(protected[this] val internal: JHttpClientRequest) extend
    * the {@link #sendHead()} method to force the request header to be written before the request has ended.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def continueHandler(handler: Handler[Void]): HttpClientRequest = wrap(internal.continueHandler(handler))
+  def continueHandler(handler: Handler[Void]): HttpClientRequest = wrap(internal.continueHandler(handler))
 
   /**
-   * Forces the head of the request to be written before {@link #end()} is called on the request or any data is
-   * written to it. This is normally used
-   * to implement HTTP 100-continue handling, see {@link #continueHandler(org.vertx.java.core.Handler)} for more information.
+   * Forces the head of the request to be written before {@link #end()} is called on the request or
+   * any data is written to it. This is normally used to implement HTTP 100-continue handling, see
+   * {@link #continueHandler(org.vertx.java.core.Handler)} for more information.
    *
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def sendHead(): HttpClientRequest = wrap(internal.sendHead())
+  def sendHead(): HttpClientRequest = wrap(internal.sendHead())
 
   /**
-   * Same as {@link #end(Buffer)} but writes a String with the default encoding
+   * Same as {@link #end(Buffer)} but writes a String with the default encoding.
    */
   def end(chunk: String): Unit = internal.end(chunk)
 
   /**
-   * Same as {@link #end(Buffer)} but writes a String with the specified encoding
+   * Same as {@link #end(Buffer)} but writes a String with the specified encoding.
    */
   def end(chunk: String, enc: String): Unit = internal.end(chunk, enc)
 
   /**
    * Same as {@link #end()} but writes some data to the request body before ending. If the request is not chunked and
-   * no other data has been written then the Content-Length header will be automatically set
+   * no other data has been written then the Content-Length header will be automatically set.
    */
-  def end(chunk: Buffer): Unit = internal.end(chunk)
+  def end(chunk: Buffer): Unit = internal.end(chunk.toJava)
 
   /**
    * Ends the request. If no data has been written to the request body, and {@link #sendHead()} has not been called then
@@ -156,7 +158,7 @@ class HttpClientRequest(protected[this] val internal: JHttpClientRequest) extend
   def end(): Unit = internal.end()
 
   /**
-   * Set's the amount of time after which if a response is not received TimeoutException()
+   * Sets the amount of time after which if a response is not received TimeoutException()
    * will be sent to the exception handler of this request. Calling this method more than once
    * has the effect of canceling any existing timeout and starting the timeout from scratch.
    *
@@ -165,4 +167,9 @@ class HttpClientRequest(protected[this] val internal: JHttpClientRequest) extend
    */
   def setTimeout(timeoutMs: Long): HttpClientRequest = wrap(internal.setTimeout(timeoutMs))
 
+}
+
+/** Factory for [[http.HttpClientRequest]] instances, by wrapping a Java instance. */
+object HttpClientRequest {
+  def apply(internal: JHttpClientRequest) = new HttpClientRequest(internal)
 }

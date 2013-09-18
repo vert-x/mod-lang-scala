@@ -27,15 +27,7 @@ import org.vertx.java.core.Handler
 import org.vertx.scala.VertxWrapper
 
 /**
- * @author swilliams
- */
-object SockJSServer {
-  def apply(internal: JSockJSServer) = new SockJSServer(internal)
-}
-
-/**
- *
- * This is an implementation of the server side part of <a href="https://github.com/sockjs">SockJS</a><p>
+ * This is an implementation of the server side part of <a href="https://github.com/sockjs">SockJS</a>.<p>
  *
  * <p>SockJS enables browsers to communicate with the server using a simple WebSocket-like api for sending
  * and receiving messages. Under the bonnet SockJS chooses to use one of several protocols depending on browser
@@ -66,22 +58,28 @@ object SockJSServer {
  * Instances of this class are not thread-safe.<p>
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class SockJSServer(protected[this] val internal: JSockJSServer) extends JSockJSServer with VertxWrapper {
+class SockJSServer(protected val internal: JSockJSServer) extends VertxWrapper {
   override type InternalType = JSockJSServer
 
-  override def installApp(config: JsonObject, sockHandler: Handler[JSockJSSocket]): SockJSServer =
-    wrap(internal.installApp(config, sockHandler))
+  def installApp(config: JsonObject, sockHandler: SockJSSocket => Unit): SockJSServer =
+    wrap(internal.installApp(config, fnToHandler(sockHandler.compose(SockJSSocket.apply))))
 
-  override def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray) =
+  def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray) =
     wrap(internal.bridge(sjsConfig, inboundPermitted, outboundPermitted))
 
-  override def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray, authTimeout: Long) =
+  def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray, authTimeout: Long) =
     wrap(internal.bridge(sjsConfig, inboundPermitted, outboundPermitted, authTimeout))
 
-  override def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray, authTimeout: Long, authAddress: String) =
+  def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray, authTimeout: Long, authAddress: String) =
     wrap(internal.bridge(sjsConfig, inboundPermitted, outboundPermitted, authTimeout, authAddress))
 
-  override def setHook(hook: EventBusBridgeHook): SockJSServer = wrap(internal.setHook(hook))
+  def setHook(hook: EventBusBridgeHook): SockJSServer = wrap(internal.setHook(hook))
+}
+
+/** Factory for [[sockjs.SockJSServer]] instances. */
+object SockJSServer {
+  def apply(internal: JSockJSServer) = new SockJSServer(internal)
 }

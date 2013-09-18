@@ -16,12 +16,12 @@
 
 package org.vertx.scala.core.streams
 
-import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
 import org.vertx.java.core.streams.{ WriteStream => JWriteStream }
 import org.vertx.scala.VertxWrapper
+import org.vertx.scala.core.buffer.Buffer
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.Handler
+import org.vertx.scala.core.Handler
 
 /**
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
@@ -33,7 +33,7 @@ trait WrappedWriteStream extends WrappedExceptionSupport with WriteStream {
 
   override def setWriteQueueMaxSize(maxSize: Int): this.type = wrap(internal.setWriteQueueMaxSize(maxSize))
 
-  override def write(data: Buffer): this.type = wrap(internal.write(data))
+  override def write(data: Buffer): this.type = wrap(internal.write(data.toJava))
 
   override def writeQueueFull(): Boolean = internal.writeQueueFull()
 

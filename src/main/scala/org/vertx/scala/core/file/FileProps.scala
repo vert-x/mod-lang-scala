@@ -1,6 +1,5 @@
 package org.vertx.scala.core.file
 
-// FIXME java types
 import org.vertx.java.core.file.{ FileProps => JFileProps }
 import org.vertx.scala.VertxWrapper
 import java.util.Date
@@ -10,8 +9,9 @@ import java.util.Date
  * Instances of FileProps are thread-safe<p>
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class FileProps(protected[this] val internal: JFileProps) extends JFileProps with VertxWrapper {
+class FileProps(protected[this] val internal: JFileProps) extends VertxWrapper {
   override type InternalType = JFileProps
 
   /**
@@ -55,6 +55,7 @@ class FileProps(protected[this] val internal: JFileProps) extends JFileProps wit
   def size(): Long = internal.size()
 }
 
+/** Factory for [[file.FileProps]] instances. */
 object FileProps {
   def apply(internal: JFileProps) = new FileProps(internal)
 }

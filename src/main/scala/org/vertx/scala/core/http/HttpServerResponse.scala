@@ -16,23 +16,13 @@
 
 package org.vertx.scala.core.http
 
-// FIXME Get rid of Java types
 import org.vertx.java.core.http.{ HttpServerResponse => JHttpServerResponse }
-import org.vertx.java.core.buffer.Buffer
+import org.vertx.scala.core.buffer._
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.Handler
 import org.vertx.scala.core.streams.WrappedWriteStream
 import org.vertx.scala.core.MultiMap
-
-/**
- * @author swilliams
- * @author nfmelendez
- * @author Ranie Jade Ramiso
- * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
- */
-object HttpServerResponse {
-  def apply(internal: JHttpServerResponse) = new HttpServerResponse(internal)
-}
+import collection.JavaConverters._
 
 /**
  * Represents a server-side HTTP response.<p>
@@ -52,116 +42,122 @@ object HttpServerResponse {
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
-class HttpServerResponse(protected[this] val internal: JHttpServerResponse) extends JHttpServerResponse with WrappedWriteStream {
+class HttpServerResponse(protected[this] val internal: JHttpServerResponse) extends WrappedWriteStream {
   override type InternalType = JHttpServerResponse
 
   /**
    * Close the underlying TCP connection
    */
-  override def close(): Unit = internal.close()
+  def close(): Unit = internal.close()
 
   /**
    * Set a close handler for the response. This will be called if the underlying connection closes before the response
    * is complete.
    * @param handler
    */
-  override def closeHandler(handler: Handler[Void]): HttpServerResponse = wrap(internal.closeHandler(handler))
-
-  /**
-   * Set a close handler for the response. This will be called if the underlying connection closes before the response
-   * is complete.
-   * @param handler
-   */
-  def closeHandler(handler: () => Unit): HttpServerResponse = wrap(internal.closeHandler(handler))
+  def closeHandler(handler: => Unit): HttpServerResponse = wrap(internal.closeHandler(handler))
 
   /**
    * Ends the response. If no data has been written to the response body,
    * the actual response won't get written until this method gets called.<p>
    * Once the response has ended, it cannot be used any more.
    */
-  override def end(): Unit = internal.end()
+  def end(): Unit = internal.end()
 
   /**
    * Same as {@link #end()} but writes some data to the response body before ending. If the response is not chunked and
    * no other data has been written then the Content-Length header will be automatically set
    */
-  override def end(chunk: org.vertx.java.core.buffer.Buffer): Unit = internal.end(chunk)
+  def end(chunk: Buffer): Unit = internal.end(chunk.toJava)
 
   /**
    * Same as {@link #end(Buffer)} but writes a String with the specified encoding before ending the response.
    */
-  override def end(chunk: String, enc: String): Unit = internal.end(chunk, enc)
+  def end(chunk: String, enc: String): Unit = internal.end(chunk, enc)
 
   /**
    * Same as {@link #end(Buffer)} but writes a String with the default encoding before ending the response.
    */
-  override def end(chunk: String): Unit = internal.end(chunk)
+  def end(chunk: String): Unit = internal.end(chunk)
 
   /**
    * The HTTP status code of the response. The default is {@code 200} representing {@code OK}.
+   *
+   * @return The status code.
    */
-  override def getStatusCode(): Int = internal.getStatusCode()
+  def getStatusCode(): Int = internal.getStatusCode()
 
   /**
    * The HTTP status message of the response. If this is not specified a default value will be used depending on what
    * {@link #setStatusCode} has been set to.
+   *
+   * @return The status message.
    */
-  override def getStatusMessage(): String = internal.getStatusMessage()
+  def getStatusMessage(): String = internal.getStatusMessage()
 
   /**
-   * @return The HTTP headers
+   * Returns the HTTP headers.
+   *
+   * @return The HTTP headers.
    */
-  override def headers(): org.vertx.java.core.MultiMap = internal.headers()
+  def headers(): org.vertx.java.core.MultiMap = internal.headers()
 
   /**
    * Is the response chunked?
    */
-  override def isChunked(): Boolean = internal.isChunked()
+  def isChunked(): Boolean = internal.isChunked()
 
   /**
-   * Put an HTTP header - fluent API
+   * Put an HTTP header - fluent API.
+   *
    * @param name    The header name
    * @param values  The header values.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def putHeader(name: String, values: java.lang.Iterable[String]): HttpServerResponse = wrap(internal.putHeader(name, values))
+  def putHeader(name: String, values: java.lang.Iterable[String]): HttpServerResponse = wrap(internal.putHeader(name, values))
 
   /**
-   * Put an HTTP header - fluent API
+   * Put an HTTP header - fluent API.
+   *
    * @param name The header name
    * @param value The header value.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def putHeader(name: String, value: String): HttpServerResponse = wrap(internal.putHeader(name, value))
+  def putHeader(name: String, value: String): HttpServerResponse = wrap(internal.putHeader(name, value))
 
   /**
-   * Put an HTTP trailer - fluent API
+   * Put an HTTP trailer - fluent API.
+   *
    * @param name    The trailer name
    * @param values  The trailer values
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def putTrailer(name: String, values: java.lang.Iterable[String]): HttpServerResponse = wrap(internal.putTrailer(name, values))
+  def putTrailer(name: String, values: Seq[String]): HttpServerResponse = wrap(internal.putTrailer(name, values.asJava))
 
   /**
-   * Put an HTTP trailer - fluent API
+   * Put an HTTP trailer - fluent API.
+   *
    * @param name The trailer name
    * @param value The trailer value
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def putTrailer(name: String, value: String): HttpServerResponse = wrap(internal.putTrailer(name, value))
+  def putTrailer(name: String, value: String): HttpServerResponse = wrap(internal.putTrailer(name, value))
 
   /**
-   * Same as {@link #sendFile(String)} but also takes the path to a resource to serve if the resource is not found
+   * Same as {@link #sendFile(String)} but also takes the path to a resource to serve if the resource is not found.
    */
-  override def sendFile(filename: String, notFoundFile: String): HttpServerResponse = wrap(internal.sendFile(filename, notFoundFile))
+  def sendFile(filename: String, notFoundFile: String): HttpServerResponse = wrap(internal.sendFile(filename, notFoundFile))
 
   /**
    * Tell the kernel to stream a file as specified by {@code filename} directly
    * from disk to the outgoing connection, bypassing userspace altogether
    * (where supported by the underlying operating system.
    * This is a very efficient way to serve files.<p>
+   *
+   * @param filename The file to send.
+   * @return A reference to this for a fluent API.
    */
-  override def sendFile(filename: String): HttpServerResponse = wrap(internal.sendFile(filename))
+  def sendFile(filename: String): HttpServerResponse = wrap(internal.sendFile(filename))
 
   /**
    * If {@code chunked} is {@code true}, this response will use HTTP chunked encoding, and each call to write to the body
@@ -173,39 +169,61 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * data is written to the response body.<p>
    * An HTTP chunked response is typically used when you do not know the total size of the request body up front.
    *
+   * @param chunked Sets the mode to chunked (true) or not (false).
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def setChunked(chunked: Boolean): HttpServerResponse = wrap(internal.setChunked(chunked))
+  def setChunked(chunked: Boolean): HttpServerResponse = wrap(internal.setChunked(chunked))
 
   /**
-   * Set the status code
+   * Set the status code.
+   *
+   * @param statusCode The status code.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def setStatusCode(statusCode: Int): HttpServerResponse = wrap(internal.setStatusCode(statusCode))
+  def setStatusCode(statusCode: Int): HttpServerResponse = wrap(internal.setStatusCode(statusCode))
 
   /**
-   * Set the status message
+   * Set the status message.
+   *
+   * @param statusMessage The status message.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def setStatusMessage(statusMessage: String): HttpServerResponse = wrap(internal.setStatusMessage(statusMessage))
+  def setStatusMessage(statusMessage: String): HttpServerResponse = wrap(internal.setStatusMessage(statusMessage))
 
   /**
-   * @return The HTTP trailers
+   * Returns the HTTP trailers.
+   *
+   * @return The HTTP trailers.
    */
-  override def trailers(): MultiMap = internal.trailers()
+  def trailers(): MultiMap = internal.trailers()
 
   /**
    * Write a {@link String} to the response body, encoded in UTF-8.
    *
+   * @param chunk The String to write.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def write(chunk: String): HttpServerResponse = wrap(internal.write(chunk))
+  def write(chunk: String): HttpServerResponse = wrap(internal.write(chunk))
 
   /**
    * Write a {@link String} to the response body, encoded using the encoding {@code enc}.
    *
+   * @param chunk The String to write.
+   * @param enc The encoding to use.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  override def write(chunk: String, enc: String): HttpServerResponse = wrap(internal.write(chunk, enc))
+  def write(chunk: String, enc: String): HttpServerResponse = wrap(internal.write(chunk, enc))
 
+}
+
+/**
+ * Factory for [[http.HttpServerResponse]] instances.
+ *
+ * @author swilliams
+ * @author nfmelendez
+ * @author Ranie Jade Ramiso
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ */
+object HttpServerResponse {
+  def apply(internal: JHttpServerResponse) = new HttpServerResponse(internal)
 }

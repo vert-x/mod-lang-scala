@@ -20,19 +20,45 @@ import org.vertx.java.core.http.{ ServerWebSocket => JServerWebSocket }
 import org.vertx.scala.core.streams.WrappedReadWriteStream
 
 /**
+ * Represents a server side WebSocket that is passed into a the websocketHandler of an {@link HttpServer}<p>
+ * Instances of this class are not thread-safe<p>
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
  * @author Galder Zamarreño
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-object ServerWebSocket {
-  def apply(socket: JServerWebSocket) = new ServerWebSocket(socket)
-}
-
-class ServerWebSocket(protected[this] val internal: JServerWebSocket) extends JServerWebSocket with WrappedWebSocketBase {
+class ServerWebSocket(protected val internal: JServerWebSocket) extends WrappedWebSocketBase {
   override type InternalType = JServerWebSocket
 
-  override def headers(): org.vertx.java.core.MultiMap = internal.headers()
-  override def path(): String = internal.path()
-  override def query(): String = internal.query()
-  override def reject(): ServerWebSocket = wrap(internal.reject())
+  /**
+   * The path the websocket is attempting to connect at
+   */
+  def path(): String = internal.path()
+
+  /**
+   * The query string passed on the websocket uri
+   */
+  def query(): String = internal.query()
+
+  /**
+   * A map of all headers in the request to upgrade to websocket
+   */
+  def headers(): org.vertx.java.core.MultiMap = internal.headers()
+
+  /**
+   * Reject the WebSocket<p>
+   * Calling this method from the websocketHandler gives you the opportunity to reject
+   * the websocket, which will cause the websocket handshake to fail by returning
+   * a 404 response code.<p>
+   * You might use this method, if for example you only want to accept websockets
+   * with a particular path.
+   */
+  def reject(): ServerWebSocket = wrap(internal.reject())
+}
+
+/** Factory for [[http.ServerWebSocket]] instances. */
+object ServerWebSocket {
+  def apply(socket: JServerWebSocket) = new ServerWebSocket(socket)
+  def unapply(socket: ServerWebSocket): JServerWebSocket = socket.toJava
 }

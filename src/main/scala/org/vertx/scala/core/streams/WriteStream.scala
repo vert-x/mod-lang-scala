@@ -16,9 +16,9 @@
 
 package org.vertx.scala.core.streams
 
-import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.streams.{ WriteStream => JWriteStream }
-import org.vertx.java.core.Handler
+import org.vertx.scala.core.buffer.Buffer
+import org.vertx.scala.core.Handler
 
 /**
  *

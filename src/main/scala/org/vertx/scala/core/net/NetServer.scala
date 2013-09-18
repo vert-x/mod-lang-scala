@@ -25,24 +25,68 @@ import org.vertx.scala.core.WrappedServerTCPSupport
 import org.vertx.scala.core.WrappedCloseable
 
 /**
- * @author swilliams
+ * Represents a TCP or SSL server<p>
+ * If an instance is instantiated from an event loop then the handlers
+ * of the instance will always be called on that same event loop.
+ * If an instance is instantiated from some other arbitrary Java thread (i.e. when running embedded) then
+ * and event loop will be assigned to the instance and used when any of its handlers
+ * are called.<p>
+ * Instances of this class are thread-safe.<p>
  *
+ * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author swilliams
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-object NetServer {
-
-  def apply(actual: JNetServer) = new NetServer(actual)
-
-}
-
-class NetServer(protected[this] val internal: JNetServer) extends JNetServer with WrappedCloseable with WrappedServerSSLSupport with WrappedServerTCPSupport {
+class NetServer(protected[this] val internal: JNetServer) extends WrappedCloseable with WrappedServerSSLSupport with WrappedServerTCPSupport {
   override type InternalType = JNetServer
 
-  override def connectHandler(connectHandler: Handler[JNetSocket]): NetServer = wrap(internal.connectHandler(connectHandler))
-  override def host(): String = internal.host()
-  override def listen(port: Int, host: String, listenHandler: Handler[AsyncResult[JNetServer]]): NetServer = wrap(internal.listen(port, host, listenHandler))
-  override def listen(port: Int, host: String): NetServer = wrap(internal.listen(port, host))
-  override def listen(port: Int, listenHandler: Handler[AsyncResult[JNetServer]]): org.vertx.java.core.net.NetServer = wrap(internal.listen(port, listenHandler))
-  override def listen(port: Int): NetServer = wrap(internal.listen(port))
-  override def port(): Int = internal.port()
+  /**
+   * Supply a connect handler for this server. The server can only have at most one connect handler at any one time.
+   * As the server accepts TCP or SSL connections it creates an instance of {@link org.vertx.java.core.net.NetSocket} and passes it to the
+   * connect handler.
+   * @return a reference to this so multiple method calls can be chained together
+   */
+  def connectHandler(connectHandler: NetSocket => Unit): NetServer = wrap(internal.connectHandler(connectHandler.compose(NetSocket.apply)))
 
+  /**
+   * Tell the server to start listening on all available interfaces and port {@code port}. Be aware this is an
+   * async operation and the server may not bound on return of the method.
+   */
+  def listen(port: Int): NetServer = wrap(internal.listen(port))
+
+  /**
+   * Instruct the server to listen for incoming connections on the specified {@code port} and all available interfaces.
+   */
+  def listen(port: Int, listenHandler: AsyncResult[NetServer] => Unit): NetServer = wrap(internal.listen(port, arNetServer(listenHandler)))
+
+  /**
+   * Tell the server to start listening on port {@code port} and hostname or ip address given by {@code host}. Be aware this is an
+   * async operation and the server may not bound on return of the method.
+   *
+   */
+  def listen(port: Int, host: String): NetServer = wrap(internal.listen(port, host))
+
+  /**
+   * Instruct the server to listen for incoming connections on the specified {@code port} and {@code host}. {@code host} can
+   * be a host name or an IP address.
+   */
+  def listen(port: Int, host: String, listenHandler: AsyncResult[NetServer] => Unit): NetServer = wrap(internal.listen(port, host, arNetServer(listenHandler)))
+
+  /**
+   * The actual port the server is listening on. This is useful if you bound the server specifying 0 as port number
+   * signifying an ephemeral port
+   */
+  def port(): Int = internal.port()
+
+  /**
+   * The host.
+   */
+  def host(): String = internal.host()
+
+  private def arNetServer = asyncResultConverter(NetServer.apply) _
+}
+
+/** Factory for [[net.NetServer]] instances. */
+object NetServer {
+  def apply(actual: JNetServer) = new NetServer(actual)
 }
