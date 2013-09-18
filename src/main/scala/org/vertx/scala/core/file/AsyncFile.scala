@@ -15,90 +15,76 @@
  */
 package org.vertx.scala.core.file
 
-
-import org.vertx.java.core.file.{AsyncFile => JAsyncFile}
-import org.vertx.java.core.buffer.Buffer
-import org.vertx.scala.core.streams.{WriteStream, ReadStream}
-import org.vertx.java.core.AsyncResult
+import org.vertx.java.core.file.{ AsyncFile => JAsyncFile }
+import org.vertx.scala.core.buffer._
+import org.vertx.scala.core.streams.{ WriteStream, ReadStream }
+import org.vertx.scala.core.AsyncResult
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.scala.core.streams.WrappedReadWriteStream
+
 /**
+ * Represents a file on the file-system which can be read from, or written to asynchronously.<p>
+ * This class also implements {@link org.vertx.java.core.streams.ReadStream} and
+ * {@link org.vertx.java.core.streams.WriteStream}. This allows the data to be pumped to and from
+ * other streams, e.g. an {@link org.vertx.java.core.http.HttpClientRequest} instance,
+ * using the {@link org.vertx.java.core.streams.Pump} class<p>
+ * Instances of AsyncFile are not thread-safe<p>
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
  * @author Edgar Chan
  * @author swilliams
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-object AsyncFile {
-  def apply(internal:JAsyncFile) = new AsyncFile(internal)
+class AsyncFile(protected[this] val internal: JAsyncFile) extends WrappedReadWriteStream {
+  override type InternalType = JAsyncFile
+
+  /**
+   * Close the file. The actual close happens asynchronously.
+   */
+  def close(): Unit = internal.close()
+
+  /**
+   * Close the file. The actual close happens asynchronously.
+   * The handler will be called when the close is complete, or an error occurs.
+   */
+  def close(handler: AsyncResult[Void] => Unit): Unit = internal.close(handler)
+
+  /**
+   * Write a {@link Buffer} to the file at position {@code position} in the file, asynchronously.
+   * If {@code position} lies outside of the current size
+   * of the file, the file will be enlarged to encompass it.<p>
+   * When multiple writes are invoked on the same file
+   * there are no guarantees as to order in which those writes actually occur.<p>
+   * The handler will be called when the write is complete, or if an error occurs.
+   */
+  def write(buffer: Buffer, position: Int, handler: AsyncResult[Void] => Unit): AsyncFile =
+    wrap(internal.write(buffer.toJava, position, handler))
+
+  /**
+   * Reads {@code length} bytes of data from the file at position {@code position} in the file, asynchronously.
+   * The read data will be written into the specified {@code Buffer buffer} at position {@code offset}.<p>
+   * If data is read past the end of the file then zero bytes will be read.<p>
+   * When multiple reads are invoked on the same file there are no guarantees as to order in which those reads actually occur.<p>
+   * The handler will be called when the close is complete, or if an error occurs.
+   */
+  def read(buffer: Buffer, offset: Int, position: Int, length: Int, handler: AsyncResult[Buffer] => Unit): AsyncFile =
+    wrap(internal.read(buffer.toJava, offset, position, length, asyncResultConverter(createBuffer)(handler)))
+
+  /**
+   * Flush any writes made to this file to underlying persistent storage.<p>
+   * If the file was opened with {@code flush} set to {@code true} then calling this method will have no effect.<p>
+   * The actual flush will happen asynchronously.
+   */
+  def flush(): AsyncFile = wrap(internal.flush())
+
+  /**
+   * Same as {@link #flush} but the handler will be called when the flush is complete or if an error occurs
+   */
+  def flush(handler: AsyncResult[Void] => Unit): AsyncFile = wrap(internal.flush(handler))
+
 }
 
-class AsyncFile(internal:JAsyncFile) extends ReadStream with WriteStream {
-
-  def dataHandler(handler: (Buffer) => Unit):AsyncFile.this.type = {
-    internal.dataHandler(handler)
-    this
-  }
-
-  def pause():AsyncFile.this.type = {
-    internal.pause()
-    this
-  }
-
-  def resume():AsyncFile.this.type = {
-    internal.resume()
-    this
-  }
-
-  def endHandler(handler: () => Unit ):AsyncFile.this.type = {
-    internal.endHandler(handler)
-    this
-  }
-
-  def write(data: Buffer):AsyncFile.this.type = {
-    internal.write(data)
-    this
-  }
-
-  def setWriteQueueMaxSize(max: Int):AsyncFile.this.type = {
-    internal.setWriteQueueMaxSize(max)
-    this
-  }
-
-  def writeQueueFull: Boolean = internal.writeQueueFull()
-
-  def drainHandler(handler: () => Unit):AsyncFile.this.type = {
-    internal.drainHandler(handler)
-    this
-  }
-
-  def exceptionHandler(handler: (Throwable) => Unit ):AsyncFile.this.type = {
-    internal.exceptionHandler(handler)
-    this
-  }
-
-  def close():Unit = {
-    internal.close()
-  }
-
-  def close(handler: (AsyncResult[Unit]) => Unit):Unit = {
-    internal.close(voidAsyncHandler(handler))
-  }
-
-  def write(data:Buffer, p:Int, handler: () => Unit ):AsyncFile.this.type = {
-    internal.write(data, p, handler)
-    this
-  }
-
-  def read(buffer: Buffer, offset: Int, position: Int, length: Int, handler: (AsyncResult[Buffer]) => Unit):AsyncFile.this.type = {
-    internal.read(buffer, offset, position, length, handler)
-    this
-  }
-
-  def flush():AsyncFile.this.type = {
-    internal.flush()
-    this
-  }
-
-  def flush(handler: () => Unit):AsyncFile.this.type = {
-   flush(handler)
-   this
-  }
-
+/** Factory for [[file.AsyncFile]] instances. */
+object AsyncFile {
+  def apply(internal: JAsyncFile) = new AsyncFile(internal)
 }

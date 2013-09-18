@@ -16,50 +16,80 @@
 package org.vertx.scala.core.streams
 
 import org.vertx.java.core.buffer.Buffer
+import org.vertx.java.core.streams.{ Pump => JPump }
+import org.vertx.scala.Wrap
+import org.vertx.scala.VertxWrapper
 
 /**
- * @author swilliams
+ * Pumps data from a {@link ReadStream} to a {@link WriteStream} and performs flow control where necessary to
+ * prevent the write stream buffer from getting overfull.<p>
+ * Instances of this class read bytes from a {@link ReadStream} and write them to a {@link WriteStream}. If data
+ * can be read faster than it can be written this could result in the write queue of the {@link WriteStream} growing
+ * without bound, eventually causing it to exhaust all available RAM.<p>
+ * To prevent this, after each write, instances of this class check whether the write queue of the {@link
+ * WriteStream} is full, and if so, the {@link ReadStream} is paused, and a {@code drainHandler} is set on the
+ * {@link WriteStream}. When the {@link WriteStream} has processed half of its backlog, the {@code drainHandler} will be
+ * called, which results in the pump resuming the {@link ReadStream}.<p>
+ * This class can be used to pump from any {@link ReadStream} to any {@link WriteStream},
+ * e.g. from an {@link org.vertx.java.core.http.HttpServerRequest} to an {@link org.vertx.java.core.file.AsyncFile},
+ * or from {@link org.vertx.java.core.net.NetSocket} to a {@link org.vertx.java.core.http.WebSocket}.<p>
  *
+ * Instances of this class are not thread-safe.<p>
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author swilliams
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object Pump {
-  def newPump(rs: ReadStream, ws: WriteStream) = {
-    new Pump(rs, ws)
-  }
-  def newPump(rs: ReadStream, ws: WriteStream, writeQueueMaxSize:Int) = {
-    def pump = new Pump(rs, ws)
-    pump.writeQueueMaxSize = writeQueueMaxSize
-    pump
-  }
+
+  /**
+   * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream}
+   */
+  def apply[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream) = createPump(rs, ws)
+
+  /**
+   * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream} and
+   * {@code writeQueueMaxSize}
+   */
+  def apply[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream, writeQueueMaxSize: Int) =
+    createPump(rs, ws, writeQueueMaxSize)
+
+  /**
+   * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream}
+   */
+  def createPump[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream) =
+    new Pump(JPump.createPump(rs.toJava(), ws.toJava()))
+
+  /**
+   * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream} and
+   * {@code writeQueueMaxSize}
+   */
+  def createPump[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream, writeQueueMaxSize: Int) =
+    new Pump(JPump.createPump(rs.toJava(), ws.toJava(), writeQueueMaxSize))
+
 }
 
-class Pump(readStream: ReadStream, writeStream: WriteStream) {
+class Pump(protected val internal: JPump) extends VertxWrapper {
+  override type InternalType = JPump
 
-  private var writeQueueMaxSize:Int = Int.MaxValue
+  /**
+   * Set the write queue max size to {@code maxSize}
+   */
+  def setWriteQueueMaxSize(maxSize: Int): Pump = wrap(internal.setWriteQueueMaxSize(maxSize))
 
-  private var bytesPumped:Int = 0
+  /**
+   * Start the Pump. The Pump can be started and stopped multiple times.
+   */
+  def start(): Pump = wrap(internal.start())
 
-  private val drainHandler:() => Unit = { () =>
-    readStream.resume()
-  }
+  /**
+   * Stop the Pump. The Pump can be started and stopped multiple times.
+   */
+  def stop(): Pump = wrap(internal.stop())
 
-  private val dataHandler:Buffer => Unit = { data:Buffer =>
-    writeStream.write(data)
-    bytesPumped += data.length()
-    if (writeStream.writeQueueFull()) {
-      readStream.pause()
-      writeStream.drainHandler(drainHandler)
-    }
-  }
-
-  def start():Pump = {
-    readStream.dataHandler(dataHandler)
-    this
-  }
-
-  def stop():Pump = {
-    writeStream.drainHandler(null)
-    readStream.dataHandler(null)
-    this
-  }
+  /**
+   * Return the total number of bytes pumped by this pump.
+   */
+  def bytesPumped(): Int = internal.bytesPumped()
 
 }

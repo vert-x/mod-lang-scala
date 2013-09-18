@@ -16,36 +16,26 @@
 
 package org.vertx.scala.core.streams
 
-import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.streams.{ ReadStream => JReadStream }
 import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
-import org.vertx.java.core.Handler
+import org.vertx.java.core.streams.{ WriteStream => JWriteStream }
 import org.vertx.scala.VertxWrapper
+import org.vertx.scala.core.buffer.Buffer
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.scala.core.Handler
 
 /**
- * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-trait ExceptionSupport {
-  type InternalType <: JExceptionSupport[_]
+trait WrappedWriteStream extends WrappedExceptionSupport with WriteStream {
+  override def drainHandler(handler: Handler[Void]): this.type = wrap(internal.drainHandler(handler))
 
-  /**
-   * Set an exception handler.
-   */
-  def exceptionHandler(handler: Handler[Throwable]): this.type
+  override def drainHandler(handler: => Unit): this.type = drainHandler(lazyToVoidHandler(handler))
 
-  /**
-   * Set an exception handler.
-   */
-  def exceptionHandler(handler: Throwable => Unit): this.type
+  override def setWriteQueueMaxSize(maxSize: Int): this.type = wrap(internal.setWriteQueueMaxSize(maxSize))
 
-  def toJava(): InternalType
-}
+  override def write(data: Buffer): this.type = wrap(internal.write(data.toJava))
 
-trait WrappedExceptionSupport extends ExceptionSupport with VertxWrapper {
-  type InternalType <: JExceptionSupport[_]
-  override def exceptionHandler(handler: Handler[Throwable]): this.type = wrap(internal.exceptionHandler(handler))
-  override def exceptionHandler(handler: Throwable => Unit): this.type = exceptionHandler(fnToHandler(handler))
+  override def writeQueueFull(): Boolean = internal.writeQueueFull()
+
   override def toJava(): InternalType = internal
 }

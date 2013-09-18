@@ -24,15 +24,8 @@ import org.vertx.scala.core.eventbus.EventBus
 import org.vertx.scala.core._
 import org.vertx.scala.platform.Verticle
 
-
 /**
  * @author swilliams
- * If you're reading this code and wondering why it converts between JSON types, 
- * then yes you're right, it's certainly an overhead.
- * 
- * But before you're too critical, bear in mind that the initial goal was to use
- * Scala native types rather than go for raw performance.
- * 
  */
 trait ModuleBase extends Verticle {
 
@@ -55,30 +48,30 @@ trait ModuleBase extends Verticle {
 
   def startMod(): Unit
 
-  def sendOK(message: Message[JsonObject]):Unit = {
+  def sendOK(message: Message[JsonObject]): Unit = {
     sendOK(message, null)
   }
 
-  def sendStatus(status: String, message: Message[JsonObject], reply: JsonObject = null):Unit = {
+  def sendStatus(status: String, message: Message[JsonObject], reply: JsonObject = null): Unit = {
     reply.putString("status", status)
     message.reply(reply)
   }
 
-  def sendOK(message: Message[JsonObject], reply: JsonObject = null):Unit = {
+  def sendOK(message: Message[JsonObject], reply: JsonObject = null): Unit = {
     sendStatus("ok", message, reply)
   }
 
-  def sendError(message: Message[JsonObject], error: String):Unit = {
+  def sendError(message: Message[JsonObject], error: String): Unit = {
     sendError(message, error, null)
   }
 
-  def sendError(message: Message[JsonObject], error: String, e: Exception):Unit = {
+  def sendError(message: Message[JsonObject], error: String, e: Exception): Unit = {
     logger.error(error, e)
     var json = new JsonObject().putString("status", "error").putString("message", error)
     message.reply(json)
   }
 
-  def getMandatoryString(fieldName: String, message: Message[JsonObject]):String = {
+  def getMandatoryString(fieldName: String, message: Message[JsonObject]): String = {
     var obj = message.body.getString(fieldName)
     if (obj == null) {
       sendError(message, fieldName + " must be specified")
@@ -86,7 +79,7 @@ trait ModuleBase extends Verticle {
     obj
   }
 
-  def getMandatoryObject(fieldName: String, message: Message[JsonObject]):JsonObject = {
+  def getMandatoryObject(fieldName: String, message: Message[JsonObject]): JsonObject = {
     var obj = message.body.getObject(fieldName)
     if (obj == null) {
       sendError(message, fieldName + " must be specified")
@@ -94,67 +87,42 @@ trait ModuleBase extends Verticle {
     obj
   }
 
-  def getOptionalBooleanConfig(fieldName: String, defaultValue: Boolean):Boolean = {
-    var b = config.getBoolean(fieldName)
-    if (b == null) defaultValue else b
-  }
+  def getOptionalBooleanConfig(fieldName: String, defaultValue: Boolean): Boolean =
+    config.getBoolean(fieldName, defaultValue)
 
-  def getOptionalStringConfig(fieldName: String, defaultValue: String):String = {
-    var b = config.getString(fieldName)
-    if (b == null) defaultValue else b
-  }
+  def getOptionalStringConfig(fieldName: String, defaultValue: String): String =
+    config.getString(fieldName, defaultValue)
 
-  def getOptionalIntConfig(fieldName: String, defaultValue: Int):Int = {
-    var b = config.getInteger(fieldName)
-    if (b == null) defaultValue else b
-  }
+  def getOptionalIntConfig(fieldName: String, defaultValue: Int): Int =
+    config.getInteger(fieldName, defaultValue)
 
-  // FIXME There's got to be a better way of doing this
-  def getOptionalLongConfig(fieldName: String, defaultValue: Long):Long = {
-    var l = config.getLong(fieldName)
-    if (l == null) defaultValue else l
-  }
+  def getOptionalLongConfig(fieldName: String, defaultValue: Long): Long =
+    config.getLong(fieldName, defaultValue)
 
-  def getOptionalObjectConfig(fieldName: String, defaultValue: JsonObject):JsonObject = {
-    var o = config.getObject(fieldName)
-    if (o == null) defaultValue else o
-  }
+  def getOptionalObjectConfig(fieldName: String, defaultValue: JsonObject): JsonObject =
+    config.getObject(fieldName, defaultValue)
 
-  def getOptionalArrayConfig(fieldName: String, defaultValue: JsonArray):JsonArray = {
-    var a = config.getArray(fieldName)
-    if (a == null) defaultValue else a
-  }
+  def getOptionalArrayConfig(fieldName: String, defaultValue: JsonArray): JsonArray =
+    config.getArray(fieldName, defaultValue)
 
-  def getMandatoryBooleanConfig(fieldName: String):Boolean = {
-    var b = config.getBoolean(fieldName)
-    if (b == null) {
+  private def mandatoryField[T](fieldName: String, getter: => T): T = {
+    val x = getter
+    if (x == null) {
       throw new IllegalArgumentException(fieldName + " must be specified in config for busmod")
     }
-    b
+    x
   }
 
-  def getMandatoryStringConfig(fieldName: String):String = {
-    var s = config.getString(fieldName)
-    if (s == null) {
-      throw new IllegalArgumentException(fieldName + " must be specified in config for busmod")
-    }
-    s
-  }
+  def getMandatoryBooleanConfig(fieldName: String): Boolean =
+    mandatoryField(fieldName, config.getBoolean(fieldName))
 
-  def getMandatoryIntConfig(fieldName: String):Int = {
-    var i = config.getInteger(fieldName)
-    if (i == null) {
-      throw new IllegalArgumentException(fieldName + " must be specified in config for busmod")
-    }
-    i
-  }
+  def getMandatoryStringConfig(fieldName: String): String =
+    mandatoryField(fieldName, config.getString(fieldName))
 
-  def getMandatoryLongConfig(fieldName: String):Long = {
-    var l = config.getLong(fieldName)
-    if (l == null) {
-      throw new IllegalArgumentException(fieldName + " must be specified in config for busmod")
-    }
-    l
-  }
+  def getMandatoryIntConfig(fieldName: String): Int =
+    mandatoryField(fieldName, config.getInteger(fieldName))
+
+  def getMandatoryLongConfig(fieldName: String): Long =
+    mandatoryField(fieldName, config.getLong(fieldName))
 
 }

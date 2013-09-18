@@ -16,129 +16,111 @@
 
 package org.vertx.scala.core.http
 
-import org.vertx.java.core.{Handler => JHandler, AsyncResult => JAsyncResult}
-import org.vertx.java.core.http.{HttpServer => JHttpServer}
-import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
-import org.vertx.java.core.http.{ServerWebSocket => JServerWebSocket}
+import org.vertx.java.core.http.{ HttpServer => JHttpServer }
+import org.vertx.java.core.http.{ HttpServerRequest => JHttpServerRequest, ServerWebSocket => JServerWebSocket }
+import org.vertx.scala.core.{ WrappedServerSSLSupport, WrappedTCPSupport }
+import org.vertx.scala.core.WrappedServerTCPSupport
+import org.vertx.scala.core.AsyncResult
+import org.vertx.scala.core.Handler
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.net.SocketConfigurer
-
+import org.vertx.scala.core.WrappedCloseable
 
 /**
+ * An HTTP and WebSockets server<p>
+ * If an instance is instantiated from an event loop then the handlers
+ * of the instance will always be called on that same event loop.
+ * If an instance is instantiated from some other arbitrary Java thread then
+ * an event loop will be assigned to the instance and used when any of its handlers
+ * are called.<p>
+ * Instances of HttpServer are thread-safe.<p>
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
- * 
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-object HttpServer {
-  def apply(actual: JHttpServer) =
-    new HttpServer(actual)
+class HttpServer(protected[this] val internal: JHttpServer) extends WrappedCloseable with WrappedServerTCPSupport with WrappedServerSSLSupport {
+  override type InternalType = JHttpServer
+
+  /**
+   * Tell the server to start listening on port {@code port} and hostname or ip address given by {@code host}.
+   *
+   * @param port The port to listen on.
+   * @param host The hostname or ip address.
+   * @param listenHandler Callback when bind is done.
+   */
+  def listen(port: Int, host: String, listenHandler: AsyncResult[HttpServer] => Unit): HttpServer =
+    wrap(internal.listen(port, host, arHttpServerFnConverter(listenHandler)))
+
+  /**
+   * Tell the server to start listening on port {@code port} and hostname or ip address given by {@code host}. Be aware this is an
+   *
+   * async operation and the server may not bound on return of the method.
+   * @param port The port to listen on.
+   * @param host The hostname or ip address.
+   */
+  def listen(port: Int, host: String): HttpServer = wrap(internal.listen(port, host))
+
+  /**
+   * Tell the server to start listening on all available interfaces and port {@code port}.
+   *
+   * @param port The port to listen on.
+   * @param listenHandler Callback when bind is done.
+   */
+  def listen(port: Int, listenHandler: AsyncResult[HttpServer] => Unit): HttpServer =
+    wrap(internal.listen(port, arHttpServerFnConverter(listenHandler)))
+
+  /**
+   * Tell the server to start listening on all available interfaces and port {@code port}. Be aware this is an
+   * async operation and the server may not bound on return of the method.
+   *
+   * @param port The port to listen on.
+   */
+  def listen(port: Int): HttpServer = wrap(internal.listen(port))
+
+  /**
+   * Get the request handler.
+   *
+   * @return The request handler.
+   */
+  def requestHandler(): HttpServerRequest => Unit =
+    handlerToFn(internal.requestHandler()).compose(HttpServerRequest.unapply)
+
+  /**
+   * Set the request handler for the server to {@code requestHandler}. As HTTP requests are received by the server,
+   * instances of {@link HttpServerRequest} will be created and passed to this handler.
+   *
+   * @return a reference to this, so methods can be chained.
+   */
+  def requestHandler(requestHandler: HttpServerRequest => Unit): HttpServer =
+    wrap(internal.requestHandler(httpServerRequestFnConverter(requestHandler)))
+
+  /**
+   * Get the websocket handler
+   * @return The websocket handler
+   */
+  def websocketHandler(): ServerWebSocket => Unit =
+    handlerToFn(internal.websocketHandler()).compose(ServerWebSocket.unapply)
+
+  /**
+   * Set the websocket handler for the server to {@code wsHandler}. If a websocket connect handshake is successful a
+   * new {@link ServerWebSocket} instance will be created and passed to the handler.
+   *
+   * @return a reference to this, so methods can be chained.
+   */
+  def websocketHandler(wsHandler: ServerWebSocket => Unit): HttpServer =
+    wrap(internal.websocketHandler(serverWebSocketFnConverter(wsHandler)))
+
+  private def arHttpServerFnConverter(handler: AsyncResult[HttpServer] => Unit): Handler[AsyncResult[JHttpServer]] =
+    asyncResultConverter(HttpServer.apply)(handler)
+
+  private def httpServerRequestFnConverter(handler: HttpServerRequest => Unit): Handler[JHttpServerRequest] =
+    fnToHandler(handler.compose(HttpServerRequest.apply))
+
+  private def serverWebSocketFnConverter(handler: ServerWebSocket => Unit): Handler[JServerWebSocket] =
+    fnToHandler(handler.compose(ServerWebSocket.apply))
 }
 
-class HttpServer(val actual: JHttpServer) extends SocketConfigurer {
-
-  def close():Unit = actual.close
-
-  def close(handler: () => Unit):Unit = actual.close(handler)
-
-  def listen(port: Int):HttpServer.this.type = {
-    actual.listen(port)
-    this
-  }
-
-  def listen(port: Int, handler: JAsyncResult[JHttpServer] => Unit):HttpServer.this.type = {
-    actual.listen(port, new JHandler[JAsyncResult[JHttpServer]]() {
-      override def handle(result: JAsyncResult[JHttpServer]):Unit = {
-        handler(result)
-      }
-      })
-
-    this
-  }
-
-  def listen(port: Int, address: String, handler: JAsyncResult[JHttpServer] => Unit):HttpServer.this.type = {
-    actual.listen(port, address, new JHandler[JAsyncResult[JHttpServer]]() {
-      override def handle(result: JAsyncResult[JHttpServer]):Unit = {
-        handler(result)
-      }
-    })
-    this
-  }
-
-
-  def listen(port: Int, address: String):HttpServer.this.type = {
-    actual.listen(port, address)
-    this
-  }
-
-  def requestHandler():JHandler[JHttpServerRequest] = {
-    actual.requestHandler
-  }
-
-  def requestHandler(handler: HttpServerRequest => Unit):HttpServer.this.type = {
-    actual.requestHandler(HttpServerRequestHandler(handler))
-    this
-  }
-
-  def websocketHandler(): JHandler[JServerWebSocket] = actual.websocketHandler
-
-  def websocketHandler(handler: ServerWebSocket => Unit):HttpServer.this.type = {
-    actual.websocketHandler(ServerWebSocketHandler(handler))
-    this
-  }
-
-  def acceptBacklog():Int = actual.getAcceptBacklog()
-
-  def acceptBacklog(backlog: Int):HttpServer.this.type = {
-    actual.setAcceptBacklog(backlog)
-    this
-  }
-
-  def keyStorePassword():String = actual.getKeyStorePassword
-
-  def keyStorePassword(keyStorePassword: String):HttpServer.this.type = {
-    actual.setKeyStorePassword(keyStorePassword)
-    this
-  }
-
-  def keyStorePath():String = actual.getKeyStorePath
-
-  def keyStorePath(keyStorePath: String):HttpServer.this.type = {
-    actual.setKeyStorePath(keyStorePath)
-    this
-  }
-
-  def receiveBufferSize():Int = actual.getReceiveBufferSize
-
-  def receiveBufferSize(receiveBufferSize: Int):HttpServer.this.type = {
-    actual.setReceiveBufferSize(receiveBufferSize)
-    this
-  }
-
-  def sendBufferSize():Int = actual.getSendBufferSize
-
-  def sendBufferSize(sendBufferSize: Int):HttpServer.this.type = {
-    actual.setSendBufferSize(sendBufferSize)
-    this
-  }
-
-  def trafficClass():Int = actual.getTrafficClass
-
-  def trafficClass(trafficClass: Int):HttpServer.this.type = {
-    actual.setTrafficClass(trafficClass)
-    this
-  }
-
-  def trustStorePassword():String = actual.getTrustStorePassword
-
-  def trustStorePassword(password: String):HttpServer.this.type = {
-    actual.setTrustStorePassword(password)
-    this
-  }
-
-  def trustStorePath():String = actual.getTrustStorePath
-
-  def trustStorePath(path: String):HttpServer.this.type = {
-    actual.setTrustStorePath(path)
-    this
-  }
-
+/** Factory for [[http.HttpServer]] instances by wrapping a Java instance. */
+object HttpServer {
+  def apply(internal: JHttpServer) = new HttpServer(internal)
 }

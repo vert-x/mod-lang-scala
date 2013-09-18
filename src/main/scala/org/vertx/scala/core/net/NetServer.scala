@@ -17,198 +17,76 @@
 package org.vertx.scala.core.net
 
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.net.{NetServer => JNetServer}
-import org.vertx.java.core.{Handler, AsyncResult, ServerTCPSupport, ServerSSLSupport}
+import org.vertx.java.core.net.{ NetServer => JNetServer, NetSocket => JNetSocket }
+import org.vertx.java.core.{ Handler, AsyncResult, ServerTCPSupport, ServerSSLSupport }
 import org.vertx.java.core.impl.DefaultFutureResult
+import org.vertx.scala.core.WrappedServerSSLSupport
+import org.vertx.scala.core.WrappedServerTCPSupport
+import org.vertx.scala.core.WrappedCloseable
 
 /**
+ * Represents a TCP or SSL server<p>
+ * If an instance is instantiated from an event loop then the handlers
+ * of the instance will always be called on that same event loop.
+ * If an instance is instantiated from some other arbitrary Java thread (i.e. when running embedded) then
+ * and event loop will be assigned to the instance and used when any of its handlers
+ * are called.<p>
+ * Instances of this class are thread-safe.<p>
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
- * 
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-object NetServer {
-  def apply(actual: JNetServer) = new NetServer(actual)
+class NetServer(protected[this] val internal: JNetServer) extends WrappedCloseable with WrappedServerSSLSupport with WrappedServerTCPSupport {
+  override type InternalType = JNetServer
 
+  /**
+   * Supply a connect handler for this server. The server can only have at most one connect handler at any one time.
+   * As the server accepts TCP or SSL connections it creates an instance of {@link org.vertx.java.core.net.NetSocket} and passes it to the
+   * connect handler.
+   * @return a reference to this so multiple method calls can be chained together
+   */
+  def connectHandler(connectHandler: NetSocket => Unit): NetServer = wrap(internal.connectHandler(connectHandler.compose(NetSocket.apply)))
+
+  /**
+   * Tell the server to start listening on all available interfaces and port {@code port}. Be aware this is an
+   * async operation and the server may not bound on return of the method.
+   */
+  def listen(port: Int): NetServer = wrap(internal.listen(port))
+
+  /**
+   * Instruct the server to listen for incoming connections on the specified {@code port} and all available interfaces.
+   */
+  def listen(port: Int, listenHandler: AsyncResult[NetServer] => Unit): NetServer = wrap(internal.listen(port, arNetServer(listenHandler)))
+
+  /**
+   * Tell the server to start listening on port {@code port} and hostname or ip address given by {@code host}. Be aware this is an
+   * async operation and the server may not bound on return of the method.
+   *
+   */
+  def listen(port: Int, host: String): NetServer = wrap(internal.listen(port, host))
+
+  /**
+   * Instruct the server to listen for incoming connections on the specified {@code port} and {@code host}. {@code host} can
+   * be a host name or an IP address.
+   */
+  def listen(port: Int, host: String, listenHandler: AsyncResult[NetServer] => Unit): NetServer = wrap(internal.listen(port, host, arNetServer(listenHandler)))
+
+  /**
+   * The actual port the server is listening on. This is useful if you bound the server specifying 0 as port number
+   * signifying an ephemeral port
+   */
+  def port(): Int = internal.port()
+
+  /**
+   * The host.
+   */
+  def host(): String = internal.host()
+
+  private def arNetServer = asyncResultConverter(NetServer.apply) _
 }
 
-class NetServer(val internal: JNetServer) extends ServerSSLSupport[NetServer] with ServerTCPSupport[NetServer] {
-
-
-  def connectHandler(handler: (NetSocket) => Unit):NetServer = {
-    internal.connectHandler(ConnectHandler(handler))
-    this
-  }
-
-  def listen(port: Int):NetServer = {
-    internal.listen(port)
-    this
-  }
-
-
-  def listen(port: Int, host: String):NetServer = {
-    internal.listen(port, host)
-    this
-  }
-
-  def listen(port: Int, handler: AsyncResult[NetServer] => Unit):NetServer = {
-    listen(port, "0.0.0.0", handler)
-  }
-
-  def listen(port: Int, host:String,  handler: AsyncResult[NetServer] => Unit):NetServer = {
-    internal.listen(port,  host, new Handler[AsyncResult[JNetServer]]() {
-       override def handle(result: AsyncResult[JNetServer]) = {
-         if (result.succeeded)
-             handler(new DefaultFutureResult[NetServer](NetServer(result.result)))
-       }
-    })
-     this
-  }
-
-
-  def close:Unit = internal.close
-
-  def close(handler: () => Unit):Unit = 
-    internal.close(handler)
-
-  def port:Int={
-    internal.port
-  }
-
-  def host:String={
-    internal.host
-  }
-
-  def setTCPNoDelay(tcpNoDelay: Boolean): NetServer = {
-    internal.setTCPNoDelay(tcpNoDelay)
-    this
-  }
-
-  def setSendBufferSize(size: Int): NetServer = {
-    internal.setSendBufferSize(size)
-    this
-  }
-
-  def setReceiveBufferSize(size: Int): NetServer = {
-    internal.setReceiveBufferSize(size)
-    this
-  }
-
-  def setTCPKeepAlive(keepAlive: Boolean): NetServer = {
-    internal.setTCPKeepAlive(keepAlive)
-    this
-  }
-
-  def setReuseAddress(reuse: Boolean): NetServer = {
-    internal.setReuseAddress(reuse)
-    this
-  }
-
-  def setSoLinger(linger: Int): NetServer = {
-    internal.setSoLinger(linger)
-    this
-  }
-
-  def setTrafficClass(trafficClass: Int): NetServer = {
-    internal.setTrafficClass(trafficClass)
-    this
-  }
-
-  def setUsePooledBuffers(pooledBuffers: Boolean): NetServer = {
-    internal.setUsePooledBuffers(pooledBuffers)
-    this
-  }
-
-  def isTCPNoDelay: Boolean = {
-    internal.isTCPNoDelay
-  }
-
-  def getSendBufferSize: Int = {
-    internal.getSendBufferSize
-  }
-
-  def getReceiveBufferSize: Int = {
-    internal.getReceiveBufferSize
-  }
-
-  def isTCPKeepAlive: Boolean = {
-    internal.isTCPKeepAlive
-  }
-
-  def isReuseAddress: Boolean = {
-    internal.isReuseAddress
-  }
-
-  def getSoLinger: Int = {
-    internal.getSoLinger
-  }
-
-  def getTrafficClass: Int = {
-    internal.getTrafficClass
-  }
-
-  def isUsePooledBuffers: Boolean = {
-    internal.isUsePooledBuffers
-  }
-
-  def setAcceptBacklog(backlog: Int): NetServer = {
-    internal.setAcceptBacklog(backlog)
-    this
-  }
-
-  def getAcceptBacklog: Int = {
-    internal.getAcceptBacklog
-  }
-
-  def setSSL(ssl: Boolean): NetServer = {
-    internal.setSSL(ssl)
-    this
-  }
-
-  def isSSL: Boolean = {
-    internal.isSSL
-  }
-
-  def setKeyStorePath(path: String): NetServer = {
-    internal.setKeyStorePath(path)
-    this
-  }
-
-  def getKeyStorePath: String = {
-    internal.getKeyStorePath
-  }
-
-  def setKeyStorePassword(pwd: String): NetServer = {
-    internal.setKeyStorePassword(pwd)
-    this
-  }
-
-  def getKeyStorePassword: String = {
-    internal.getKeyStorePassword
-  }
-
-  def setTrustStorePath(path: String): NetServer = {
-    internal.setTrustStorePath(path)
-    this
-  }
-
-  def getTrustStorePath: String = {
-    internal.getTrustStorePath
-  }
-
-  def setTrustStorePassword(pwd: String): NetServer = {
-    internal.setTrustStorePassword(pwd)
-    this
-  }
-
-  def getTrustStorePassword: String = {
-    internal.getTrustStorePassword
-  }
-
-  def setClientAuthRequired(required: Boolean): NetServer = {
-    internal.setClientAuthRequired(required)
-    this
-  }
-
-  def isClientAuthRequired: Boolean = {
-    internal.isClientAuthRequired
-  }
+/** Factory for [[net.NetServer]] instances. */
+object NetServer {
+  def apply(actual: JNetServer) = new NetServer(actual)
 }
