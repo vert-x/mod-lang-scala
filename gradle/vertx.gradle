@@ -105,7 +105,7 @@ task modZip( type: Zip, dependsOn: 'pullInDeps', description: 'Package the modul
   group = 'vert.x'
   description = "Assembles a vert.x module"
   destinationDir = project.file('build/libs')
-  archiveName = "${modname}-${version}" + ".zip"
+  archiveName = "${modname}-${version}" + "-mod.zip"
   from copyMod
 }
 
