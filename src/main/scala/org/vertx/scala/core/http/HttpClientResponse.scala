@@ -21,7 +21,7 @@ import org.vertx.java.core.http.{ HttpClientResponse => JHttpClientResponse }
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.Handler
 import org.vertx.scala.core.MultiMap
-import org.vertx.scala.core.buffer.Buffer
+import org.vertx.scala.core.buffer._
 import org.vertx.scala.core.net.NetSocket
 import org.vertx.scala.core.streams.WrappedReadWriteStream
 import org.vertx.scala.core.streams.WrappedReadStream
@@ -87,7 +87,7 @@ class HttpClientResponse(protected[this] val internal: JHttpClientResponse) exte
    * @param bodyHandler This handler will be called after all the body has been received.
    */
   def bodyHandler(handler: Buffer => Unit): HttpClientResponse =
-    wrap(internal.bodyHandler(handler.compose(org.vertx.scala.core.buffer.createBuffer)))
+    wrap(internal.bodyHandler(bufferHandlerToJava(handler)))
 
   /**
    * Get a net socket for the underlying connection of this request. USE THIS WITH CAUTION!

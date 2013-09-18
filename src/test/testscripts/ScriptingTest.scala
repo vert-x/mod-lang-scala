@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.vertx.scala.core.http._
+import org.vertx.testtools.VertxAssert._
 
-load('vertx.js')
+VertxAssert.initialize()
+vertx.createHttpServer.requestHandler { req: HttpServerRequest =>
+  req.response.end("Hello verticle script!")
+}.listen(8080, { ar: AsyncResult[HttpServer] => {
+  startTests()
+})
 
-var handler = function(msg, reply) {
-  reply(msg)
-}
-
-vertx.eventBus.registerHandler('test.echo', handler)
-
-function vertxStop() {
-  vertx.eventBus.unregisterHandler('test.echo', handler)
+def testHttpServer(): Unit = {
+  vertx.createHttpClient.setPort(8080).getNow("/", { resp => 
+    resp.bodyHandler({ buf => assertEquals("Hello verticle script!", buf.toString()) })
+  })
 }

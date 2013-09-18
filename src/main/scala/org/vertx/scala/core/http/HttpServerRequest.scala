@@ -117,7 +117,7 @@ class HttpServerRequest(protected val internal: JHttpServerRequest) extends Wrap
    *
    * @param bodyHandler This handler will be called after all the body has been received
    */
-  def bodyHandler(handler: Buffer => Unit): HttpServerRequest = wrap(internal.bodyHandler(handler.compose(createBuffer)))
+  def bodyHandler(handler: Buffer => Unit): HttpServerRequest = wrap(internal.bodyHandler(bufferHandlerToJava(handler)))
 
   /**
    * Get a net socket for the underlying connection of this request. USE THIS WITH CAUTION!

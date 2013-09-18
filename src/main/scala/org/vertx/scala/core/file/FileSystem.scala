@@ -16,12 +16,12 @@
 
 package org.vertx.scala.core.file
 
+import org.vertx.java.core.buffer.{ Buffer => JBuffer }
 import org.vertx.java.core.file.{ FileSystem => JFileSystem }
-import org.vertx.scala.core.{ Handler, AsyncResult }
-import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.VertxWrapper
 import org.vertx.scala.core.AsyncResult
-import org.vertx.scala.core.buffer._
+import org.vertx.scala.core.FunctionConverters.{ asyncResultConverter, convertFunctionToParameterisedAsyncHandler }
+import org.vertx.scala.core.buffer.Buffer
 
 /**
  * Contains a broad set of operations for manipulating files.<p>
@@ -321,7 +321,7 @@ class FileSystem(protected val internal: JFileSystem) extends VertxWrapper {
   /**
    * Synchronous version of {@link #readFile(String, Handler)}
    */
-  def readFileSync(path: String): Buffer = internal.readFileSync(path)
+  def readFileSync(path: String): Buffer = Buffer(internal.readFileSync(path))
 
   /**
    * Creates the file, and writes the specified {@code Buffer data} to the file represented by the path {@code path},
@@ -474,7 +474,7 @@ class FileSystem(protected val internal: JFileSystem) extends VertxWrapper {
     asyncResultConverter(AsyncFile.apply)(handler)
 
   private def arBufferConverter(handler: AsyncResult[Buffer] => Unit) =
-    asyncResultConverter(createBuffer)(handler)
+    asyncResultConverter({ jbuf: JBuffer => Buffer(jbuf) })(handler)
 
 }
 

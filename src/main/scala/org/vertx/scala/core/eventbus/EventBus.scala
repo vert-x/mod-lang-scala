@@ -56,18 +56,18 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
    * Please bear in mind that you cannot unregister handlers you register with this method.
    */
   def registerHandler[T <% MessageData](address: String, handler: Message[T] => Unit): EventBus = wrap({
-    internal.registerHandler(address, handler)
+    internal.registerHandler(address, fnToHandler(handler.compose(Message.apply)))
   })
 
   /**
    * Please bear in mind that you cannot unregister handlers you register with this method.
    */
   def registerHandler[T <% MessageData](address: String, handler: Message[T] => Unit, resultHandler: AsyncResult[Void] => Unit): EventBus = wrap({
-    internal.registerHandler(address, handler, resultHandler)
+    internal.registerHandler(address, handler.compose(Message.apply), resultHandler)
   })
 
   def registerLocalHandler[T <% MessageData](address: String, handler: Message[T] => Unit): EventBus = wrap({
-    internal.registerLocalHandler(address, handler)
+    internal.registerLocalHandler(address, handler.compose(Message.apply))
   })
 
   def unregisterHandler[T <% MessageData](address: String, handler: Handler[JMessage[T]]): EventBus = wrap({
@@ -79,7 +79,7 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
   })
 
   private def mapHandler[T <% MessageData](handler: Message[T] => Unit): Handler[JMessage[T]] = {
-    fnToHandler(handler compose { (sth: JMessage[T]) => Message.apply(sth) })
+    fnToHandler(handler.compose(Message.apply))
   }
 
   private def sendOrPublish(cmd: SendOrPublish): EventBus = {
