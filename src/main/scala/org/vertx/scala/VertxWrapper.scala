@@ -7,7 +7,7 @@ import org.vertx.java.core.Handler
  *
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-trait VertxWrapper extends Wrap {
+private[scala] trait VertxWrapper extends Wrap {
 
   /** The internal type of the wrapped class. */
   type InternalType
