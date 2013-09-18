@@ -18,11 +18,12 @@ package org.vertx.scala.platform
 
 import scala.language.implicitConversions
 import scala.collection.JavaConverters._
-import org.vertx.java.core.logging.Logger
 import org.vertx.java.platform.{ Container => JContainer }
-import org.vertx.java.core.AsyncResult
+import org.vertx.scala.core.AsyncResult
 import org.vertx.scala.core.json._
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.scala.core.logging.Logger
+import org.vertx.scala.VertxWrapper
 
 /**
  * @author swilliams
@@ -31,7 +32,9 @@ object Container {
   def apply(actual: JContainer) = new Container(actual)
 }
 
-class Container(internal: JContainer) {
+class Container(val internal: JContainer) extends VertxWrapper {
+  override type InternalType = JContainer
+
   private val defaultJsConfig = Json.emptyObj()
 
   def deployModule(name: String, config: JsonObject = defaultJsConfig, instances: Int = 1, handler: AsyncResult[String] => Unit = { ar: AsyncResult[String] => }): Unit = internal.deployModule(name, config, instances, handler)
@@ -46,7 +49,7 @@ class Container(internal: JContainer) {
 
   def exit(): Unit = internal.exit
 
-  def logger(): Logger = internal.logger()
+  def logger(): Logger = new Logger(internal.logger())
 
   def undeployModule(deploymentID: String, handler: () => Unit): Unit = internal.undeployModule(deploymentID, handler)
 

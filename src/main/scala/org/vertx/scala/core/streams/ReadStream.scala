@@ -16,10 +16,10 @@
 
 package org.vertx.scala.core.streams
 
-import org.vertx.java.core.buffer.Buffer
+import org.vertx.scala.core.Handler
+import org.vertx.scala.core.buffer._
 import org.vertx.java.core.streams.{ ReadStream => JReadStream }
 import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
-import org.vertx.java.core.Handler
 
 /**
  * Represents a stream of data that can be read from.<p>

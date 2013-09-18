@@ -28,9 +28,11 @@ package object json {
   type JsonArray = org.vertx.java.core.json.JsonArray
   type JsonObject = org.vertx.java.core.json.JsonObject
 
+  import scala.language.implicitConversions
+
   implicit def toJsonObject(js: JsObject): JsonObject = js.internal
 
-  implicit class JsObject(val internal: JsonObject) extends AnyVal{
+  implicit class JsObject(val internal: JsonObject) extends AnyVal {
     import scala.collection.JavaConverters._
     def asMap: Map[String, AnyRef] = internal.toMap.asScala
   }

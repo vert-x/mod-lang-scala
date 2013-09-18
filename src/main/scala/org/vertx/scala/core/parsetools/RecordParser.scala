@@ -19,10 +19,10 @@ package org.vertx.scala.core.parsetools
 import scala.language.implicitConversions
 
 import org.vertx.java.core.Handler
-import org.vertx.java.core.buffer.{Buffer => JBuffer}
-import org.vertx.java.core.parsetools.{RecordParser => JRecordParser}
+import org.vertx.java.core.buffer.{ Buffer => JBuffer }
+import org.vertx.java.core.parsetools.{ RecordParser => JRecordParser }
 import org.vertx.scala.core.FunctionConverters.fnToHandler
-import org.vertx.scala.core.buffer.Buffer
+import org.vertx.scala.core.buffer._
 
 /**
  * A helper class which allows you to easily parse protocols which are delimited by a sequence of bytes, or fixed
@@ -65,19 +65,19 @@ object RecordParser {
    * by the String {@code} delim endcoded in latin-1 . Don't use this if your String contains other than latin-1 characters.<p>
    * {@code output} Will receive whole records which have been parsed.
    */
-  def newDelimited(delim: String, handler: Buffer => Unit) = JRecordParser.newDelimited(delim, handler.compose(Buffer))
+  def newDelimited(delim: String, handler: Buffer => Unit) = JRecordParser.newDelimited(delim, bufferHandlerToJava(handler))
 
   /**
    * Create a new {@code RecordParser} instance, initially in delimited mode, and where the delimiter can be represented
    * by the {@code byte[]} delim.<p>
    * {@code output} Will receive whole records which have been parsed.
    */
-  def newDelimited(delim: Array[Byte], handler: Buffer => Unit) = JRecordParser.newDelimited(delim, handler.compose(Buffer))
+  def newDelimited(delim: Array[Byte], handler: Buffer => Unit) = JRecordParser.newDelimited(delim, bufferHandlerToJava(handler))
 
   /**
    * Create a new {@code RecordParser} instance, initially in fixed size mode, and where the record size is specified
    * by the {@code size} parameter.<p>
    * {@code output} Will receive whole records which have been parsed.
    */
-  def newFixed(size: Int, handler: Buffer => Unit) = JRecordParser.newFixed(size, handler.compose(Buffer))
+  def newFixed(size: Int, handler: Buffer => Unit) = JRecordParser.newFixed(size, bufferHandlerToJava(handler))
 }

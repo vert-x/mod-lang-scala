@@ -16,23 +16,19 @@
 
 package org.vertx.scala.platform.impl
 
-import scala.collection.mutable
-import scala.reflect.internal.util.BatchSourceFile
-import scala.reflect.io.Path.string2path
-import scala.reflect.io.PlainFile
-import scala.tools.nsc.interpreter.IMain
+import java.io.{ File, FilenameFilter }
+
+import scala.Array.canBuildFrom
 import scala.tools.nsc.Settings
-import org.vertx.java.core.logging.Logger
-import org.vertx.java.core.{Vertx => JVertx}
-import org.vertx.java.platform.{Container => JContainer}
-import org.vertx.java.platform.{Verticle => JVerticle}
-import org.vertx.java.platform.VerticleFactory
-import org.vertx.scala.platform.Verticle
-import java.io.{PrintWriter, FilenameFilter, File}
+import scala.tools.nsc.interpreter.Results.Success
 import scala.util.matching.Regex
+
+import org.vertx.java.core.{ Vertx => JVertx }
+import org.vertx.java.core.logging.Logger
+import org.vertx.java.platform.{ Container => JContainer, Verticle => JVerticle, VerticleFactory }
+import org.vertx.scala.core.Vertx
 import org.vertx.scala.lang.ScalaInterpreter
-import org.vertx.scala.core
-import scala.tools.nsc.interpreter.Results.{Success, Result}
+import org.vertx.scala.platform.Verticle
 
 /**
  * @author swilliams
@@ -55,15 +51,10 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   private var interpreter: ScalaInterpreter = null
 
-  private val classLoader = classOf[ScalaVerticleFactory].getClassLoader
-
-  // private val classCache = mutable.Map[String, java.lang.Class[_]]()
-
   override def init(jvertx: JVertx, jcontainer: JContainer, aloader: ClassLoader): Unit = {
     this.jvertx = jvertx
     this.jcontainer = jcontainer
     this.loader = aloader
-
 
     val sVertx = Vertx(jvertx)
     val settings = interpreterSettings()
@@ -75,7 +66,8 @@ class ScalaVerticleFactory extends VerticleFactory {
     val loadedVerticle = if (!main.endsWith(SUFFIX)) Some(loader.loadClass(main)) else load(main)
     loadedVerticle match {
       case Some(verticleClass) =>
-        val delegate = verticleClass.newInstance().asInstanceOf[Verticle]
+        val vcInstance = verticleClass.newInstance()
+        val delegate = vcInstance.asInstanceOf[Verticle]
         ScalaVerticle.newVerticle(delegate, jvertx, jcontainer)
       case None =>
         DummyVerticle // run directly as script
@@ -92,11 +84,10 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   @throws(classOf[Exception])
   private def load(verticlePath: String): Option[Class[_]] = {
+    println("verticle path: " + verticlePath)
     // Try running it as a script
-    println(s"Try running $verticlePath as script")
     val result = interpreter.runScript(new File(verticlePath))
     if (result != Success) {
-      println(s"Not a script, try running $verticlePath as class")
       // Might be a Scala class
       val resolved = loader.getResource(verticlePath).toExternalForm
       val className = verticlePath.replaceFirst(".scala$", "").replaceAll("/", ".")
@@ -114,13 +105,12 @@ class ScalaVerticleFactory extends VerticleFactory {
     val settings = new Settings()
 
     for {
-      jar <- findAll(classLoader, "lib", JarFileRegex)
+      jar <- findAll(loader, "lib", JarFileRegex)
     } yield {
-      println(s"Found $jar, add to compiler bootstrap")
       settings.bootclasspath.append(jar.getAbsolutePath)
     }
 
-    val modLangScala = classLoader.getResource("./").toExternalForm
+    val modLangScala = loader.getResource("./").toExternalForm
     settings.bootclasspath.append(modLangScala.replaceFirst("file:", ""))
     settings.usejavacp.value = true
     settings.verbose.value = ScalaInterpreter.isVerbose
@@ -145,7 +135,6 @@ object ScalaVerticleFactory {
    *         the regular expression
    */
   def findAll(directory: File, regex: Regex): Array[File] = {
-    println(s"Find $regex pattern in $directory")
     // Protect against null return from listing files
     val files: Array[File] = directory.listFiles(new FilenameFilter {
       def accept(dir: File, name: String): Boolean = {
@@ -166,8 +155,11 @@ object ScalaVerticleFactory {
    *         the regular expression
    */
   def findAll(classLoader: ClassLoader, path: String, regex: Regex): Array[File] = {
-    println(s"Find $regex pattern in $classLoader")
-    findAll(new File(classLoader.getResources(path).nextElement().toURI), regex)
+    if (classLoader.getResources(path).hasMoreElements()) {
+      findAll(new File(classLoader.getResources(path).nextElement().toURI), regex)
+    } else {
+      Array[File]()
+    }
   }
 
 }

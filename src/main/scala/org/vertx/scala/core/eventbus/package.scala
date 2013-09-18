@@ -1,8 +1,8 @@
 package org.vertx.scala.core
 
-import org.vertx.java.core.buffer.{Buffer => JBuffer}
-import org.vertx.java.core.eventbus.{EventBus => JEventBus}
-import org.vertx.java.core.eventbus.{Message => JMessage}
+import org.vertx.java.core.buffer.{ Buffer => JBuffer }
+import org.vertx.java.core.eventbus.{ EventBus => JEventBus }
+import org.vertx.java.core.eventbus.{ Message => JMessage }
 import org.vertx.scala.core.json.JsonArray
 import org.vertx.scala.core.json.JsonObject
 import org.vertx.scala.core.buffer.Buffer
@@ -25,7 +25,8 @@ package object eventbus {
     def toScalaMessageData(): MessageData
   }
 
-  def anyToMessageData(any: Any): MessageData = any match {
+  import scala.language.implicitConversions
+  implicit def anyToMessageData(any: Any): MessageData = any match {
     case sth: String => StringData(sth)
     case sth: JsonArray => JsonArrayData(sth)
     case sth: JsonObject => JsonObjectData(sth)
@@ -33,7 +34,7 @@ package object eventbus {
     case sth: Array[Byte] => ByteArrayData(sth)
     case sth: Boolean => BooleanData(sth)
     case sth: Integer => IntegerData(sth)
-    case sth: Long=> LongData(sth)
+    case sth: Long => LongData(sth)
     case sth: Short => ShortData(sth)
     case sth: Float => FloatData(sth)
     case sth: Double => DoubleData(sth)
@@ -71,7 +72,7 @@ package object eventbus {
   implicit class BufferData(val data: Buffer) extends MessageData {
     type InternalType = Buffer
     def send(eb: JEventBus, address: String) = eb.send(address, data)
-    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data.internal, handler)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data.toJava, handler)
     def publish(eb: JEventBus, address: String) = eb.publish(address, data)
     def reply[A](msg: JMessage[A]) = msg.reply(data)
     def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
@@ -80,11 +81,11 @@ package object eventbus {
   implicit class JBufferData(val data: JBuffer) extends JMessageData {
     type InternalType = JBuffer
     def send(eb: JEventBus, address: String) = eb.send(address, data)
-    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data.internal, handler)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data, handler)
     def publish(eb: JEventBus, address: String) = eb.publish(address, data)
     def reply[A](msg: JMessage[A]) = msg.reply(data)
     def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
-    def toScalaMessageData(): BufferData = BufferData(data)
+    def toScalaMessageData(): BufferData = BufferData(Buffer(data))
   }
 
   implicit class ByteArrayData(val data: Array[Byte]) extends MessageData {
@@ -96,10 +97,10 @@ package object eventbus {
     def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
   }
 
-  implicit class IntegerData(val data: Integer) extends MessageData {
-    type InternalType = Integer
+  implicit class IntegerData(val data: Int) extends MessageData {
+    type InternalType = Int
     def send(eb: JEventBus, address: String) = eb.send(address, data)
-    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data, handler)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, Int.box(data), handler)
     def publish(eb: JEventBus, address: String) = eb.publish(address, data)
     def reply[A](msg: JMessage[A]) = msg.reply(data)
     def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)

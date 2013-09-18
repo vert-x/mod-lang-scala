@@ -19,12 +19,12 @@ package org.vertx.scala.core.eventbus
 import org.vertx.java.core.eventbus.{ Message => JMessage }
 import org.vertx.scala.core.FunctionConverters._
 
-class Message[T](internal: JMessage[T]) {
+class Message[T <% MessageData](internal: JMessage[T]) {
 
   /**
    * The body of the message.
    */
-  def body[X <: MessageData] = anyToMessageData(internal.body())
+  def body(): T = anyToMessageData(internal.body()).data.asInstanceOf[T]
 
   /**
    * The reply address (if any).
@@ -53,13 +53,13 @@ class Message[T](internal: JMessage[T]) {
    * The same as {@code reply(MessageData)} but you can specify handler for the reply - i.e.
    * to receive the reply to the reply.
    */
-  def reply[B](value: MessageData, handler: Message[B] => Unit) = value.reply(internal, fnToHandler(handler.compose(Message.apply)))
+  def reply[B <% MessageData](value: MessageData, handler: Message[B] => Unit) = value.reply(internal, fnToHandler(handler.compose(Message.apply)))
 
   /**
    * The same as {@code reply()} but you can specify handler for the reply - i.e.
    * to receive the reply to the reply.
    */
-  def reply[B](handler: Message[B] => Unit) = internal.reply(messageFnToJMessageHandler(handler))
+  def reply[B <% MessageData](handler: Message[B] => Unit) = internal.reply(messageFnToJMessageHandler(handler))
 }
 
 /**
@@ -67,5 +67,5 @@ class Message[T](internal: JMessage[T]) {
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object Message {
-  def apply[X](jmessage: JMessage[X]): Message[X] = new Message(jmessage)
+  def apply[X <% MessageData](jmessage: JMessage[X]): Message[X] = new Message(jmessage)
 }

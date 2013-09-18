@@ -17,6 +17,7 @@ package org.vertx.scala.core.file
 
 import org.vertx.java.core.file.{ AsyncFile => JAsyncFile }
 import org.vertx.scala.core.buffer._
+import org.vertx.java.core.buffer.{ Buffer => JBuffer }
 import org.vertx.scala.core.streams.{ WriteStream, ReadStream }
 import org.vertx.scala.core.AsyncResult
 import org.vertx.scala.core.FunctionConverters._
@@ -68,7 +69,7 @@ class AsyncFile(protected[this] val internal: JAsyncFile) extends WrappedReadWri
    * The handler will be called when the close is complete, or if an error occurs.
    */
   def read(buffer: Buffer, offset: Int, position: Int, length: Int, handler: AsyncResult[Buffer] => Unit): AsyncFile =
-    wrap(internal.read(buffer.toJava, offset, position, length, asyncResultConverter(createBuffer)(handler)))
+    wrap(internal.read(buffer.toJava, offset, position, length, asyncResultConverter { jbuf: JBuffer => Buffer.apply(jbuf) }(handler)))
 
   /**
    * Flush any writes made to this file to underlying persistent storage.<p>
