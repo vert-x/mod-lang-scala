@@ -28,8 +28,6 @@ import org.vertx.scala.core.FunctionConverters.fnToHandler
 class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
   override type InternalType = JEventBus
 
-  private val handlers: Map[Any, Handler[_ <: JMessage[_]]] = Map.empty()
-
   sealed private trait SendOrPublish
   private case class Publish(address: String, value: MessageData) extends SendOrPublish
   private case class Send[X](address: String, value: MessageData, replyHandler: Option[Handler[JMessage[X]]]) extends SendOrPublish
