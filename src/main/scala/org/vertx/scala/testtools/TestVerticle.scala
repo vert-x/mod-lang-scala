@@ -9,26 +9,12 @@ import org.vertx.scala.core.VertxExecutionContext
 import org.vertx.testtools.VertxAssert
 import org.vertx.scala.core.Vertx
 
-
-
-//abstract class TestVerticle extends org.vertx.testtools.TestVerticle with Verticle with VertxExecutionContext {
 @RunWith(classOf[ScalaClassRunner])
 abstract class TestVerticle extends Verticle with VertxExecutionContext {
-  println("init scala TestVerticle")
-
-  @Test
-  def someTest() {
-    println("test in TestVerticle?!")
-  }
-  
   override final def start() {
-    println("starting test")
     initialize()
-    println("initialized")
     before()
-    println("sync before done")
     asyncBefore() map { _ =>
-      println("async before done, starting tests")
       startTests()
     } recover {
       case ex: Throwable => VertxAssert.handleThrowable(ex)

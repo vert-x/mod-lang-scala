@@ -6,9 +6,10 @@ import org.vertx.testtools.VertxAssert._
 import org.vertx.scala.core.Vertx
 import org.vertx.scala.core.AsyncResult
 import org.vertx.scala.core.http.HttpServer
+import org.vertx.scala.platform.Verticle
 
 class ScalaHttpTest extends TestVerticle {
-  println("init scala http test")
+  println("init scala http test - " + this.isInstanceOf[Verticle])
 
   val testPort = 8844
 

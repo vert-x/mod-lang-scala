@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
  */
 
 apply plugin: 'java'
-apply plugin: 'groovy'
+apply plugin: 'scala'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 
@@ -63,8 +63,8 @@ repositories {
 dependencies {
   provided "io.vertx:vertx-core:$vertxVersion"
   provided "io.vertx:vertx-platform:$vertxVersion"
-  testCompile "junit:junit:$junitVersion"
-  testCompile "io.vertx:testtools:$toolsVersion"
+  provided "junit:junit:$junitVersion"
+  provided "io.vertx:testtools:$toolsVersion"
 }
 
 // This sets up the classpath for the script itself
@@ -96,7 +96,7 @@ sourceSets {
 
 task copyMod( type:Copy, dependsOn: 'classes', description: 'Assemble the module into the local mods directory' ) {
   into "build/mods/$moduleName"
-  from compileJava
+  from classes
   from 'src/main/resources'
   into( 'lib' ) {
     from configurations.compile
@@ -178,6 +178,7 @@ def runModWithClasspath(URL[] classpath) {
 
 task runMod(dependsOn: copyMod, description: 'Run the module using all the build dependencies (not using installed vertx') << {
   setSysProps()
+//  System.setProperty("vertx.langs.scala", "io.vertx~lang-scala~${version}:org.vertx.scala.platform.impl.ScalaVerticleFactory")
   def pm = PlatformLocator.factory.createPlatformManager()
   def latch = new CountDownLatch(1)
   pm.deployModule(moduleName, null, 1, new AsyncResultHandler<String>() {
