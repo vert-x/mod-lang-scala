@@ -23,16 +23,16 @@ import scala.reflect.io.PlainFile
 import scala.tools.nsc.interpreter.IMain
 import scala.tools.nsc.Settings
 import org.vertx.java.core.logging.Logger
-import org.vertx.java.core.{Vertx => JVertx}
-import org.vertx.java.platform.{Container => JContainer}
-import org.vertx.java.platform.{Verticle => JVerticle}
+import org.vertx.java.core.{ Vertx => JVertx }
+import org.vertx.java.platform.{ Container => JContainer }
+import org.vertx.java.platform.{ Verticle => JVerticle }
 import org.vertx.java.platform.VerticleFactory
 import org.vertx.scala.platform.Verticle
-import java.io.{PrintWriter, FilenameFilter, File}
+import java.io.{ PrintWriter, FilenameFilter, File }
 import scala.util.matching.Regex
 import org.vertx.scala.lang.ScalaInterpreter
 import org.vertx.scala.core
-import scala.tools.nsc.interpreter.Results.{Success, Result}
+import scala.tools.nsc.interpreter.Results.{ Success, Result }
 
 /**
  * @author swilliams
@@ -64,7 +64,6 @@ class ScalaVerticleFactory extends VerticleFactory {
     this.jcontainer = jcontainer
     this.loader = aloader
 
-
     val sVertx = Vertx(jvertx)
     val settings = interpreterSettings()
     interpreter = new ScalaInterpreter(settings, sVertx)
@@ -93,10 +92,8 @@ class ScalaVerticleFactory extends VerticleFactory {
   @throws(classOf[Exception])
   private def load(verticlePath: String): Option[Class[_]] = {
     // Try running it as a script
-    println(s"Try running $verticlePath as script")
     val result = interpreter.runScript(new File(verticlePath))
     if (result != Success) {
-      println(s"Not a script, try running $verticlePath as class")
       // Might be a Scala class
       val resolved = loader.getResource(verticlePath).toExternalForm
       val className = verticlePath.replaceFirst(".scala$", "").replaceAll("/", ".")
@@ -116,7 +113,6 @@ class ScalaVerticleFactory extends VerticleFactory {
     for {
       jar <- findAll(classLoader, "lib", JarFileRegex)
     } yield {
-      println(s"Found $jar, add to compiler bootstrap")
       settings.bootclasspath.append(jar.getAbsolutePath)
     }
 
@@ -145,7 +141,6 @@ object ScalaVerticleFactory {
    *         the regular expression
    */
   def findAll(directory: File, regex: Regex): Array[File] = {
-    println(s"Find $regex pattern in $directory")
     // Protect against null return from listing files
     val files: Array[File] = directory.listFiles(new FilenameFilter {
       def accept(dir: File, name: String): Boolean = {
@@ -166,8 +161,11 @@ object ScalaVerticleFactory {
    *         the regular expression
    */
   def findAll(classLoader: ClassLoader, path: String, regex: Regex): Array[File] = {
-    println(s"Find $regex pattern in $classLoader")
-    findAll(new File(classLoader.getResources(path).nextElement().toURI), regex)
+    if (classLoader.getResources(path).hasMoreElements()) {
+      findAll(new File(classLoader.getResources(path).nextElement().toURI), regex)
+    } else {
+      Array[File]()
+    }
   }
 
 }

@@ -3,7 +3,7 @@ package org.vertx.scala.tests.lang
 import java.io.{File, Writer, StringWriter, PrintWriter}
 import org.junit.Test
 import scala.tools.nsc.interpreter.Results.{Success, Result}
-import org.vertx.testtools.TestVerticle
+import org.vertx.scala.testtools.TestVerticle
 import org.junit.Assert.fail
 import org.vertx.testtools.VertxAssert._
 import org.vertx.scala.lang.ScalaInterpreter
@@ -20,8 +20,6 @@ class ScalaInterpreterTest extends TestVerticle {
 
   import org.vertx.scala.core._
 
-  lazy val sVertx = Vertx(getVertx)
-
   @Test
   def runScriptTest(): Unit = {
     val path = "src/test/scripts/VerticleScript.scala"
@@ -33,13 +31,15 @@ class ScalaInterpreterTest extends TestVerticle {
 
   @Test
   def runClassTest(): Unit = {
-    val filePath = "src/test/scala/org/vertx/scala/tests/lang/VerticleClass.scala"
+    val filePath = "src/test/scripts/org/vertx/scala/tests/lang/VerticleClass.scala"
     val out = new StringWriter()
     val interpreter = createInterpreter(out)
     val verticleClass = interpreter.compileClass(new File(filePath),
         "org.vertx.scala.tests.lang.VerticleClass")
     val verticle = verticleClass.get.newInstance().asInstanceOf[Verticle]
-    ScalaVerticle.newVerticle(verticle, vertx, container).start()
+    verticle.vertx = vertx
+    verticle.container = container
+    verticle.start()
     assertHttpClientGetNow("Hello verticle class!")
   }
 
@@ -47,7 +47,7 @@ class ScalaInterpreterTest extends TestVerticle {
     val settings = new Settings()
     settings.usejavacp.value = true
     settings.verbose.value = ScalaInterpreter.isVerbose
-    new ScalaInterpreter(settings, sVertx, new PrintWriter(out))
+    new ScalaInterpreter(settings, vertx, new PrintWriter(out))
   }
 
   private def assertInterpret(out: Writer, result: Result) {
@@ -56,15 +56,15 @@ class ScalaInterpreterTest extends TestVerticle {
   }
 
   private def assertHttpClientGetNow(expected: String) {
-    val client = sVertx.createHttpClient().setPort(8080)
-    client.getNow("/"){
+    val client = vertx.createHttpClient().setPort(8080)
+    client.getNow("/", {
       h => h.bodyHandler {
         data => {
           assertEquals(expected, data.toString)
           testComplete()
         }
       }
-    }
+    })
   }
 
 }

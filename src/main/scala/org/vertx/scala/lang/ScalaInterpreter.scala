@@ -15,15 +15,10 @@ import scala.reflect.io.PlainFile
  *
  * @author Galder Zamarreño
  */
-class ScalaInterpreter(settings: Settings, vertx: Vertx, out: PrintWriter) {
+class ScalaInterpreter(settings: Settings, vertx: Vertx, out: PrintWriter = new NewLinePrintWriter(new ConsoleWriter, true)) {
 
   private val interpreter = new IMain(settings, out)
-  interpreter.classLoader
   interpreter.setContextClassLoader()
-
-  def this(settings: Settings, vertx: Vertx) {
-    this(settings, vertx, new NewLinePrintWriter(new ConsoleWriter, true))
-  }
 
   def addBootClasspathJar(path: String): Unit =
     settings.bootclasspath.append(path)
