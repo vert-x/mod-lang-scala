@@ -22,7 +22,7 @@ class HttpTestForSimpleApi extends TestVerticle {
   @Test
   def createHttpServer() {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
-      c.getNow("/", correctBodyHandler(testComplete))
+      c.getNow("/", correctHeadAndBodyHandler(testComplete))
     }))
   }
 
@@ -37,7 +37,7 @@ class HttpTestForSimpleApi extends TestVerticle {
       c.setSSL(true)
       c.setKeyStorePath("./src/test/keystores/client-keystore.jks").setKeyStorePassword("wibble")
       c.setTrustStorePath("./src/test/keystores/client-truststore.jks").setTrustStorePassword("wibble")
-      c.exceptionHandler(ex => fail("Should not get exception but got " + ex)) getNow ("/", correctBodyHandler(testComplete))
+      c.exceptionHandler(ex => fail("Should not get exception but got " + ex)) getNow ("/", correctHeadAndBodyHandler(testComplete))
     }))
   }
 
@@ -53,86 +53,97 @@ class HttpTestForSimpleApi extends TestVerticle {
 
   @Test def postMethod(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
-      c.post("/", correctBodyHandler(testComplete)).end()
+      c.post("/", correctHeadAndBodyHandler(testComplete)).end()
     }))
   }
 
   @Test def getMethod(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
-      c.get("/", correctBodyHandler(testComplete)).end()
+      c.get("/", correctHeadAndBodyHandler(testComplete)).end()
     }))
   }
 
   @Test def headMethod(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
-      c.head("/", correctBodyHandler(testComplete)).end()
+      c.head("/", checkCorrectHeader(testComplete)).end()
     }))
   }
 
   @Test def connectMethod(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
-      c.connect("/", correctBodyHandler(testComplete)).end()
+      c.connect("/", checkCorrectHeader(testComplete)).end()
     }))
   }
 
   @Test
   def getRequestMethod(): Unit = {
-    simpleRequest("GET")
+    headAndBodyRequest("GET")
   }
 
   @Test
   def postRequestMethod(): Unit = {
-    simpleRequest("POST")
+    headAndBodyRequest("POST")
   }
 
   @Test
   def putRequestMethod(): Unit = {
-    simpleRequest("PUT")
+    headAndBodyRequest("PUT")
   }
 
   @Test
   def deleteRequestMethod(): Unit = {
-    simpleRequest("DELETE")
+    headAndBodyRequest("DELETE")
   }
 
   @Test
   def headRequestMethod(): Unit = {
-    simpleRequest("HEAD")
+    headOnlyRequest("HEAD")
   }
 
   @Test
   def traceRequestMethod(): Unit = {
-    simpleRequest("TRACE")
+    headAndBodyRequest("TRACE")
   }
 
   @Test
   def connectRequestMethod(): Unit = {
-    simpleRequest("CONNECT")
+    headOnlyRequest("CONNECT")
   }
 
   @Test
   def optionsRequestMethod(): Unit = {
-    simpleRequest("OPTIONS")
+    headAndBodyRequest("OPTIONS")
   }
 
   @Test
-  def patchRequestMethod(): Unit = simpleRequest("PATCH")
+  def patchRequestMethod(): Unit = headAndBodyRequest("PATCH")
 
-  private def simpleRequest(name: String): Unit = {
+  private def simpleRequest(fn: (() => Unit) => HttpClientResponse => Unit)(name: String): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
-      c.request(name, "/", correctBodyHandler(testComplete)).end()
+      c.request(name, "/", fn(testComplete)).end()
     }))
   }
+
+  private def headAndBodyRequest(name: String): Unit = simpleRequest(correctHeadAndBodyHandler)(name)
+  private def headOnlyRequest(name: String): Unit = simpleRequest(checkCorrectHeader)(name)
 
   private def regularRequestHandler: HttpServerRequest => Unit = { req =>
     req.response.end(html)
   }
 
-  private def correctBodyHandler(fn: () => Unit) = { resp: HttpClientResponse =>
-    resp.bodyHandler({ buf =>
-      assertEquals(html, buf.toString)
-      fn()
-    }): Unit
+  private def checkCorrectHeader(fn: () => Unit) = { resp: HttpClientResponse =>
+    assertEquals(200, resp.statusCode)
+    assertEquals("OK", resp.statusMessage)
+    fn()
+  }
+
+  private def correctHeadAndBodyHandler(fn: () => Unit) = { resp: HttpClientResponse =>
+    checkCorrectHeader({ () =>
+      resp.bodyHandler({ buf =>
+        assertEquals(html, buf.toString)
+        fn()
+      })
+    }).apply(resp): Unit
   }
 
   private def checkServer(clientFn: HttpClient => Unit) = { ar: AsyncResult[HttpServer] =>
