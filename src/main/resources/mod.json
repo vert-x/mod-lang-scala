@@ -1,4 +1,17 @@
 {
+  "description": "Scala language implementation module for Vert.x",
+  "licenses": ["The Apache Software License Version 2.0"],
+  "author": "Galder Zamarreño",
+  "developers": ["Stuart Williams",
+                 "Edgar Chan",
+                 "Nicolas Melendez",
+                 "Joern Bernhardt",
+                 "Ranie Jade Ramiso"
+  ],
+  "keywords": ["scala", "language"],
+  "homepage": "https://github.com/vert-x/mod-lang-scala",
+
+  // Required for language modules
   "system": true,
   "resident": true
 }
