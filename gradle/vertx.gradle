@@ -114,7 +114,7 @@ task modZip( type: Zip, dependsOn: 'pullInDeps', description: 'Package the modul
 task sourceJar(type: Jar) {
   description = 'Builds a source jar artifact suitable for maven deployment.'
   classifier = 'sources'
-  from sourceSets.main.java
+  from sourceSets.main.scala
 }
 
 task javadocJar(type: Jar) {
