@@ -94,8 +94,9 @@ sourceSets {
 
 task copyMod( type:Copy, dependsOn: 'classes', description: 'Assemble the module into the local mods directory' ) {
   into "build/mods/$moduleName"
-  from classes
+  from compileJava
   from 'src/main/resources'
+  from compileScala
   into( 'lib' ) {
     from configurations.compile
   }
