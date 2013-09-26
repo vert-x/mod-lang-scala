@@ -13,32 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vertx.scala.core.buffer
+package org.vertx.scala.core
 
-import org.vertx.java.core.buffer.{Buffer => JBuffer}
+import org.vertx.java.core.buffer.{ Buffer => JBuffer }
+import org.vertx.scala.VertxWrapper
 
 /**
  * @author swilliams
  * @author Edgar Chan
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-object Buffer {
+package object buffer {
 
-  implicit class SBuffer(val actual: JBuffer) extends AnyVal {
+  implicit class Buffer(val internal: JBuffer) extends AnyVal {
 
-    def toJava:JBuffer = actual
+    def toJava: JBuffer = internal
 
-    def append[T](v:T):SBuffer= v match {
-      case sb:SBuffer     => actual.appendBuffer(sb.actual)
-      case jb:JBuffer     => actual.appendBuffer(jb)
-      case ba:Array[Byte] => actual.appendBytes(ba)
-      case by:Byte        => actual.appendByte(by)
-      case in:Int         => actual.appendInt(in)
-      case ln:Long        => actual.appendLong(ln)
-      case sh:Short       => actual.appendShort(sh)
-      case fl:Float       => actual.appendFloat(fl)
-      case db:Double      => actual.appendDouble(db)
-      case st:String      => actual.appendString(st)
-      case _ => throw new IllegalArgumentException("Invalid " + v.getClass)
+    def append[T: BufferType](v: T): Buffer = {
+      implicitly[BufferType[T]].appendToBuffer(internal, v)
     }
+
+    override def toString(): String = internal.toString()
   }
+
+  def createBuffer(internal: JBuffer) = Buffer(internal)
 }

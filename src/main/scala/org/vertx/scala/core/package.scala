@@ -16,94 +16,158 @@
 
 package org.vertx.scala
 
-import org.vertx.java.core.{Vertx => JVertx}
-import org.vertx.java.core.{VertxFactory => JVertxFactory}
+import org.vertx.java.core.{ Vertx => JVertx }
+import org.vertx.java.core.{ VertxFactory => JVertxFactory }
 import org.vertx.java.core.AsyncResult
-import org.vertx.java.core.{Future => JFuture}
+import org.vertx.java.core.{ Future => JFuture }
 import org.vertx.scala.core.eventbus.EventBus
-import org.vertx.scala.core.http.{HttpClient, HttpServerRequest, HttpServer}
-import org.vertx.scala.core.net.{NetServer, NetClient}
+import org.vertx.scala.core.http.{ HttpClient, HttpServerRequest, HttpServer }
+import org.vertx.scala.core.net.{ NetServer, NetClient }
 import org.vertx.scala.core.sockjs.SockJSServer
 import org.vertx.scala.core.file.FileSystem
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.java.core.shareddata.SharedData
+import org.vertx.java.core.Context
+import org.vertx.java.core.Handler
 
 package object core {
 
-  def newVertx() =
-    new Vertx(JVertxFactory.newVertx())
+  type AsyncResult[T] = org.vertx.java.core.AsyncResult[T]
+  type Handler[T] = org.vertx.java.core.Handler[T]
+  type MultiMap = org.vertx.java.core.MultiMap
 
-  def newVertx(port: Int, hostname: String) =
-    new Vertx(JVertxFactory.newVertx(port, hostname))
+  def newVertx() = new Vertx(JVertxFactory.newVertx())
 
-  def newVertx(hostname: String) =
-    new Vertx(JVertxFactory.newVertx(hostname))
+  def newVertx(port: Int, hostname: String) = new Vertx(JVertxFactory.newVertx(port, hostname))
 
-
+  def newVertx(hostname: String) = new Vertx(JVertxFactory.newVertx(hostname))
 
   implicit class Vertx(val internal: JVertx) extends AnyVal {
 
-  // TODO no vals allowed in value classes. do we need to make it val?
-  // val eventBus:EventBus = EventBus(internal.eventBus)
+    /**
+     * Create a TCP/SSL server
+     */
+    def createNetServer(): NetServer = NetServer(internal.createNetServer())
 
-    def eventBus:EventBus = EventBus(internal.eventBus)
+    /**
+     * Create a TCP/SSL client
+     */
+    def createNetClient(): NetClient = NetClient(internal.createNetClient())
 
-    def cancelTimer(id: Long):Boolean = internal.cancelTimer(id)
+    /**
+     * Create an HTTP/HTTPS server
+     */
+    def createHttpServer(): HttpServer = HttpServer(internal.createHttpServer())
 
-    def createHttpServer():HttpServer = HttpServer(internal.createHttpServer)
+    /**
+     * Create a HTTP/HTTPS client
+     */
+    def createHttpClient(): HttpClient = HttpClient(internal.createHttpClient())
 
-    def createHttpServer(h: HttpServerRequest => Unit):HttpServer =
-         HttpServer(internal.createHttpServer).requestHandler(h)
+    /**
+     * Create a SockJS server that wraps an HTTP server
+     */
+    def createSockJSServer(httpServer: HttpServer): SockJSServer = SockJSServer(internal.createSockJSServer(httpServer.toJava))
 
-    def createHttpClient():HttpClient = HttpClient(internal.createHttpClient)
+    /**
+     * The File system object
+     */
+    def fileSystem(): FileSystem = FileSystem(internal.fileSystem())
 
-    def createNetClient():NetClient = NetClient(internal.createNetClient)
+    /**
+     * The event bus
+     */
+    def eventBus(): EventBus = EventBus(internal.eventBus())
 
-    def createNetServer():NetServer = NetServer(internal.createNetServer)
+    /**
+     * The shared data object
+     */
+    def sharedData(): SharedData = internal.sharedData()
 
-    def createSockJSServer(httpServer: HttpServer):SockJSServer = SockJSServer(internal.createSockJSServer(httpServer.actual))
+    /**
+     * Set a one-shot timer to fire after {@code delay} milliseconds, at which point {@code handler} will be called with
+     * the id of the timer.
+     * @return the unique ID of the timer
+     */
+    def setTimer(delay: Long, handler: Long => Unit): Long = {
+      internal.setTimer(delay, fnToHandler(handler.compose {
+        l: java.lang.Long => Long.box(l)
+      }))
+    }
 
-    def fileSystem:FileSystem = FileSystem(internal.fileSystem)
+    /**
+     * Set a periodic timer to fire every {@code delay} milliseconds, at which point {@code handler} will be called with
+     * the id of the timer.
+     * @return the unique ID of the timer
+     */
+    def setPeriodic(delay: Long, handler: Long => Unit): Long = {
+      internal.setPeriodic(delay, fnToHandler(handler.compose {
+        l: java.lang.Long => Long.box(l)
+      }))
+    }
 
-    def isEventLoop:Boolean = internal.isEventLoop
+    /**
+     * Cancel the timer with the specified {@code id}. Returns {@code} true if the timer was successfully cancelled, or
+     * {@code false} if the timer does not exist.
+     */
+    def cancelTimer(id: Long): Boolean = internal.cancelTimer(id)
 
-    def isWorker:Boolean = internal.isWorker
+    /**
+     * @return The current context
+     */
+    def currentContext(): Context = internal.currentContext()
 
-    def runOnLoop(handler: () => Unit):Unit = internal.runOnLoop(handler)
+    /**
+     * Put the handler on the event queue for the current loop (or worker context) so it will be run asynchronously ASAP after this event has
+     * been processed
+     */
+    def runOnContext(action: => Unit): Unit = internal.runOnContext(lazyToVoidHandler(action))
 
-    def periodic(delay: Long)(handler: (java.lang.Long) => Unit):Unit = internal.setPeriodic(delay, handler)
+    /**
+     * Is the current thread an event loop thread?
+     * @return true if current thread is an event loop thread
+     */
+    def isEventLoop(): Boolean = internal.isEventLoop()
 
-    def timer(delay: Long)(handler: (java.lang.Long) => Unit):Unit = internal.setTimer(delay, handler)
+    /**
+     * Is the current thread an worker thread?
+     * @return true if current thread is an worker thread
+     */
+    def isWorker(): Boolean = internal.isWorker()
 
-    def sharedData:SharedData = SharedData(internal.sharedData)
+    /**
+     * Stop the eventbus and any resource managed by the eventbus.
+     */
+    def stop(): Unit = internal.stop()
 
   }
 
   implicit class Future[T](internal: JFuture[T]) extends AsyncResult[T] {
 
-    def complete():Boolean = internal.complete()
+    def complete(): Boolean = internal.complete()
 
-    def setHandler(handler: AsyncResult[T] => Unit):Future[T] = {
+    def setHandler(handler: AsyncResult[T] => Unit): Future[T] = {
       internal.setHandler(handler)
       this
     }
 
-    def setFailure(cause: Throwable):Future[T] = {
+    def setFailure(cause: Throwable): Future[T] = {
       internal.setFailure(cause)
       this
     }
 
-    def setResult(result: T):Future[T] = {
+    def setResult(result: T): Future[T] = {
       internal.setResult(result)
       this
     }
 
-    override def result():T = internal.result()
+    override def result(): T = internal.result()
 
-    override def cause():Throwable = internal.cause()
+    override def cause(): Throwable = internal.cause()
 
-    override def succeeded():Boolean = internal.succeeded()
+    override def succeeded(): Boolean = internal.succeeded()
 
-    override def failed():Boolean = internal.failed()
+    override def failed(): Boolean = internal.failed()
 
   }
 
