@@ -14,6 +14,7 @@ class BufferTest {
   private def appendTest[T: BufferType](value: T) {
     val buffer = new JBuffer
     buffer.append(value)
+    
     val realValue = value.toString().getBytes().mkString(",")
     val computedValue = buffer.getBytes().mkString(",")
     assertEquals(realValue + " should match " + computedValue, realValue, computedValue)

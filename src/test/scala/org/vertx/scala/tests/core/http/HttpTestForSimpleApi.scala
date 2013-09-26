@@ -75,48 +75,15 @@ class HttpTestForSimpleApi extends TestVerticle {
     }))
   }
 
-  @Test
-  def getRequestMethod(): Unit = {
-    headAndBodyRequest("GET")
-  }
-
-  @Test
-  def postRequestMethod(): Unit = {
-    headAndBodyRequest("POST")
-  }
-
-  @Test
-  def putRequestMethod(): Unit = {
-    headAndBodyRequest("PUT")
-  }
-
-  @Test
-  def deleteRequestMethod(): Unit = {
-    headAndBodyRequest("DELETE")
-  }
-
-  @Test
-  def headRequestMethod(): Unit = {
-    headOnlyRequest("HEAD")
-  }
-
-  @Test
-  def traceRequestMethod(): Unit = {
-    headAndBodyRequest("TRACE")
-  }
-
-  @Test
-  def connectRequestMethod(): Unit = {
-    headOnlyRequest("CONNECT")
-  }
-
-  @Test
-  def optionsRequestMethod(): Unit = {
-    headAndBodyRequest("OPTIONS")
-  }
-
-  @Test
-  def patchRequestMethod(): Unit = headAndBodyRequest("PATCH")
+  @Test def getRequestMethod(): Unit = headAndBodyRequest("GET")
+  @Test def postRequestMethod(): Unit = headAndBodyRequest("POST")
+  @Test def putRequestMethod(): Unit = headAndBodyRequest("PUT")
+  @Test def deleteRequestMethod(): Unit = headAndBodyRequest("DELETE")
+  @Test def headRequestMethod(): Unit = headOnlyRequest("HEAD")
+  @Test def traceRequestMethod(): Unit = headAndBodyRequest("TRACE")
+  @Test def connectRequestMethod(): Unit = headOnlyRequest("CONNECT")
+  @Test def optionsRequestMethod(): Unit = headAndBodyRequest("OPTIONS")
+  @Test def patchRequestMethod(): Unit = headAndBodyRequest("PATCH")
 
   private def simpleRequest(fn: (() => Unit) => HttpClientResponse => Unit)(name: String): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>

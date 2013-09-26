@@ -14,7 +14,7 @@ import org.vertx.scala.tests.util.TestUtils._
 
 class WebSocketsTest extends TestVerticle {
   val testPort = 8844
-  
+
   val html = <html>
                <head>
                  <title>test</title>
@@ -32,7 +32,7 @@ class WebSocketsTest extends TestVerticle {
 
   @Test def secureWebsocketServer(): Unit = {
     val server = vertx.createHttpServer.setSSL(true)
-  
+
     server.setKeyStorePath("./src/test/keystores/server-keystore.jks").setKeyStorePassword("wibble")
     server.setTrustStorePath("./src/test/keystores/server-truststore.jks").setTrustStorePassword("wibble")
 
@@ -44,17 +44,46 @@ class WebSocketsTest extends TestVerticle {
     }))
   }
 
+  @Test def pingPongMessages(): Unit = {
+    vertx.createHttpServer.websocketHandler({ ws: ServerWebSocket =>
+      ws.dataHandler({ buf =>
+        if (buf.toString() == "ping") {
+          ws.write(new Buffer("pong"))
+        } else if (buf.toString() == "ping2") {
+          ws.write(new Buffer("pong2"))
+        }
+      })
+    }).listen(testPort, checkServer({ c =>
+      c.connectWebsocket("/", { resp: WebSocket =>
+        resp.dataHandler({ buf =>
+          assertEquals("pong", buf.toString)
+          resp.dataHandler({ buf =>
+            assertEquals("pong2", buf.toString)
+            testComplete()
+          })
+          resp.write(new Buffer("ping2"))
+        })
+        resp.write(new Buffer("ping"))
+      })
+    }))
+  }
+
   private def regularRequestHandler: ServerWebSocket => Unit = { ws =>
     ws.write(new Buffer(html))
+
+    ws.dataHandler({ buf =>
+      assertEquals(html, buf.toString)
+      testComplete()
+    }): Unit
   }
-  
+
   private def correctBodyHandler(fn: () => Unit) = { resp: WebSocket =>
     resp.dataHandler({ buf =>
       assertEquals(html, buf.toString)
       fn()
     }): Unit
   }
-  
+
   private def checkServer(clientFn: HttpClient => Unit) = { ar: AsyncResult[HttpServer] =>
     if (ar.succeeded()) {
       val httpClient = vertx.createHttpClient.setPort(testPort)
