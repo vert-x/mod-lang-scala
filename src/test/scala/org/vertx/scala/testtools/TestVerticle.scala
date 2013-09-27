@@ -1,15 +1,14 @@
 package org.vertx.scala.testtools
 
 import java.lang.reflect.InvocationTargetException
-import scala.concurrent.Future
-import org.junit.Test
 import org.junit.runner.RunWith
-import org.vertx.scala.platform.Verticle
 import org.vertx.scala.core.VertxExecutionContext
+import org.vertx.scala.platform.Verticle
+import org.vertx.testtools.JavaClassRunner
 import org.vertx.testtools.VertxAssert
-import org.vertx.scala.core.Vertx
+import scala.concurrent.Future
 
-@RunWith(classOf[ScalaClassRunner])
+@RunWith(classOf[JavaClassRunner])
 abstract class TestVerticle extends Verticle with VertxExecutionContext {
   override final def start() {
     initialize()

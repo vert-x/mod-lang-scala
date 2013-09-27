@@ -17,7 +17,6 @@ import org.vertx.java.platform.impl.cli.Starter
  */
 
 apply plugin: 'java'
-apply plugin: 'groovy'
 apply plugin: 'scala'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
@@ -60,8 +59,8 @@ repositories {
 dependencies {
   provided "io.vertx:vertx-core:$vertxVersion"
   provided "io.vertx:vertx-platform:$vertxVersion"
-  provided "junit:junit:$junitVersion"
-  provided "io.vertx:testtools:$toolsVersion"
+  testCompile "junit:junit:$junitVersion"
+  testCompile "io.vertx:testtools:$toolsVersion"
 }
 
 // This sets up the classpath for the script itself
