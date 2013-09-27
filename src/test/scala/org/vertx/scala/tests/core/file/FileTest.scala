@@ -22,7 +22,7 @@ class FileTest extends TestVerticle {
   override def asyncBefore(): Future[Unit] = {
     (for {
       exists <- fileExists("x.dat") if (exists)
-      deleted <- fileDelete("x.dat")
+      deleted <- fileDelete("x.dat", false)
     } yield {
     }) recover {
       case ex: Throwable =>
@@ -32,7 +32,7 @@ class FileTest extends TestVerticle {
   @Test def createFile: Unit = checkNoError(for {
     cf <- fileCreate("x.dat")
     ex <- fileExists("x.dat")
-    df <- fileDelete("x.dat")
+    df <- fileDelete("x.dat", false)
   } yield {
     ex
   })
@@ -41,15 +41,15 @@ class FileTest extends TestVerticle {
     cf <- fileCreate("x.dat")
     fc <- fileCopy("x.dat", "y.dat")
     ex <- fileExists("y.dat")
-    df <- fileDelete("x.dat")
-    df <- fileDelete("y.dat")
+    df <- fileDelete("x.dat", false)
+    df <- fileDelete("y.dat", false)
   } yield {
     ex
   })
 
   @Test def deleteFile: Unit = checkNoError(for {
     cf <- fileCreate("x.dat")
-    df <- fileDelete("x.dat")
+    df <- fileDelete("x.dat", false)
     ex <- fileExists("x.dat")
   } yield {
     !ex
@@ -59,7 +59,7 @@ class FileTest extends TestVerticle {
     cf <- fileCreate("x.dat")
     mf <- fileMove("x.dat", "./src/x.dat")
     ex <- fileExists("./src/x.dat")
-    df <- fileDelete("./src/x.dat")
+    df <- fileDelete("./src/x.dat", false)
   } yield {
     ex
   })
@@ -67,7 +67,7 @@ class FileTest extends TestVerticle {
   @Test def existsFile: Unit = checkNoError(for {
     _ <- fileCreate("x.dat")
     ex <- fileExists("x.dat")
-    _ <- fileDelete("x.dat")
+    _ <- fileDelete("x.dat", false)
   } yield {
     ex
   })
@@ -75,7 +75,7 @@ class FileTest extends TestVerticle {
   @Test def writeFile: Unit = checkNoError(for {
     wf <- fileWrite("x.dat", "Hello")
     ex <- fileExists("x.dat")
-    df <- fileDelete("x.dat")
+    df <- fileDelete("x.dat", false)
   } yield {
     ex
   })
@@ -83,7 +83,7 @@ class FileTest extends TestVerticle {
   @Test def readFile: Unit = checkNoError(for {
     wf <- fileWrite("x.dat", "Hello")
     rf <- fileRead("x.dat")
-    df <- fileDelete("x.dat")
+    df <- fileDelete("x.dat", false)
   } yield {
     "Hello" == rf.toString
   })
@@ -92,8 +92,8 @@ class FileTest extends TestVerticle {
     cf <- fileCreate("x.dat")
     lf <- fileLink("y.dat", "x.dat")
     ex <- fileExists("y.dat")
-    df <- fileDelete("x.dat")
-    df <- fileDelete("y.dat")
+    df <- fileDelete("x.dat", false)
+    df <- fileDelete("y.dat", false)
   } yield {
     ex
   })
@@ -103,7 +103,7 @@ class FileTest extends TestVerticle {
     lf <- fileLink("y.dat", "x.dat")
     uf <- fileUnlink("y.dat")
     ex <- fileExists("y.dat")
-    df <- fileDelete("x.dat")
+    df <- fileDelete("x.dat", false)
   } yield {
     !ex
   })
@@ -112,8 +112,8 @@ class FileTest extends TestVerticle {
     cf <- fileCreate("x.dat")
     lf <- fileSymlink("y.dat", "x.dat")
     ex <- fileExists("y.dat")
-    df <- fileDelete("x.dat")
-    df <- fileDelete("y.dat")
+    df <- fileDelete("x.dat", false)
+    df <- fileDelete("y.dat", false)
   } yield {
     ex
   })
@@ -122,8 +122,8 @@ class FileTest extends TestVerticle {
     cf <- fileCreate("x.dat")
     lf <- fileSymlink("y.dat", "x.dat")
     ex <- fileReadSymLink("y.dat")
-    df <- fileDelete("x.dat")
-    df <- fileDelete("y.dat")
+    df <- fileDelete("x.dat", false)
+    df <- fileDelete("y.dat", false)
   } yield {
     ex.toString() == "x.dat"
   })
@@ -133,7 +133,7 @@ class FileTest extends TestVerticle {
     checkNoError(for {
       cf <- fileCreate("x.dat")
       pf <- fileProps("x.dat")
-      df <- fileDelete("x.dat")
+      df <- fileDelete("x.dat", false)
     } yield {
       !pf.isDirectory
       pf.isRegularFile
@@ -148,7 +148,7 @@ class FileTest extends TestVerticle {
   @Test def chmodFile: Unit = checkNoError((for {
     cf <- fileCreate("x.dat")
     fc <- fileChmod("x.dat", "rwxr-xr-x")
-    df <- fileDelete("x.dat")
+    df <- fileDelete("x.dat", false)
   } yield {
     fc.toString() == "rwxr-xr-x"
   }) recover {
@@ -159,9 +159,44 @@ class FileTest extends TestVerticle {
     wf <- fileWrite("x.dat", "Hallo-was-los")
     tf <- fileTruncate("x.dat", 5)
     rf <- fileRead("x.dat")
-    df <- fileDelete("x.dat")
+    df <- fileDelete("x.dat", false)
   } yield {
     rf.toString.getBytes.length == 5L
+  })
+  
+  @Test def makeDirectory: Unit = checkNoError(for {
+    wf <- fileMkdir("d")
+    pf <- fileProps("d")
+    df <- fileDelete("d", true)
+  } yield {
+    pf.isDirectory
+  })
+  
+  @Test def readDirectory: Unit = checkNoError(for {
+    wf <- fileMkdir("d")
+    cf <- fileCreate("./d/x.dat")
+    cf <- fileCreate("./d/y.dat")
+    xf <- fileReadDir("d")
+    df <- fileDelete("d", true)
+  } yield {
+    xf.length == 2
+  })
+  
+  @Test def openFile: Unit = checkNoError(for {
+    of <- fileOpen("asyn.dat")
+    ex <- fileExists("asyn.dat")
+    df <- fileDelete("asyn.dat", false)
+  } yield {
+    ex
+  })
+  
+  @Test def wirteAndreadAsynFile: Unit = checkNoError(for {
+    of <- fileOpen("asynx.dat")
+    aw <- fileAsynWrite(of, "Hello-World", 0)
+    rf <- fileAsynRead(of, 0, 0, "Hello-World".length)
+    df <- fileDelete("asynx.dat", false)
+  } yield {
+    rf.toString == "Hello-World"
   })
   
   private def resultInPromise[T](p: Promise[T]): AsyncResult[T] => Unit = { ar: AsyncResult[T] =>
@@ -179,7 +214,7 @@ class FileTest extends TestVerticle {
   }
 
   private def fileCreate(f: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.createFile(f, resultInPromise(p)) }
-  private def fileDelete(f: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.delete(f, resultInPromise(p)) }
+  private def fileDelete(f: String, b: Boolean): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.delete(f, b, resultInPromise(p)) }
   private def fileCopy(f: String, t: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.copy(f, t, resultInPromise(p)) }
   private def fileMove(f: String, t: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.move(f, t, resultInPromise(p)) }
   private def fileExists(f: String): Future[Boolean] = promisify { p: Promise[Boolean] => vertx.fileSystem.exists(f, resultInPromise(p)) }
@@ -192,6 +227,11 @@ class FileTest extends TestVerticle {
   private def fileProps(l: String): Future[FileProps] = promisify { p: Promise[FileProps] => vertx.fileSystem.props(l, resultInPromise(p)) }
   private def fileChmod(f: String, per: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.chmod(f, per, resultInPromise(p)) }
   private def fileTruncate(f: String, l: Long): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.truncate(f, l, resultInPromise(p)) }
+  private def fileMkdir(f: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.mkdir(f, resultInPromise(p)) }
+  private def fileReadDir(f: String): Future[Array[String]] = promisify { p: Promise[Array[String]] => vertx.fileSystem.readDir(f, resultInPromise(p)) }
+  private def fileOpen(f: String): Future[AsyncFile] = promisify { p: Promise[AsyncFile] => vertx.fileSystem.open(f, resultInPromise(p)) }
+  private def fileAsynWrite(ar: AsyncFile, d: String, i: Int): Future[Void] = promisify { p: Promise[Void] => ar.write(new JBuffer(d), i, resultInPromise(p)) }
+  private def fileAsynRead(ar: AsyncFile, o: Int, i: Int, l: Int): Future[Buffer] = promisify { p: Promise[Buffer] => ar.read(new JBuffer(1000), o, i, l, resultInPromise(p)) }
 
   private def checkNoError(fut: Future[Boolean]) = fut onComplete {
     case Success(x) =>
