@@ -15,8 +15,20 @@ class BufferTest {
     val buffer = new JBuffer
     buffer.append(value)
     
-    val realValue = value.toString().getBytes().mkString(",")
-    val computedValue = buffer.getBytes().mkString(",")
+    val computedValue = value match {
+      case _ : Int => buffer.getInt(0)
+      case _ : Float => buffer.getFloat(0)
+      case x : String => buffer.getString(0, x.length)
+      case _ : Buffer => Buffer(buffer.getBuffer(0, value.toString.length))
+      case _ : Long => buffer.getLong(0)
+      case _ : Byte => buffer.getByte(0)
+      case _ : Double => buffer.getDouble(0)
+      case _ : Short => buffer.getShort(0)
+      case y : Array[Byte] => buffer.getBytes()
+      case value : (x, y) => (buffer.getString(0, value._1.toString.length, value._2.toString), value._2)
+    }
+    
+    val realValue = value
     assertEquals(realValue + " should match " + computedValue, realValue, computedValue)
   }
 
@@ -30,4 +42,6 @@ class BufferTest {
   @Test def testAppendShort(): Unit = appendTest(Short.MaxValue)
   @Test def testAppendString(): Unit = appendTest("hello")
   @Test def testAppendStringWithEncoding(): Unit = appendTest("hellö", "UTF-8")
+  
+  
 }
