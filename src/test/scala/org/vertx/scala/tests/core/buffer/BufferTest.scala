@@ -19,7 +19,7 @@ class BufferTest {
       case _: Int => buffer.getInt(0)
       case _: Float => buffer.getFloat(0)
       case x: String => buffer.getString(0, x.length)
-      case _: Buffer => Buffer(buffer.getBuffer(0, value.toString.length))
+      case _: Buffer => Buffer(buffer.getBuffer(0, buffer.length))
       case _: Long => buffer.getLong(0)
       case _: Byte => buffer.getByte(0)
       case _: Double => buffer.getDouble(0)
