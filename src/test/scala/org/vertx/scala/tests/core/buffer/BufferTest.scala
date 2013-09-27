@@ -14,22 +14,30 @@ class BufferTest {
   private def appendTest[T: BufferType](value: T) {
     val buffer = new JBuffer
     buffer.append(value)
-    
+
     val computedValue = value match {
-      case _ : Int => buffer.getInt(0)
-      case _ : Float => buffer.getFloat(0)
-      case x : String => buffer.getString(0, x.length)
-      case _ : Buffer => Buffer(buffer.getBuffer(0, value.toString.length))
-      case _ : Long => buffer.getLong(0)
-      case _ : Byte => buffer.getByte(0)
-      case _ : Double => buffer.getDouble(0)
-      case _ : Short => buffer.getShort(0)
-      case y : Array[Byte] => buffer.getBytes()
-      case value : (x, y) => (buffer.getString(0, value._1.toString.length, value._2.toString), value._2)
+      case _: Int => buffer.getInt(0)
+      case _: Float => buffer.getFloat(0)
+      case x: String => buffer.getString(0, x.length)
+      case _: Buffer => Buffer(buffer.getBuffer(0, value.toString.length))
+      case _: Long => buffer.getLong(0)
+      case _: Byte => buffer.getByte(0)
+      case _: Double => buffer.getDouble(0)
+      case _: Short => buffer.getShort(0)
+      case y: Array[Byte] => buffer.getBytes()
+      case (a: String, b: String) => (buffer.getString(0, buffer.length, b), b)
     }
-    
-    val realValue = value
-    assertEquals(realValue + " should match " + computedValue, realValue, computedValue)
+
+    val realValue = value match {
+      case x: Array[Byte] => x
+      case _ => value
+    }
+
+    (realValue, computedValue) match {
+      case (x: Array[Byte], y: Array[Byte]) => (0 to x.length - 1) map (i => assertEquals(x(i), y(i)))
+      case ((a, b), (x, y)) => assertEquals(a + " should match " + x, a, x)
+      case (a, b) => assertEquals(a + " should match " + b, a, b)
+    }
   }
 
   @Test def testAppendBuffer(): Unit = appendTest(Buffer(new JBuffer("test")))
@@ -41,7 +49,6 @@ class BufferTest {
   @Test def testAppendLong(): Unit = appendTest(123L)
   @Test def testAppendShort(): Unit = appendTest(Short.MaxValue)
   @Test def testAppendString(): Unit = appendTest("hello")
-  @Test def testAppendStringWithEncoding(): Unit = appendTest("hellö", "UTF-8")
-  
-  
+  @Test def testAppendStringWithEncoding(): Unit = appendTest("hellöäü", "UTF-8")
+
 }
