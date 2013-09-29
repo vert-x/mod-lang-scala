@@ -59,8 +59,8 @@ repositories {
 dependencies {
   provided "io.vertx:vertx-core:$vertxVersion"
   provided "io.vertx:vertx-platform:$vertxVersion"
-  testCompile "junit:junit:$junitVersion"
-  testCompile "io.vertx:testtools:$toolsVersion"
+  provided "junit:junit:$junitVersion"
+  provided "io.vertx:testtools:$toolsVersion"
 }
 
 // This sets up the classpath for the script itself

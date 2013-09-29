@@ -16,16 +16,18 @@
 
 package org.vertx.scala.mods
 
-import org.vertx.java.core.json.JsonObject
-import org.vertx.java.core.logging.Logger
-import org.vertx.java.core.eventbus.Message
-import org.vertx.java.core.json.JsonArray
+import org.vertx.scala.core.json.JsonObject
+import org.vertx.scala.core.json.JsonArray
+import org.vertx.scala.core.logging.Logger
+import org.vertx.scala.core.eventbus.Message
 import org.vertx.scala.core.eventbus.EventBus
 import org.vertx.scala.core._
 import org.vertx.scala.platform.Verticle
+import scala.concurrent.Promise
 
 /**
  * @author swilliams
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 trait ModuleBase extends Verticle {
 
@@ -33,17 +35,10 @@ trait ModuleBase extends Verticle {
 
   var config: JsonObject = null
 
-  var logger: Logger = null
-
   override final def start(): Unit = {
     eb = vertx.eventBus
     config = container.config()
-    logger = container.logger()
     startMod()
-  }
-
-  override def start(result: Future[Void]): Unit = {
-    super.start(result)
   }
 
   def startMod(): Unit

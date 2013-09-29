@@ -10,6 +10,7 @@ import org.vertx.scala.lang.ScalaInterpreter
 import org.vertx.scala.platform.impl.ScalaVerticle
 import org.vertx.scala.platform.Verticle
 import scala.tools.nsc.Settings
+import org.vertx.scala.platform.impl.ScalaVerticleFactory
 
 /**
  * // TODO: Document this
@@ -36,9 +37,7 @@ class ScalaInterpreterTest extends TestVerticle {
     val interpreter = createInterpreter(out)
     val verticleClass = interpreter.compileClass(new File(filePath),
         "org.vertx.scala.tests.lang.VerticleClass")
-    val verticle = verticleClass.get.newInstance().asInstanceOf[Verticle]
-    verticle.vertx = vertx
-    verticle.container = container
+    val verticle = ScalaVerticle.newVerticle(verticleClass.get.newInstance().asInstanceOf[Verticle], vertx.internal, container.internal)
     verticle.start()
     assertHttpClientGetNow("Hello verticle class!")
   }

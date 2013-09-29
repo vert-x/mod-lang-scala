@@ -8,22 +8,24 @@ import org.vertx.testtools.JavaClassRunner
 import org.vertx.testtools.VertxAssert
 import scala.concurrent.Future
 
-@RunWith(classOf[JavaClassRunner])
-abstract class TestVerticle extends Verticle with VertxExecutionContext {
+@RunWith(classOf[ScalaClassRunner])
+abstract class TestVerticle extends Verticle {
+
   override final def start() {
     initialize()
     before()
     asyncBefore() map { _ =>
       startTests()
     } recover {
-      case ex: Throwable => VertxAssert.handleThrowable(ex)
+      case ex: Throwable =>
+        VertxAssert.handleThrowable(ex)
     }
   }
 
   /**
    * Override this method if you want to do things synchronously before starting the tests.
    */
-  def before() {}
+  def before(): Unit = {}
 
   /**
    * Override this method if you want to do things asynchronously before starting the tests.

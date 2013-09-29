@@ -12,6 +12,7 @@ import org.vertx.scala.core.http.HttpClientResponse
 import scala.concurrent.Promise
 import org.vertx.scala.core.http.HttpClient
 import org.vertx.scala.tests.util.TestUtils._
+import org.vertx.scala.platform.Verticle
 
 class HttpTestForSimpleApi extends TestVerticle {
   val testPort = 8844

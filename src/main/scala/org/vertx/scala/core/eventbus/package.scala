@@ -1,8 +1,8 @@
 package org.vertx.scala.core
 
-import org.vertx.java.core.buffer.{Buffer => JBuffer}
-import org.vertx.java.core.eventbus.{EventBus => JEventBus}
-import org.vertx.java.core.eventbus.{Message => JMessage}
+import org.vertx.java.core.buffer.{ Buffer => JBuffer }
+import org.vertx.java.core.eventbus.{ EventBus => JEventBus }
+import org.vertx.java.core.eventbus.{ Message => JMessage }
 import org.vertx.scala.core.json.JsonArray
 import org.vertx.scala.core.json.JsonObject
 import org.vertx.scala.core.buffer.Buffer
@@ -25,7 +25,7 @@ package object eventbus {
     def toScalaMessageData(): MessageData
   }
 
-  def anyToMessageData(any: Any): MessageData = any match {
+  implicit def anyToMessageData(any: Any): MessageData = any match {
     case sth: String => StringData(sth)
     case sth: JsonArray => JsonArrayData(sth)
     case sth: JsonObject => JsonObjectData(sth)
@@ -33,7 +33,7 @@ package object eventbus {
     case sth: Array[Byte] => ByteArrayData(sth)
     case sth: Boolean => BooleanData(sth)
     case sth: Integer => IntegerData(sth)
-    case sth: Long=> LongData(sth)
+    case sth: Long => LongData(sth)
     case sth: Short => ShortData(sth)
     case sth: Float => FloatData(sth)
     case sth: Double => DoubleData(sth)

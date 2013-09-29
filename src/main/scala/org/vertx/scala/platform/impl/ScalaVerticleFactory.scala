@@ -33,6 +33,7 @@ import scala.util.matching.Regex
 import org.vertx.scala.lang.ScalaInterpreter
 import org.vertx.scala.core
 import scala.tools.nsc.interpreter.Results.{ Success, Result }
+import java.net.URLClassLoader
 
 /**
  * @author swilliams
@@ -55,10 +56,6 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   private var interpreter: ScalaInterpreter = null
 
-  private val classLoader = classOf[ScalaVerticleFactory].getClassLoader
-
-  // private val classCache = mutable.Map[String, java.lang.Class[_]]()
-
   override def init(jvertx: JVertx, jcontainer: JContainer, aloader: ClassLoader): Unit = {
     this.jvertx = jvertx
     this.jcontainer = jcontainer
@@ -74,7 +71,8 @@ class ScalaVerticleFactory extends VerticleFactory {
     val loadedVerticle = if (!main.endsWith(SUFFIX)) Some(loader.loadClass(main)) else load(main)
     loadedVerticle match {
       case Some(verticleClass) =>
-        val delegate = verticleClass.newInstance().asInstanceOf[Verticle]
+        val vcInstance = verticleClass.newInstance()
+        val delegate = vcInstance.asInstanceOf[Verticle]
         ScalaVerticle.newVerticle(delegate, jvertx, jcontainer)
       case None =>
         DummyVerticle // run directly as script
@@ -111,12 +109,12 @@ class ScalaVerticleFactory extends VerticleFactory {
     val settings = new Settings()
 
     for {
-      jar <- findAll(classLoader, "lib", JarFileRegex)
+      jar <- findAll(loader, "lib", JarFileRegex)
     } yield {
       settings.bootclasspath.append(jar.getAbsolutePath)
     }
 
-    val modLangScala = classLoader.getResource("./").toExternalForm
+    val modLangScala = loader.getResource("./").toExternalForm
     settings.bootclasspath.append(modLangScala.replaceFirst("file:", ""))
     settings.usejavacp.value = true
     settings.verbose.value = ScalaInterpreter.isVerbose
