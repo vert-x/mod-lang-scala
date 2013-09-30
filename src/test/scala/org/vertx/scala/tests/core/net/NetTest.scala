@@ -7,7 +7,7 @@ import org.vertx.java.core.AsyncResult
 import org.vertx.scala.core.net.NetSocket
 import org.vertx.scala.core.net.NetClient
 import org.vertx.scala.core.net.NetServer
-import org.vertx.java.core.buffer.Buffer
+import org.vertx.scala.core.buffer._
 import org.vertx.scala.tests.util.TestUtils._
 
 class NetTest extends TestVerticle {
@@ -18,7 +18,7 @@ class NetTest extends TestVerticle {
   def createNetServer() {
     vertx.createNetServer.connectHandler(regularConnectHandler).listen(testPort, checkServer())
   }
-  
+
   @Test
   def sslNetServer(): Unit = {
     val server = vertx.createNetServer.setSSL(true)
@@ -28,14 +28,14 @@ class NetTest extends TestVerticle {
 
     server.connectHandler(regularConnectHandler).listen(testPort, { ar: AsyncResult[NetServer] =>
       (if (ar.succeeded()) {
-      val c = vertx.createNetClient
-      c.setSSL(true)
-      c.setKeyStorePath("./src/test/keystores/client-keystore.jks").setKeyStorePassword("wibble")
-      c.setTrustStorePath("./src/test/keystores/client-truststore.jks").setTrustStorePassword("wibble")
-      c.connect(testPort, correctBodyHandler(testComplete))
+        val c = vertx.createNetClient
+        c.setSSL(true)
+        c.setKeyStorePath("./src/test/keystores/client-keystore.jks").setKeyStorePassword("wibble")
+        c.setTrustStorePath("./src/test/keystores/client-truststore.jks").setTrustStorePassword("wibble")
+        c.connect(testPort, correctBodyHandler(testComplete))
       } else {
         fail("listening did not succeed: " + ar.cause().getMessage())
-    }): Unit
+      }): Unit
     })
   }
 
@@ -69,6 +69,6 @@ class NetTest extends TestVerticle {
   }
 
   private def regularConnectHandler: NetSocket => Unit = { ws =>
-    ws.write(new Buffer("hello-World"))
+    ws.write(Buffer("hello-World"))
   }
 }

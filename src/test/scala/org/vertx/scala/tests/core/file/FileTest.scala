@@ -185,7 +185,7 @@ class FileTest extends TestVerticle {
   private def fileCopy(f: String, t: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.copy(f, t, resultInPromise(p)) }
   private def fileMove(f: String, t: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.move(f, t, resultInPromise(p)) }
   private def fileExists(f: String): Future[Boolean] = promisify { p: Promise[Boolean] => vertx.fileSystem.exists(f, resultInPromise(p)) }
-  private def fileWrite(f: String, d: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.writeFile(f, new JBuffer(d), resultInPromise(p)) }
+  private def fileWrite(f: String, d: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.writeFile(f, Buffer(d), resultInPromise(p)) }
   private def fileRead(f: String): Future[Buffer] = promisify { p: Promise[Buffer] => vertx.fileSystem.readFile(f, resultInPromise(p)) }
   private def fileLink(l: String, e: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.link(l, e, resultInPromise(p)) }
   private def fileSymlink(l: String, e: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.symlink(l, e, resultInPromise(p)) }
@@ -197,8 +197,8 @@ class FileTest extends TestVerticle {
   private def fileMkdir(f: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.mkdir(f, resultInPromise(p)) }
   private def fileReadDir(f: String): Future[Array[String]] = promisify { p: Promise[Array[String]] => vertx.fileSystem.readDir(f, resultInPromise(p)) }
   private def fileOpen(f: String): Future[AsyncFile] = promisify { p: Promise[AsyncFile] => vertx.fileSystem.open(f, resultInPromise(p)) }
-  private def fileAsynWrite(ar: AsyncFile, d: String, i: Int): Future[Void] = promisify { p: Promise[Void] => ar.write(new JBuffer(d), i, resultInPromise(p)) }
-  private def fileAsynRead(ar: AsyncFile, o: Int, i: Int, l: Int): Future[Buffer] = promisify { p: Promise[Buffer] => ar.read(new JBuffer(1000), o, i, l, resultInPromise(p)) }
+  private def fileAsynWrite(ar: AsyncFile, d: String, i: Int): Future[Void] = promisify { p: Promise[Void] => ar.write(Buffer(d), i, resultInPromise(p)) }
+  private def fileAsynRead(ar: AsyncFile, o: Int, i: Int, l: Int): Future[Buffer] = promisify { p: Promise[Buffer] => ar.read(Buffer(1000), o, i, l, resultInPromise(p)) }
 
   private def checkNoError(fut: Future[Boolean]) = fut onComplete {
     case Success(x) =>

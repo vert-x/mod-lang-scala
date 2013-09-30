@@ -1,18 +1,13 @@
 package org.vertx.scala.tests.core.streams
 
-import org.vertx.scala.testtools.TestVerticle
 import org.junit.Test
-import org.vertx.testtools.VertxAssert._
-import org.vertx.scala.core.streams.Pump
-import org.vertx.scala.core.http.HttpServerRequest
+import org.junit.runner.RunWith
 import org.vertx.scala.core.AsyncResult
-import org.vertx.scala.core.http.HttpServer
-import org.vertx.scala.core.http.HttpClient
-import org.vertx.scala.core.http.HttpClientResponse
-import org.vertx.scala.core.http.HttpClientRequest
-import org.vertx.scala.core.buffer._
-import org.vertx.scala.core.buffer.BufferTypes._
-import org.vertx.java.core.buffer.{ Buffer => JBuffer }
+import org.vertx.scala.core.buffer.{ Buffer, BufferElem }
+import org.vertx.scala.core.http.{ HttpClient, HttpClientResponse, HttpServer, HttpServerRequest }
+import org.vertx.scala.core.streams.Pump
+import org.vertx.scala.testtools.{ ScalaClassRunner, TestVerticle }
+import org.vertx.testtools.VertxAssert._
 
 class PumpTest extends TestVerticle {
 
@@ -30,16 +25,17 @@ class PumpTest extends TestVerticle {
   @Test
   def pumpingHttp(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
-      val chunk = new Buffer(new JBuffer("hello pump"))
+      val chunk = Buffer("hello pump")
       val req = c.post("/", { resp =>
         assertEquals(200, resp.statusCode)
-        val buffer = new Buffer(new JBuffer())
+        val buffer = Buffer()
         resp.dataHandler { buff =>
-          buffer.append(new Buffer(buff))
+          buffer.append(buff)
         }
         resp.endHandler {
-          assertEquals(chunk.internal.length(), buffer.internal.length())
+          assertEquals(chunk.length(), buffer.length())
           assertEquals(chunk, buffer)
+          testComplete()
         }
       })
       req.setChunked(true)
@@ -56,8 +52,11 @@ class PumpTest extends TestVerticle {
 
   private def regularRequestHandler: HttpServerRequest => Unit = { req =>
     req.response.setChunked(true)
-    val pump = Pump.createPump(req, req.response)
-    pump.start
+    req.bodyHandler({ buf => println("buf-body:" + buf) })
+    req.dataHandler({ buf => println("buf:" + buf) })
+    req.endHandler({ req.response.end })
+    //    req.response.drainHandler(req.response.end)
+    Pump.createPump(req, req.response).start
   }
 
   private def checkServer(clientFn: HttpClient => Unit) = { ar: AsyncResult[HttpServer] =>

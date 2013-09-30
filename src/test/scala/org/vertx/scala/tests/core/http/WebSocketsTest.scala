@@ -9,7 +9,7 @@ import org.vertx.scala.core.http.HttpClient
 import org.vertx.scala.core.http.HttpClientResponse
 import org.vertx.scala.core.http.ServerWebSocket
 import org.vertx.scala.core.http.WebSocket
-import org.vertx.java.core.buffer.Buffer
+import org.vertx.scala.core.buffer.Buffer
 import org.vertx.scala.tests.util.TestUtils._
 
 class WebSocketsTest extends TestVerticle {
@@ -48,9 +48,9 @@ class WebSocketsTest extends TestVerticle {
     vertx.createHttpServer.websocketHandler({ ws: ServerWebSocket =>
       ws.dataHandler({ buf =>
         if (buf.toString() == "ping") {
-          ws.write(new Buffer("pong"))
+          ws.write(Buffer("pong"))
         } else if (buf.toString() == "ping2") {
-          ws.write(new Buffer("pong2"))
+          ws.write(Buffer("pong2"))
         }
       })
     }).listen(testPort, checkServer({ c =>
@@ -61,15 +61,15 @@ class WebSocketsTest extends TestVerticle {
             assertEquals("pong2", buf.toString)
             testComplete()
           })
-          resp.write(new Buffer("ping2"))
+          resp.write(Buffer("ping2"))
         })
-        resp.write(new Buffer("ping"))
+        resp.write(Buffer("ping"))
       })
     }))
   }
 
   private def regularRequestHandler: ServerWebSocket => Unit = { ws =>
-    ws.write(new Buffer(html))
+    ws.write(Buffer(html))
 
     ws.dataHandler({ buf =>
       assertEquals(html, buf.toString)

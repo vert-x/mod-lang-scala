@@ -142,33 +142,4 @@ package object core {
 
   }
 
-  implicit class Future[T](internal: JFuture[T]) extends AsyncResult[T] {
-
-    def complete(): Boolean = internal.complete()
-
-    def setHandler(handler: AsyncResult[T] => Unit): Future[T] = {
-      internal.setHandler(handler)
-      this
-    }
-
-    def setFailure(cause: Throwable): Future[T] = {
-      internal.setFailure(cause)
-      this
-    }
-
-    def setResult(result: T): Future[T] = {
-      internal.setResult(result)
-      this
-    }
-
-    override def result(): T = internal.result()
-
-    override def cause(): Throwable = internal.cause()
-
-    override def succeeded(): Boolean = internal.succeeded()
-
-    override def failed(): Boolean = internal.failed()
-
-  }
-
 }
