@@ -2,10 +2,10 @@ package org.vertx.scala.tests.core.http
 
 import org.junit.Test
 import org.vertx.scala.core.AsyncResult
-import org.vertx.scala.core.http.{HttpClient, HttpClientResponse, HttpServer, HttpServerRequest}
+import org.vertx.scala.core.http.{ HttpClient, HttpClientResponse, HttpServer, HttpServerRequest }
 import org.vertx.scala.tests.util.TestUtils.completeWithArFailed
 import org.vertx.scala.testtools.TestVerticle
-import org.vertx.testtools.VertxAssert.{assertEquals, fail, testComplete}
+import org.vertx.testtools.VertxAssert.{ assertEquals, fail, testComplete }
 
 class HttpTestForSimpleApi extends TestVerticle {
   val testPort = 8844
@@ -65,13 +65,13 @@ class HttpTestForSimpleApi extends TestVerticle {
 
   @Test def headMethod(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
-      c.head("/", checkCorrectHeader(testComplete)).end()
+      c.head("/", correctHeadAndEmptyBodyHandler(testComplete)).end()
     }))
   }
 
   @Test def connectMethod(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
-      c.connect("/", checkCorrectHeader(testComplete)).end()
+      c.connect("/", correctHeadAndEmptyBodyHandler(testComplete)).end()
     }))
   }
 
@@ -92,7 +92,7 @@ class HttpTestForSimpleApi extends TestVerticle {
   }
 
   private def headAndBodyRequest(name: String): Unit = simpleRequest(correctHeadAndBodyHandler)(name)
-  private def headOnlyRequest(name: String): Unit = simpleRequest(checkCorrectHeader)(name)
+  private def headOnlyRequest(name: String): Unit = simpleRequest(correctHeadAndEmptyBodyHandler)(name)
 
   private def regularRequestHandler: HttpServerRequest => Unit = { req =>
     req.response.end(html)
@@ -108,6 +108,15 @@ class HttpTestForSimpleApi extends TestVerticle {
     checkCorrectHeader({ () =>
       resp.bodyHandler({ buf =>
         assertEquals(html, buf.toString)
+        fn()
+      })
+    }).apply(resp): Unit
+  }
+
+  private def correctHeadAndEmptyBodyHandler(fn: () => Unit) = { resp: HttpClientResponse =>
+    checkCorrectHeader({ () =>
+      resp.bodyHandler({ buf =>
+        assertEquals("", buf.toString)
         fn()
       })
     }).apply(resp): Unit

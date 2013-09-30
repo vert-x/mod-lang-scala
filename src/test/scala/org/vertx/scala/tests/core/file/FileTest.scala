@@ -33,9 +33,7 @@ class FileTest extends TestVerticle {
     cf <- fileCreate("x.dat")
     ex <- fileExists("x.dat")
     df <- fileDelete("x.dat", false)
-  } yield {
-    ex
-  })
+  } yield ex)
 
   @Test def copyFile: Unit = checkNoError(for {
     cf <- fileCreate("x.dat")
@@ -43,50 +41,38 @@ class FileTest extends TestVerticle {
     ex <- fileExists("y.dat")
     df <- fileDelete("x.dat", false)
     df <- fileDelete("y.dat", false)
-  } yield {
-    ex
-  })
+  } yield ex)
 
   @Test def deleteFile: Unit = checkNoError(for {
     cf <- fileCreate("x.dat")
     df <- fileDelete("x.dat", false)
     ex <- fileExists("x.dat")
-  } yield {
-    !ex
-  })
+  } yield !ex)
 
   @Test def moveFile: Unit = checkNoError(for {
     cf <- fileCreate("x.dat")
     mf <- fileMove("x.dat", "./src/x.dat")
     ex <- fileExists("./src/x.dat")
     df <- fileDelete("./src/x.dat", false)
-  } yield {
-    ex
-  })
+  } yield ex)
 
   @Test def existsFile: Unit = checkNoError(for {
     _ <- fileCreate("x.dat")
     ex <- fileExists("x.dat")
     _ <- fileDelete("x.dat", false)
-  } yield {
-    ex
-  })
+  } yield ex)
 
   @Test def writeFile: Unit = checkNoError(for {
     wf <- fileWrite("x.dat", "Hello")
     ex <- fileExists("x.dat")
     df <- fileDelete("x.dat", false)
-  } yield {
-    ex
-  })
+  } yield ex)
 
   @Test def readFile: Unit = checkNoError(for {
     wf <- fileWrite("x.dat", "Hello")
     rf <- fileRead("x.dat")
     df <- fileDelete("x.dat", false)
-  } yield {
-    "Hello" == rf.toString
-  })
+  } yield "Hello" == rf.toString)
 
   @Test def linkFile: Unit = checkNoError(for {
     cf <- fileCreate("x.dat")
@@ -94,9 +80,7 @@ class FileTest extends TestVerticle {
     ex <- fileExists("y.dat")
     df <- fileDelete("x.dat", false)
     df <- fileDelete("y.dat", false)
-  } yield {
-    ex
-  })
+  } yield ex)
 
   @Test def unlinkFile: Unit = checkNoError(for {
     cf <- fileCreate("x.dat")
@@ -104,9 +88,7 @@ class FileTest extends TestVerticle {
     uf <- fileUnlink("y.dat")
     ex <- fileExists("y.dat")
     df <- fileDelete("x.dat", false)
-  } yield {
-    !ex
-  })
+  } yield !ex)
 
   @Test def symlinkFile: Unit = checkNoError(for {
     cf <- fileCreate("x.dat")
@@ -114,9 +96,7 @@ class FileTest extends TestVerticle {
     ex <- fileExists("y.dat")
     df <- fileDelete("x.dat", false)
     df <- fileDelete("y.dat", false)
-  } yield {
-    ex
-  })
+  } yield ex)
 
   @Test def readSymlinkFile: Unit = checkNoError(for {
     cf <- fileCreate("x.dat")
@@ -124,9 +104,7 @@ class FileTest extends TestVerticle {
     ex <- fileReadSymLink("y.dat")
     df <- fileDelete("x.dat", false)
     df <- fileDelete("y.dat", false)
-  } yield {
-    ex.toString() == "x.dat"
-  })
+  } yield ex.toString() == "x.dat")
 
   @Test def propsFile: Unit = {
     val startTime = 1000 * (System.currentTimeMillis() / 1000 - 1);
@@ -135,40 +113,37 @@ class FileTest extends TestVerticle {
       pf <- fileProps("x.dat")
       df <- fileDelete("x.dat", false)
     } yield {
-      !pf.isDirectory
-      pf.isRegularFile
-      !pf.isSymbolicLink
-      !pf.isOther
-      pf.lastAccessTime.getTime >= startTime
-      pf.creationTime.getTime >= startTime
-      pf.lastModifiedTime.getTime >= startTime
+      !pf.isDirectory &&
+        pf.isRegularFile &&
+        !pf.isSymbolicLink &&
+        !pf.isOther &&
+        pf.lastAccessTime.getTime >= startTime &&
+        pf.creationTime.getTime >= startTime &&
+        pf.lastModifiedTime.getTime >= startTime
     })
   }
 
-  @Test def chmodFile: Unit = checkNoError((for {
-    cf <- fileCreate("x.dat")
-    fc <- fileChmod("x.dat", "rwxr-xr-x")
-    df <- fileDelete("x.dat", false)
-  } yield true) recover {
-    case ex: Throwable => false
-  })
+  @Test def chmodFile: Unit = checkNoError(for {
+    of <- fileOpen("ch.dat")
+    aw <- fileAsynWrite(of, "Hello-Chmod", 0)
+    fc <- fileChmod("ch.dat", "---------")
+    aw <- fileAsynWrite(of, "Hello-Chmod-xxxx", 0)
+    rf <- fileAsynRead(of, 0, 0, "Hello-Chmod".length)
+    df <- fileDelete("ch.dat", false)
+  } yield rf.toString == "Hello-Chmod")
 
   @Test def truncateFile: Unit = checkNoError(for {
     wf <- fileWrite("x.dat", "Hallo-was-los")
     tf <- fileTruncate("x.dat", 5)
     rf <- fileRead("x.dat")
     df <- fileDelete("x.dat", false)
-  } yield {
-    rf.toString.getBytes.length == 5L
-  })
+  } yield rf.toString.getBytes.length == 5L)
 
   @Test def makeDirectory: Unit = checkNoError(for {
     wf <- fileMkdir("d")
     pf <- fileProps("d")
     df <- fileDelete("d", true)
-  } yield {
-    pf.isDirectory
-  })
+  } yield pf.isDirectory)
 
   @Test def readDirectory: Unit = checkNoError(for {
     wf <- fileMkdir("d")
@@ -176,26 +151,20 @@ class FileTest extends TestVerticle {
     cf <- fileCreate("./d/y.dat")
     xf <- fileReadDir("d")
     df <- fileDelete("d", true)
-  } yield {
-    xf.length == 2
-  })
+  } yield xf.length == 2)
 
   @Test def openFile: Unit = checkNoError(for {
     of <- fileOpen("asyn.dat")
     ex <- fileExists("asyn.dat")
     df <- fileDelete("asyn.dat", false)
-  } yield {
-    ex
-  })
+  } yield ex)
 
-  @Test def wirteAndreadAsynFile: Unit = checkNoError(for {
+  @Test def writeAndReadAsyncFile: Unit = checkNoError(for {
     of <- fileOpen("asynx.dat")
     aw <- fileAsynWrite(of, "Hello-World", 0)
     rf <- fileAsynRead(of, 0, 0, "Hello-World".length)
     df <- fileDelete("asynx.dat", false)
-  } yield {
-    rf.toString == "Hello-World"
-  })
+  } yield rf.toString == "Hello-World")
 
   private def resultInPromise[T](p: Promise[T]): AsyncResult[T] => Unit = { ar: AsyncResult[T] =>
     if (ar.succeeded()) {
