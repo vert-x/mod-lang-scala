@@ -16,24 +16,19 @@
 
 package org.vertx.scala.platform.impl
 
-import scala.collection.mutable
-import scala.reflect.internal.util.BatchSourceFile
-import scala.reflect.io.Path.string2path
-import scala.reflect.io.PlainFile
-import scala.tools.nsc.interpreter.IMain
+import java.io.{ File, FilenameFilter }
+
+import scala.Array.canBuildFrom
 import scala.tools.nsc.Settings
-import org.vertx.java.core.logging.Logger
-import org.vertx.java.core.{ Vertx => JVertx }
-import org.vertx.java.platform.{ Container => JContainer }
-import org.vertx.java.platform.{ Verticle => JVerticle }
-import org.vertx.java.platform.VerticleFactory
-import org.vertx.scala.platform.Verticle
-import java.io.{ PrintWriter, FilenameFilter, File }
+import scala.tools.nsc.interpreter.Results.Success
 import scala.util.matching.Regex
+
+import org.vertx.java.core.{ Vertx => JVertx }
+import org.vertx.java.core.logging.Logger
+import org.vertx.java.platform.{ Container => JContainer, Verticle => JVerticle, VerticleFactory }
+import org.vertx.scala.core.Vertx
 import org.vertx.scala.lang.ScalaInterpreter
-import org.vertx.scala.core
-import scala.tools.nsc.interpreter.Results.{ Success, Result }
-import java.net.URLClassLoader
+import org.vertx.scala.platform.Verticle
 
 /**
  * @author swilliams
