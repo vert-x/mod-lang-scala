@@ -97,10 +97,10 @@ package object eventbus {
     def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
   }
 
-  implicit class IntegerData(val data: Integer) extends MessageData {
-    type InternalType = Integer
+  implicit class IntegerData(val data: Int) extends MessageData {
+    type InternalType = Int
     def send(eb: JEventBus, address: String) = eb.send(address, data)
-    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, data, handler)
+    def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) = eb.send(address, Int.box(data), handler)
     def publish(eb: JEventBus, address: String) = eb.publish(address, data)
     def reply[A](msg: JMessage[A]) = msg.reply(data)
     def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
