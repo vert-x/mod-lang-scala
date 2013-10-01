@@ -63,7 +63,6 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   @throws(classOf[Exception])
   override def createVerticle(main: String): JVerticle = {
-    println("shall create verticle: " + main)
     val loadedVerticle = if (!main.endsWith(SUFFIX)) Some(loader.loadClass(main)) else load(main)
     loadedVerticle match {
       case Some(verticleClass) =>
