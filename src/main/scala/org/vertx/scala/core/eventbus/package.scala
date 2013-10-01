@@ -25,6 +25,7 @@ package object eventbus {
     def toScalaMessageData(): MessageData
   }
 
+  import scala.language.implicitConversions
   implicit def anyToMessageData(any: Any): MessageData = any match {
     case sth: String => StringData(sth)
     case sth: JsonArray => JsonArrayData(sth)

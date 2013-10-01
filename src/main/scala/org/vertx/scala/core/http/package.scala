@@ -26,6 +26,8 @@ package object http {
   type HttpVersion = org.vertx.java.core.http.HttpVersion
   type WebSocketVersion = org.vertx.java.core.http.WebSocketVersion
 
+  import scala.language.implicitConversions
+
   /**
    * Implicit conversion for [[org.vertx.java.core.MultiMap]] to [[scala.collection.mutable.MultiMap]].
    */
