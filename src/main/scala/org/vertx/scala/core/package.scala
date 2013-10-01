@@ -18,7 +18,6 @@ package org.vertx.scala
 
 import org.vertx.java.core.{ Vertx => JVertx }
 import org.vertx.java.core.{ VertxFactory => JVertxFactory }
-import org.vertx.java.core.AsyncResult
 import org.vertx.java.core.{ Future => JFuture }
 import org.vertx.scala.core.eventbus.EventBus
 import org.vertx.scala.core.http.{ HttpClient, HttpServerRequest, HttpServer }
@@ -26,9 +25,8 @@ import org.vertx.scala.core.net.{ NetServer, NetClient }
 import org.vertx.scala.core.sockjs.SockJSServer
 import org.vertx.scala.core.file.FileSystem
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.shareddata.SharedData
+import org.vertx.scala.core.shareddata.SharedData
 import org.vertx.java.core.Context
-import org.vertx.java.core.Handler
 
 package object core {
 
@@ -42,52 +40,52 @@ package object core {
 
   def newVertx(hostname: String) = new Vertx(JVertxFactory.newVertx(hostname))
 
-  implicit class Vertx(val internal: JVertx) extends AnyVal {
+  implicit class Vertx(val internal: JVertx) {
 
     /**
-     * Create a TCP/SSL server
+     * Create a TCP/SSL server.
      */
     def createNetServer(): NetServer = NetServer(internal.createNetServer())
 
     /**
-     * Create a TCP/SSL client
+     * Create a TCP/SSL client.
      */
     def createNetClient(): NetClient = NetClient(internal.createNetClient())
 
     /**
-     * Create an HTTP/HTTPS server
+     * Create an HTTP/HTTPS server.
      */
     def createHttpServer(): HttpServer = HttpServer(internal.createHttpServer())
 
     /**
-     * Create a HTTP/HTTPS client
+     * Create a HTTP/HTTPS client.
      */
     def createHttpClient(): HttpClient = HttpClient(internal.createHttpClient())
 
     /**
-     * Create a SockJS server that wraps an HTTP server
+     * Create a SockJS server that wraps an HTTP server.
      */
     def createSockJSServer(httpServer: HttpServer): SockJSServer = SockJSServer(internal.createSockJSServer(httpServer.toJava))
 
     /**
-     * The File system object
+     * The File system object.
      */
-    def fileSystem(): FileSystem = FileSystem(internal.fileSystem())
+    val fileSystem: FileSystem = FileSystem(internal.fileSystem())
 
     /**
-     * The event bus
+     * The event bus.
      */
-    def eventBus(): EventBus = EventBus(internal.eventBus())
+    val eventBus: EventBus = EventBus(internal.eventBus())
 
     /**
-     * The shared data object
+     * The shared data object.
      */
-    def sharedData(): SharedData = internal.sharedData()
+    val sharedData: SharedData = SharedData(internal.sharedData())
 
     /**
      * Set a one-shot timer to fire after {@code delay} milliseconds, at which point {@code handler} will be called with
      * the id of the timer.
-     * @return the unique ID of the timer
+     * @return The unique ID of the timer.
      */
     def setTimer(delay: Long, handler: Long => Unit): Long = {
       internal.setTimer(delay, fnToHandler(handler.compose {
@@ -98,7 +96,7 @@ package object core {
     /**
      * Set a periodic timer to fire every {@code delay} milliseconds, at which point {@code handler} will be called with
      * the id of the timer.
-     * @return the unique ID of the timer
+     * @return the unique ID of the timer.
      */
     def setPeriodic(delay: Long, handler: Long => Unit): Long = {
       internal.setPeriodic(delay, fnToHandler(handler.compose {
@@ -113,25 +111,25 @@ package object core {
     def cancelTimer(id: Long): Boolean = internal.cancelTimer(id)
 
     /**
-     * @return The current context
+     * @return The current context.
      */
     def currentContext(): Context = internal.currentContext()
 
     /**
      * Put the handler on the event queue for the current loop (or worker context) so it will be run asynchronously ASAP after this event has
-     * been processed
+     * been processed.
      */
     def runOnContext(action: => Unit): Unit = internal.runOnContext(lazyToVoidHandler(action))
 
     /**
      * Is the current thread an event loop thread?
-     * @return true if current thread is an event loop thread
+     * @return true if current thread is an event loop thread.
      */
     def isEventLoop(): Boolean = internal.isEventLoop()
 
     /**
      * Is the current thread an worker thread?
-     * @return true if current thread is an worker thread
+     * @return true if current thread is an worker thread.
      */
     def isWorker(): Boolean = internal.isWorker()
 

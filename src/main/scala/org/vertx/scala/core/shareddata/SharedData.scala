@@ -3,8 +3,10 @@ package org.vertx.scala.core.shareddata
 import org.vertx.java.core.shareddata.{ SharedData => JSharedData }
 import org.vertx.java.core.shareddata.ConcurrentSharedMap
 import java.util.Set
+import org.vertx.scala.VertxWrapper
 
-class SharedData(internal: JSharedData) {
+class SharedData(protected val internal: JSharedData) extends VertxWrapper {
+  override type InternalType = JSharedData
 
   /**
    * Return a {@code Map} with the specific {@code name}. All invocations of this method with the same value of {@code name}
@@ -28,4 +30,8 @@ class SharedData(internal: JSharedData) {
    */
   def removeSet(name: String): Boolean = internal.removeSet(name)
 
+}
+
+object SharedData {
+  def apply(actual: JSharedData) = new SharedData(actual)
 }
