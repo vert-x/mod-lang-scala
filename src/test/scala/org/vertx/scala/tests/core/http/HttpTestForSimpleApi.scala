@@ -115,10 +115,10 @@ class HttpTestForSimpleApi extends TestVerticle {
 
   private def correctHeadAndEmptyBodyHandler(fn: () => Unit) = { resp: HttpClientResponse =>
     checkCorrectHeader({ () =>
-      resp.bodyHandler({ buf =>
-        assertEquals("", buf.toString)
+      resp.bodyHandler { buf =>
+        assertEquals(0, buf.length)
         fn()
-      })
+      }
     }).apply(resp): Unit
   }
 
