@@ -29,6 +29,7 @@ class ScalaInterpreter(settings: Settings, vertx: Vertx, out: PrintWriter = new 
   def close(): Unit = interpreter.close()
 
   def runScript(script: File): Result = {
+    println("Running script " + script.getAbsolutePath())
     val content = Source.fromFile(script)
     val ops = List(
       ("<internal adding imports>", () => addImports(

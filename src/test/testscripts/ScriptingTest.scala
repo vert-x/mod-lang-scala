@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 import org.vertx.scala.core.http._
+import org.vertx.testtools.VertxAssert._
 
+VertxAssert.initialize()
 vertx.createHttpServer.requestHandler { req: HttpServerRequest =>
   req.response.end("Hello verticle script!")
-}.listen(8080)
+}.listen(8080, { ar: AsyncResult[HttpServer] => {
+  startTests()
+})
+
+def testHttpServer(): Unit = {
+  vertx.createHttpClient.setPort(8080).getNow("/", { resp => 
+    resp.bodyHandler({ buf => assertEquals("Hello verticle script!", buf.toString()) })
+  })
+}

@@ -63,6 +63,7 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   @throws(classOf[Exception])
   override def createVerticle(main: String): JVerticle = {
+    println("shall create verticle: " + main)
     val loadedVerticle = if (!main.endsWith(SUFFIX)) Some(loader.loadClass(main)) else load(main)
     loadedVerticle match {
       case Some(verticleClass) =>
@@ -84,6 +85,7 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   @throws(classOf[Exception])
   private def load(verticlePath: String): Option[Class[_]] = {
+    println("verticle path: " + verticlePath)
     // Try running it as a script
     val result = interpreter.runScript(new File(verticlePath))
     if (result != Success) {

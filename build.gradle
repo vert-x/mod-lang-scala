@@ -69,6 +69,7 @@ test {
   */
 
   jvmArgs "-XX:MaxPermSize=256m"
+  systemProperty 'vertx.test.resources', 'src/test/testscripts'
 }
 
 /*
