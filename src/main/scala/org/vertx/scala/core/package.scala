@@ -27,6 +27,8 @@ import org.vertx.scala.core.file.FileSystem
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.shareddata.SharedData
 import org.vertx.java.core.Context
+import java.net.InetSocketAddress
+import org.vertx.scala.core.dns.DnsClient
 
 package object core {
 
@@ -76,6 +78,11 @@ package object core {
      * The event bus.
      */
     val eventBus: EventBus = EventBus(internal.eventBus())
+
+    /**
+     * Return the {@link DnsClient}
+     */
+    def createDnsClient(dnsServers: InetSocketAddress*): DnsClient = DnsClient(internal.createDnsClient(dnsServers: _*))
 
     /**
      * The shared data object.
