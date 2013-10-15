@@ -28,8 +28,11 @@ import org.vertx.java.platform.{Container => JContainer}
 import org.vertx.java.platform.{Verticle => JVerticle}
 import org.vertx.java.platform.VerticleFactory
 import org.vertx.scala.platform.Verticle
-import java.io.{FilenameFilter, File}
+import java.io.{PrintWriter, FilenameFilter, File}
 import scala.util.matching.Regex
+import org.vertx.scala.lang.ScalaInterpreter
+import org.vertx.scala.core
+import scala.tools.nsc.interpreter.Results.{Success, Result}
 
 /**
  * @author swilliams
@@ -38,11 +41,11 @@ import scala.util.matching.Regex
  */
 class ScalaVerticleFactory extends VerticleFactory {
 
+  import org.vertx.scala.core._
+
   import ScalaVerticleFactory._
 
   protected val SUFFIX: String = ".scala"
-
-  private val settings = new Settings()
 
   private var jvertx: JVertx = null
 
@@ -50,25 +53,33 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   private var loader: ClassLoader = null
 
-  private var interpreter: IMain = null
+  private var interpreter: ScalaInterpreter = null
 
   private val classLoader = classOf[ScalaVerticleFactory].getClassLoader
 
-  private val classCache = mutable.Map[String, java.lang.Class[_]]()
+  // private val classCache = mutable.Map[String, java.lang.Class[_]]()
 
   override def init(jvertx: JVertx, jcontainer: JContainer, aloader: ClassLoader): Unit = {
     this.jvertx = jvertx
     this.jcontainer = jcontainer
     this.loader = aloader
 
-    initializeScalaInterpreter()
+
+    val sVertx = Vertx(jvertx)
+    val settings = interpreterSettings()
+    interpreter = new ScalaInterpreter(settings, sVertx)
   }
 
   @throws(classOf[Exception])
   override def createVerticle(main: String): JVerticle = {
-    val rawClass = if (!main.endsWith(SUFFIX)) loader.loadClass(main) else loadScript(main)
-    val delegate = rawClass.newInstance().asInstanceOf[Verticle]
-    ScalaVerticle.newVerticle(delegate, jvertx, jcontainer)
+    val loadedVerticle = if (!main.endsWith(SUFFIX)) Some(loader.loadClass(main)) else load(main)
+    loadedVerticle match {
+      case Some(verticleClass) =>
+        val delegate = verticleClass.newInstance().asInstanceOf[Verticle]
+        ScalaVerticle.newVerticle(delegate, jvertx, jcontainer)
+      case None =>
+        DummyVerticle // run directly as script
+    }
   }
 
   override def reportException(logger: Logger, t: Throwable): Unit = {
@@ -80,22 +91,28 @@ class ScalaVerticleFactory extends VerticleFactory {
   }
 
   @throws(classOf[Exception])
-  private def loadScript(main: String): Class[_] = {
-    val resolved = loader.getResource(main).toExternalForm
-    val className = main.replaceFirst(".scala$", "").replaceAll("/", ".")
-    var cls = classCache.get(className).getOrElse(null)
-
-    if (cls == null) {
-      interpreter.compileSources(new BatchSourceFile(PlainFile.fromPath(resolved.replaceFirst("file:", ""))))
-      cls = interpreter.classLoader.loadClass(className)
+  private def load(verticlePath: String): Option[Class[_]] = {
+    // Try running it as a script
+    println(s"Try running $verticlePath as script")
+    val result = interpreter.runScript(new File(verticlePath))
+    if (result != Success) {
+      println(s"Not a script, try running $verticlePath as class")
+      // Might be a Scala class
+      val resolved = loader.getResource(verticlePath).toExternalForm
+      val className = verticlePath.replaceFirst(".scala$", "").replaceAll("/", ".")
+      val classFile = new File(resolved.replaceFirst("file:", ""))
+      val verticleClass = interpreter.compileClass(classFile, className).getOrElse {
+        throw new Exception(s"$verticlePath is neither a Scala script nor a Scala class")
+      }
+      Some(verticleClass)
+    } else {
+      None
     }
-
-    classCache += className -> cls
-
-    cls
   }
 
-  private def initializeScalaInterpreter(): Unit = {
+  private def interpreterSettings(): Settings = {
+    val settings = new Settings()
+
     for {
       jar <- findAll(classLoader, "lib", JarFileRegex)
     } yield {
@@ -105,13 +122,12 @@ class ScalaVerticleFactory extends VerticleFactory {
 
     val modLangScala = classLoader.getResource("./").toExternalForm
     settings.bootclasspath.append(modLangScala.replaceFirst("file:", ""))
-
     settings.usejavacp.value = true
-    settings.verbose.value = true
-    interpreter = new IMain(settings)
-    interpreter.classLoader
-    interpreter.setContextClassLoader()
+    settings.verbose.value = ScalaInterpreter.isVerbose
+    settings
   }
+
+  private object DummyVerticle extends JVerticle
 
 }
 
