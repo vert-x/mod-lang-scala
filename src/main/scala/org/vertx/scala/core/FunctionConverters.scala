@@ -21,6 +21,9 @@ import org.vertx.java.core.eventbus.{ Message => JMessage }
 import org.vertx.scala.core.eventbus.Message
 import org.vertx.java.core.impl.DefaultFutureResult
 import org.vertx.scala.VertxWrapper
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
 /**
  * @author swilliams
@@ -48,6 +51,16 @@ trait FunctionConverters {
 
   implicit def convertFunctionToParameterisedAsyncHandler[T](func: AsyncResult[T] => Unit): AsyncResultHandler[T] = new AsyncResultHandler[T]() {
     override def handle(event: AsyncResult[T]) = func(event)
+  }
+
+  implicit def tryToAsyncResultHandler[X](tryHandler: Try[X] => Unit): AsyncResult[X] => Unit = {
+    tryHandler.compose { ar: AsyncResult[X] =>
+      if (ar.succeeded()) {
+        Success(ar.result())
+      } else {
+        Failure(ar.cause())
+      }
+    }
   }
 
   def asyncResultConverter[ST, JT](mapFn: JT => ST)(handler: AsyncResult[ST] => Unit): Handler[AsyncResult[JT]] = {
