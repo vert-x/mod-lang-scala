@@ -16,20 +16,19 @@
 
 package org.vertx.scala.platform.impl
 
-import scala.collection.mutable
-import scala.reflect.internal.util.BatchSourceFile
-import scala.reflect.io.Path.string2path
-import scala.reflect.io.PlainFile
-import scala.tools.nsc.interpreter.IMain
+import java.io.{ File, FilenameFilter }
+
+import scala.Array.canBuildFrom
 import scala.tools.nsc.Settings
-import org.vertx.java.core.logging.Logger
-import org.vertx.java.core.{Vertx => JVertx}
-import org.vertx.java.platform.{Container => JContainer}
-import org.vertx.java.platform.{Verticle => JVerticle}
-import org.vertx.java.platform.VerticleFactory
-import org.vertx.scala.platform.Verticle
-import java.io.{FilenameFilter, File}
+import scala.tools.nsc.interpreter.Results.Success
 import scala.util.matching.Regex
+
+import org.vertx.java.core.{ Vertx => JVertx }
+import org.vertx.java.core.logging.Logger
+import org.vertx.java.platform.{ Container => JContainer, Verticle => JVerticle, VerticleFactory }
+import org.vertx.scala.core.Vertx
+import org.vertx.scala.lang.ScalaInterpreter
+import org.vertx.scala.platform.Verticle
 
 /**
  * @author swilliams
@@ -38,11 +37,11 @@ import scala.util.matching.Regex
  */
 class ScalaVerticleFactory extends VerticleFactory {
 
+  import org.vertx.scala.core._
+
   import ScalaVerticleFactory._
 
   protected val SUFFIX: String = ".scala"
-
-  private val settings = new Settings()
 
   private var jvertx: JVertx = null
 
@@ -50,25 +49,29 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   private var loader: ClassLoader = null
 
-  private var interpreter: IMain = null
-
-  private val classLoader = classOf[ScalaVerticleFactory].getClassLoader
-
-  private val classCache = mutable.Map[String, java.lang.Class[_]]()
+  private var interpreter: ScalaInterpreter = null
 
   override def init(jvertx: JVertx, jcontainer: JContainer, aloader: ClassLoader): Unit = {
     this.jvertx = jvertx
     this.jcontainer = jcontainer
     this.loader = aloader
 
-    initializeScalaInterpreter()
+    val sVertx = Vertx(jvertx)
+    val settings = interpreterSettings()
+    interpreter = new ScalaInterpreter(settings, sVertx)
   }
 
   @throws(classOf[Exception])
   override def createVerticle(main: String): JVerticle = {
-    val rawClass = if (!main.endsWith(SUFFIX)) loader.loadClass(main) else loadScript(main)
-    val delegate = rawClass.newInstance().asInstanceOf[Verticle]
-    ScalaVerticle.newVerticle(delegate, jvertx, jcontainer)
+    val loadedVerticle = if (!main.endsWith(SUFFIX)) Some(loader.loadClass(main)) else load(main)
+    loadedVerticle match {
+      case Some(verticleClass) =>
+        val vcInstance = verticleClass.newInstance()
+        val delegate = vcInstance.asInstanceOf[Verticle]
+        ScalaVerticle.newVerticle(delegate, jvertx, jcontainer)
+      case None =>
+        DummyVerticle // run directly as script
+    }
   }
 
   override def reportException(logger: Logger, t: Throwable): Unit = {
@@ -80,38 +83,41 @@ class ScalaVerticleFactory extends VerticleFactory {
   }
 
   @throws(classOf[Exception])
-  private def loadScript(main: String): Class[_] = {
-    val resolved = loader.getResource(main).toExternalForm
-    val className = main.replaceFirst(".scala$", "").replaceAll("/", ".")
-    var cls = classCache.get(className).getOrElse(null)
-
-    if (cls == null) {
-      interpreter.compileSources(new BatchSourceFile(PlainFile.fromPath(resolved.replaceFirst("file:", ""))))
-      cls = interpreter.classLoader.loadClass(className)
+  private def load(verticlePath: String): Option[Class[_]] = {
+    println("verticle path: " + verticlePath)
+    // Try running it as a script
+    val result = interpreter.runScript(new File(verticlePath))
+    if (result != Success) {
+      // Might be a Scala class
+      val resolved = loader.getResource(verticlePath).toExternalForm
+      val className = verticlePath.replaceFirst(".scala$", "").replaceAll("/", ".")
+      val classFile = new File(resolved.replaceFirst("file:", ""))
+      val verticleClass = interpreter.compileClass(classFile, className).getOrElse {
+        throw new Exception(s"$verticlePath is neither a Scala script nor a Scala class")
+      }
+      Some(verticleClass)
+    } else {
+      None
     }
-
-    classCache += className -> cls
-
-    cls
   }
 
-  private def initializeScalaInterpreter(): Unit = {
+  private def interpreterSettings(): Settings = {
+    val settings = new Settings()
+
     for {
-      jar <- findAll(classLoader, "lib", JarFileRegex)
+      jar <- findAll(loader, "lib", JarFileRegex)
     } yield {
-      println(s"Found $jar, add to compiler bootstrap")
       settings.bootclasspath.append(jar.getAbsolutePath)
     }
 
-    val modLangScala = classLoader.getResource("./").toExternalForm
+    val modLangScala = loader.getResource("./").toExternalForm
     settings.bootclasspath.append(modLangScala.replaceFirst("file:", ""))
-
     settings.usejavacp.value = true
-    settings.verbose.value = true
-    interpreter = new IMain(settings)
-    interpreter.classLoader
-    interpreter.setContextClassLoader()
+    settings.verbose.value = ScalaInterpreter.isVerbose
+    settings
   }
+
+  private object DummyVerticle extends JVerticle
 
 }
 
@@ -129,7 +135,6 @@ object ScalaVerticleFactory {
    *         the regular expression
    */
   def findAll(directory: File, regex: Regex): Array[File] = {
-    println(s"Find $regex pattern in $directory")
     // Protect against null return from listing files
     val files: Array[File] = directory.listFiles(new FilenameFilter {
       def accept(dir: File, name: String): Boolean = {
@@ -150,8 +155,11 @@ object ScalaVerticleFactory {
    *         the regular expression
    */
   def findAll(classLoader: ClassLoader, path: String, regex: Regex): Array[File] = {
-    println(s"Find $regex pattern in $classLoader")
-    findAll(new File(classLoader.getResources(path).nextElement().toURI), regex)
+    if (classLoader.getResources(path).hasMoreElements()) {
+      findAll(new File(classLoader.getResources(path).nextElement().toURI), regex)
+    } else {
+      Array[File]()
+    }
   }
 
 }

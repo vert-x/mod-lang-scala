@@ -13,62 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.vertx.scala.core.eventbus
 
-import org.vertx.java.core.eventbus.{Message => JMessage}
+import org.vertx.java.core.eventbus.{ Message => JMessage }
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.buffer.Buffer
-import org.vertx.scala.core.json.{JsonObject, JsonArray}
+
+class Message[T <% MessageData](internal: JMessage[T]) {
+
+  /**
+   * The body of the message.
+   */
+  def body(): T = anyToMessageData(internal.body()).data.asInstanceOf[T]
+
+  /**
+   * The reply address (if any).
+   *
+   * @return An optional String containing the reply address.
+   */
+  def replyAddress(): Option[String] = Option(internal.replyAddress())
+
+  /**
+   * Reply to this message. If the message was sent specifying a reply handler, that handler will be
+   * called when it has received a reply. If the message wasn't sent specifying a receipt handler
+   * this method does nothing.
+   */
+  def reply() = internal.reply()
+
+  /**
+   * Reply to this message. If the message was sent specifying a reply handler, that handler will be
+   * called when it has received a reply. If the message wasn't sent specifying a receipt handler
+   * this method does nothing.
+   *
+   * @param value Some data to send with the reply.
+   */
+  def reply(value: MessageData) = value.reply(internal)
+
+  /**
+   * The same as {@code reply(MessageData)} but you can specify handler for the reply - i.e.
+   * to receive the reply to the reply.
+   */
+  def reply[B <% MessageData](value: MessageData, handler: Message[B] => Unit) = value.reply(internal, fnToHandler(handler.compose(Message.apply)))
+
+  /**
+   * The same as {@code reply()} but you can specify handler for the reply - i.e.
+   * to receive the reply to the reply.
+   */
+  def reply[B <% MessageData](handler: Message[B] => Unit) = internal.reply(messageFnToJMessageHandler(handler))
+}
 
 /**
  * @author pidster
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object Message {
-
-  def apply[T](jmessage: JMessage[T]) =
-    new Message(jmessage)
-
-}
-
-class Message[T](jmessage: JMessage[T]) {
-
-  def toJavaMessage:JMessage[T] = jmessage
-
-  def body:T = jmessage.body()
-
-  def replyAddress:String = jmessage.replyAddress()
-
-  def reply(payload: T, handler: Message[T] => Unit = msg => {}):Unit = payload match {
-      case str:String =>
-              jmessage.reply(str, handler)
-      case boo:Boolean =>
-              jmessage.reply(boo, handler)
-      case bff:Buffer =>
-              jmessage.reply(bff, handler)
-      case bya:Array[Byte] =>
-              jmessage.reply(bya, handler)
-      case chr:Char =>
-              jmessage.reply(Char.box(chr), handler)
-      case dbl:Double =>
-              jmessage.reply(dbl, handler)
-      case flt:Float =>
-              jmessage.reply(Float.box(flt), handler)
-      case int:Int =>
-              jmessage.reply(Int.box(int), handler)
-      case jsa:JsonArray =>
-              jmessage.reply(jsa, handler)
-      case jso:JsonObject =>
-              jmessage.reply(jso, handler)
-      case lng:Long =>
-              jmessage.reply(Long.box(lng), handler)
-      case srt:Short =>
-              jmessage.reply(Short.box(srt), handler)
-      case obj:AnyRef=>
-              jmessage.reply(obj, handler)
-
-      case _ => throw new IllegalArgumentException("Invalid reply message " + payload.getClass)
-
-  }
-
+  def apply[X <% MessageData](jmessage: JMessage[X]): Message[X] = new Message(jmessage)
 }

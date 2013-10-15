@@ -15,20 +15,30 @@
  */
 
 package org.vertx.scala.platform.impl
-import org.vertx.java.core.{Vertx => JVertx}
-import org.vertx.java.platform.{Container => JContainer}
-import org.vertx.java.platform.{Verticle => JVerticle}
+import org.vertx.java.core.{ Vertx => JVertx }
+import org.vertx.java.platform.{ Container => JContainer }
+import org.vertx.java.platform.{ Verticle => JVerticle }
 import org.vertx.java.core.Future
 import org.vertx.scala.core.Vertx
 import org.vertx.scala.platform.Verticle
 import org.vertx.scala.platform.Container
+import scala.util.Success
+import scala.util.Failure
+import org.vertx.scala.core.VertxExecutionContext
+import scala.concurrent.Promise
 
 /**
  * @author swilliams
- * 
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
 object ScalaVerticle {
-  def newVerticle(delegate: Verticle, jvertx: JVertx, jcontainer: JContainer):ScalaVerticle = {
+  def newVerticle(delegate: Verticle, vertx: Vertx, container: Container): ScalaVerticle = {
+    val verticle = new ScalaVerticle(delegate)
+    verticle.setVertx(vertx.internal)
+    verticle.setContainer(container.internal)
+    verticle
+  }
+  def newVerticle(delegate: Verticle, jvertx: JVertx, jcontainer: JContainer): ScalaVerticle = {
     val verticle = new ScalaVerticle(delegate)
     verticle.setVertx(jvertx)
     verticle.setContainer(jcontainer)
@@ -36,23 +46,32 @@ object ScalaVerticle {
   }
 }
 
-final private[platform] class ScalaVerticle(delegate: Verticle) extends JVerticle {
+final private[platform] class ScalaVerticle(delegate: Verticle) extends JVerticle with VertxExecutionContext {
 
-  override def setContainer(jcontainer: JContainer) {
-    delegate.container = Container(jcontainer)
+  override def setContainer(jcontainer: JContainer) = {
+    delegate.setContainer(Container(jcontainer))
     super.setContainer(jcontainer)
   }
 
-  override def setVertx(jvertx: JVertx) {
-    delegate.vertx = Vertx(jvertx)
+  override def setVertx(jvertx: JVertx) = {
+    delegate.setVertx(Vertx(jvertx))
     super.setVertx(jvertx)
   }
 
-  override def start(): Unit = delegate.start
+  override def start(): Unit = {
+    delegate.start
+  }
 
   override def start(future: Future[Void]): Unit = {
-    // TODO auto-convert future type here?
-    delegate.start(future)
+    val p = Promise[Unit]
+    delegate.start()
+    delegate.start(p)
+    p.future onComplete {
+      case Success(_) =>
+        future.setResult(null)
+      case Failure(x) =>
+        future.setFailure(x)
+    }
   }
 
   override def stop(): Unit = delegate.stop

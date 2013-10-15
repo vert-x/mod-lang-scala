@@ -16,72 +16,138 @@
 
 package org.vertx.scala.core.http
 
-import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.http.{HttpServerRequest => JHttpServerRequest}
+import org.vertx.java.core.http.{ HttpServerRequest => JHttpServerRequest }
 import org.vertx.scala.core.FunctionConverters._
-import collection.mutable.MultiMap
-import org.vertx.java.core.{Handler}
-
+import org.vertx.scala.core.streams.WrappedReadStream
+import org.vertx.scala.core.MultiMap
+import org.vertx.scala.core.net.NetSocket
+import org.vertx.scala.core.buffer._
+import org.vertx.scala.core.Handler
+import org.vertx.scala.VertxWrapper
 
 /**
+ * Represents a server-side HTTP request.<p>
+ * Instances are created for each request that is handled by the server
+ * and is passed to the user via the {@link org.vertx.java.core.Handler} instance
+ * registered with the {@link HttpServer} using the method {@link HttpServer#requestHandler(org.vertx.java.core.Handler)}.<p>
+ * Each instance of this class is associated with a corresponding {@link HttpServerResponse} instance via
+ * the {@code response} field.<p>
+ * It implements {@link org.vertx.java.core.streams.ReadStream} so it can be used with
+ * {@link org.vertx.java.core.streams.Pump} to pump data with flow control.<p>
+ * Instances of this class are not thread-safe<p>
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
  * @author nfmelendez
  * @author Ranie Jade Ramiso
- * 
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-object HttpServerRequest {
-  def apply(internal: JHttpServerRequest) = 
-    new HttpServerRequest(internal)
+class HttpServerRequest(protected val internal: JHttpServerRequest) extends WrappedReadStream with VertxWrapper {
+  override type InternalType = JHttpServerRequest
+
+  /**
+   * The HTTP version of the request
+   */
+  def version(): HttpVersion = internal.version()
+
+  /**
+   * The HTTP method for the request. One of GET, PUT, POST, DELETE, TRACE, CONNECT, OPTIONS or HEAD
+   */
+  def method(): String = internal.method
+
+  /**
+   * The uri of the request. For example
+   * http://www.somedomain.com/somepath/somemorepath/someresource.foo?someparam=32&someotherparam=x
+   */
+  def uri(): String = internal.uri
+
+  /**
+   * The path part of the uri. For example /somepath/somemorepath/someresource.foo
+   */
+  def path(): String = internal.path
+
+  /**
+   * The query part of the uri. For example someparam=32&someotherparam=x
+   */
+  def query(): String = internal.query
+
+  /**
+   * The response. Each instance of this class has an {@link HttpServerResponse} instance attached to it. This is used
+   * to send the response back to the client.
+   */
+  def response(): HttpServerResponse = HttpServerResponse(internal.response)
+
+  /**
+   * A map of all headers in the request, If the request contains multiple headers with the same key, the values
+   * will be concatenated together into a single header with the same key value, with each value separated by a comma,
+   * as specified <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2">here</a>.
+   * The headers will be automatically lower-cased when they reach the server
+   */
+  def headers(): MultiMap = internal.headers
+
+  /**
+   * Returns a map of all the parameters in the request.
+   *
+   * @return A map of all the parameters in the request.
+   */
+  def params(): MultiMap = internal.params
+
+  /**
+   * Return the remote (client side) address of the request.
+   */
+  def remoteAddress(): java.net.InetSocketAddress = internal.remoteAddress()
+
+  /**
+   * @return an array of the peer certificates.  Returns null if connection is
+   *         not SSL.
+   * @throws SSLPeerUnverifiedException SSL peer's identity has not been verified.
+   */
+  def peerCertificateChain(): Array[javax.security.cert.X509Certificate] = internal.peerCertificateChain()
+
+  /**
+   * Get the absolute URI corresponding to the the HTTP request
+   * @return the URI
+   */
+  def absoluteURI(): java.net.URI = internal.absoluteURI()
+
+  /**
+   * Convenience method for receiving the entire request body in one piece. This saves the user having to manually
+   * set a data and end handler and append the chunks of the body until the whole body received.
+   * Don't use this if your request body is large - you could potentially run out of RAM.
+   *
+   * @param bodyHandler This handler will be called after all the body has been received
+   */
+  def bodyHandler(handler: Buffer => Unit): HttpServerRequest = wrap(internal.bodyHandler(bufferHandlerToJava(handler)))
+
+  /**
+   * Get a net socket for the underlying connection of this request. USE THIS WITH CAUTION!
+   * Writing to the socket directly if you don't know what you're doing can easily break the HTTP protocol
+   * @return the net socket
+   */
+  def netSocket(): NetSocket = NetSocket(internal.netSocket())
+
+  /**
+   * Call this with true if you are expecting a multi-part form to be submitted in the request
+   * This must be called before the body of the request has been received.
+   * @param expect
+   */
+  def expectMultiPart(expect: Boolean): HttpServerRequest = wrap(internal.expectMultiPart(expect))
+
+  /**
+   * Set the upload handler. The handler will get notified once a new file upload was received and so allow to
+   * get notified by the upload in progress.
+   */
+  def uploadHandler(handler: Handler[HttpServerFileUpload]): HttpServerRequest = wrap(internal.uploadHandler(handler))
+
+  /**
+   * Returns a map of all form attributes which was found in the request. Be aware that this message should only get
+   * called after the endHandler was notified as the map will be filled on-the-fly.
+   * {@link #expectMultiPart(boolean)} must be called first before trying to get the formAttributes
+   */
+  def formAttributes(): MultiMap = internal.formAttributes()
 }
 
-class HttpServerRequest(val internal: JHttpServerRequest) {
-
-  def headers():MultiMap[String, String] = {
-    internal.headers
-  }
-
-  def method():String = internal.method
-
-  def path():String = internal.path
-
-  def params():MultiMap[String, String] = {
-    internal.params
-  }
-
-  def query():String = internal.query
-
-  def response():HttpServerResponse = HttpServerResponse(internal.response)
-
-  def uri():String = internal.uri
-
-  def bodyHandler(handler: (Buffer) => Unit):HttpServerRequest.this.type = {
-    internal.bodyHandler(handler)
-    this
-  }
-
-  def dataHandler(handler: (Buffer) => Unit):HttpServerRequest.this.type = {
-    internal.dataHandler(handler)
-    this
-  }
-
-  def endHandler(handler: () => Unit):HttpServerRequest.this.type = {
-    internal.endHandler(handler)
-    this
-  }
-
-  def exceptionHandler(handler: Throwable => Unit):HttpServerRequest.this.type = {
-    internal.exceptionHandler(handler)
-    this
-  }
-
-  def pause():HttpServerRequest.this.type = {
-    internal.pause()
-    this
-  }
-
-  def resume():HttpServerRequest.this.type = {
-    internal.resume()
-    this
-  }
-
+object HttpServerRequest {
+  def apply(internal: JHttpServerRequest) = new HttpServerRequest(internal)
+  def unapply(request: HttpServerRequest): JHttpServerRequest = request.toJava
 }
