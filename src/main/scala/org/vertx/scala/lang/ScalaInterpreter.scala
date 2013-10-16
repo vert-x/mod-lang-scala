@@ -32,15 +32,16 @@ class ScalaInterpreter(
   def close(): Unit = interpreter.close()
 
   def runScript(script: File): Result = {
-    println("Running script " + script.getAbsolutePath())
-    val content = Source.fromFile(script)
+    val content = Source.fromFile(script).mkString
     val ops = List(
-      ("<internal adding imports>", () => addImports(
+      () => addImports(
         "org.vertx.scala._",
         "org.vertx.scala.core._",
-        "org.vertx.scala.core.http._")),
-      ("<internal adding vertx>", () => bind("vertx", "org.vertx.scala.core.Vertx", vertx)))
-    interpret(ops ::: content.getLines.map(l => (l, () => interpret(l))).toList, -1, Incomplete)
+        "org.vertx.scala.core.http._"),
+      () => bind("vertx", "org.vertx.scala.core.Vertx", vertx),
+      () => interpret(content)
+    )
+    interpret(ops, Incomplete)
   }
 
   private def addImports(ids: String*): Result =
@@ -69,19 +70,14 @@ class ScalaInterpreter(
   }
 
   @tailrec
-  private def interpret(ops: List[(String, () => Result)], line: Int, accumulate: Result): Result = {
+  private def interpret(ops: List[() => Result], accumulate: Result): Result = {
     ops match {
       case List() => accumulate
       case x :: xs =>
-        val result = x._2()
+        val result = x()
         result match {
-          case Error =>
-            println("error when interpreting line " + line + ": " + x._1)
-            result
-          case Incomplete =>
-            println("interpret incomplete at line " + line + ": " + x._1)
-            result
-          case Success => interpret(xs, line + 1, result)
+          case Error | Incomplete => result
+          case Success => interpret(xs, result)
         }
     }
   }

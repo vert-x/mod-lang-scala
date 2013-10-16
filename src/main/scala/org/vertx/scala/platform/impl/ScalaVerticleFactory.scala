@@ -84,11 +84,12 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   @throws(classOf[Exception])
   private def load(verticlePath: String): Option[Class[_]] = {
-    println("verticle path: " + verticlePath)
+    println(s"Try running $verticlePath as script")
     // Try running it as a script
     val result = interpreter.runScript(new File(verticlePath))
     if (result != Success) {
       // Might be a Scala class
+      println(s"Not a script, try running $verticlePath as class")
       val resolved = loader.getResource(verticlePath).toExternalForm
       val className = verticlePath.replaceFirst(".scala$", "").replaceAll("/", ".")
       val classFile = new File(resolved.replaceFirst("file:", ""))
