@@ -10,7 +10,6 @@ import org.vertx.scala.lang.ScalaInterpreter
 import org.vertx.scala.platform.impl.ScalaVerticle
 import org.vertx.scala.platform.Verticle
 import scala.tools.nsc.Settings
-import org.vertx.scala.platform.impl.ScalaVerticleFactory
 
 /**
  * // TODO: Document this
@@ -18,8 +17,6 @@ import org.vertx.scala.platform.impl.ScalaVerticleFactory
  * @since // TODO
  */
 class ScalaInterpreterTest extends TestVerticle {
-
-  import org.vertx.scala.core._
 
   @Test
   def runScriptTest(): Unit = {
@@ -32,12 +29,13 @@ class ScalaInterpreterTest extends TestVerticle {
 
   @Test
   def runClassTest(): Unit = {
-    val filePath = "src/test/scripts/org/vertx/scala/tests/lang/VerticleClass.scala"
+    val filePath = "src/test/scala/org/vertx/scala/tests/lang/VerticleClass.scala"
     val out = new StringWriter()
     val interpreter = createInterpreter(out)
     val verticleClass = interpreter.compileClass(new File(filePath),
         "org.vertx.scala.tests.lang.VerticleClass")
-    val verticle = ScalaVerticle.newVerticle(verticleClass.get.newInstance().asInstanceOf[Verticle], vertx.internal, container.internal)
+    val verticle = ScalaVerticle.newVerticle(
+        verticleClass.get.newInstance().asInstanceOf[Verticle], vertx.internal, container.internal)
     verticle.start()
     assertHttpClientGetNow("Hello verticle class!")
   }
@@ -59,7 +57,7 @@ class ScalaInterpreterTest extends TestVerticle {
     client.getNow("/", {
       h => h.bodyHandler {
         data => {
-          assertEquals(expected, data.toString)
+          assertEquals(expected, data.toString())
           testComplete()
         }
       }
