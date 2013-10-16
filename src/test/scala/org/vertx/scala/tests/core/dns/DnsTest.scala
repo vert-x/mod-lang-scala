@@ -3,268 +3,311 @@ package org.vertx.scala.tests.core.dns
 import org.vertx.scala.testtools.TestVerticle
 import org.vertx.testtools.VertxAssert._
 import org.junit.Test
+import org.vertx.testtools.TestDnsServer
+import org.vertx.scala.core.dns.DnsClient
+import java.net.InetSocketAddress
+import java.net.Inet4Address
+import org.vertx.scala.core.AsyncResult
+import java.net.Inet6Address
+import org.vertx.scala.core.dns.MxRecord
+import org.vertx.scala.core.dns.SrvRecord
+import java.net.InetAddress
+import org.vertx.scala.core.dns.DnsException
+import org.vertx.scala.core.dns.DnsResponseCode
+import org.vertx.java.core.dns.{ DnsResponseCode => JDnsResponseCode }
 
 class DnsTest extends TestVerticle {
-  @Test
-  def testResolveA(): Unit = fail("not implemented test")
-  //    final String ip = "10.0.0.1";
-  //    DnsClient dns = prepareDns(TestDnsServer.testResolveA(ip));
-  //
-  //    dns.resolveA("vertx.io", new Handler<AsyncResult<List<Inet4Address>>>() {
-  //      @Override
-  //      public void handle(AsyncResult<List<Inet4Address>> event) {
-  //        tu.checkThread();
-  //        List<Inet4Address> result = event.result();
-  //
-  //        tu.azzert(!result.isEmpty());
-  //        tu.azzert(result.size() == 1);
-  //        tu.azzert(ip.equals(result.get(0).getHostAddress()));
-  //        tu.testComplete();
-  //      }
-  //    });
+
+  // bytes representation of ::1
+  private val IP6_BYTES: Array[Byte] = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
 
   @Test
-  def testResolveAAAA(): Unit = fail("not implemented test")
-  //    DnsClient dns = prepareDns(TestDnsServer.testResolveAAAA("::1"));
-  //
-  //    dns.resolveAAAA("vertx.io", new Handler<AsyncResult<List<Inet6Address>>>() {
-  //      @Override
-  //      public void handle(AsyncResult<List<Inet6Address>> event) {
-  //        tu.checkThread();
-  //        List<Inet6Address> result = event.result();
-  //        tu.azzert(result != null);
-  //        tu.azzert(!result.isEmpty());
-  //        tu.azzert(result.size() == 1);
-  //
-  //        tu.azzert(Arrays.equals(IP6_BYTES, result.get(0).getAddress()));
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testResolveA(): Unit = {
+    val ip = "10.0.0.1"
+    val server: TestDnsServer = TestDnsServer.testResolveA(ip)
+    val dns: DnsClient = prepareDns(server)
+
+    dns.resolveA("vertx.io", { ar: AsyncResult[List[Inet4Address]] =>
+      if (ar.succeeded()) {
+        val result: List[Inet4Address] = ar.result
+
+        assertTrue(!result.isEmpty)
+        assertEquals(result.size, 1)
+        assertTrue(ip.equals(result.apply(0).getHostAddress()))
+        server.stop()
+        testComplete
+      } else {
+        fail("ResolveA failed: " + ar.cause().asInstanceOf[DnsException].code)
+      }
+    })
+  }
 
   @Test
-  def testResolveMX(): Unit = fail("not implemented test")
-  //    final String mxRecord = "mail.vertx.io";
-  //    final int prio = 10;
-  //    DnsClient dns = prepareDns(TestDnsServer.testResolveMX(prio, mxRecord));
-  //
-  //    dns.resolveMX("vertx.io", new Handler<AsyncResult<List<MxRecord>>>() {
-  //      @Override
-  //      public void handle(AsyncResult<List<MxRecord>> event) {
-  //        tu.checkThread();
-  //        List<MxRecord> result = event.result();
-  //        tu.azzert(!result.isEmpty());
-  //        tu.azzert(1 == result.size());
-  //        MxRecord record = result.get(0);
-  //        tu.azzert(record.priority() == prio);
-  //        tu.azzert(mxRecord.equals(record.name()));
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testResolveAAAA(): Unit = {
+    val server: TestDnsServer = TestDnsServer.testResolveAAAA("::1")
+    val dns: DnsClient = prepareDns(server)
+
+    dns.resolveAAAA("vertx.io", { ar: AsyncResult[List[Inet6Address]] =>
+      if (ar.succeeded()) {
+        val result: List[Inet6Address] = ar.result
+
+        assertTrue(!result.isEmpty)
+        assertEquals(result.size, 1)
+        (0 to IP6_BYTES.length - 1) map (i => assertEquals(IP6_BYTES(i),result(0).getAddress()(i)))
+        server.stop()
+        testComplete
+      } else {
+        fail("ResolveAAAA failed: " + ar.cause())
+      }
+    })
+
+  }
 
   @Test
-  def testResolveTXT(): Unit = fail("not implemented test")
-  //    final String txt = "vertx is awesome";
-  //    DnsClient dns = prepareDns(TestDnsServer.testResolveTXT(txt));
-  //
-  //    dns.resolveTXT("vertx.io", new Handler<AsyncResult<List<String>>>() {
-  //      @Override
-  //      public void handle(AsyncResult<List<String>> event) {
-  //        tu.checkThread();
-  //        List<String> result = event.result();
-  //        tu.azzert(!result.isEmpty());
-  //        tu.azzert(result.size() == 1);
-  //        tu.azzert(txt.equals(result.get(0)));
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testResolveMX(): Unit = {
+    val mxRecordx: String = "mail.vertx.io"
+    val prio: Int = 10
+    val server: TestDnsServer = TestDnsServer.testResolveMX(prio, mxRecordx)
+    val dns: DnsClient = prepareDns(server)
+
+    dns.resolveMX("vertx.io", { ar: AsyncResult[List[MxRecord]] =>
+      if (ar.succeeded()) {
+        val result: List[MxRecord] = ar.result()
+        val record: MxRecord = result(0)
+        assertTrue(!result.isEmpty)
+        assertEquals(result.size, 1)
+        assertEquals(record.priority, prio)
+        assertEquals(record.name, mxRecordx)
+        server.stop()
+        testComplete
+      } else {
+        fail("ResolveMX failed: " + ar.cause())
+      }
+    })
+  }
 
   @Test
-  def testResolveNS(): Unit = fail("not implemented test")
-  //    final String ns = "ns.vertx.io";
-  //    DnsClient dns = prepareDns(TestDnsServer.testResolveNS(ns));
-  //
-  //    dns.resolveNS("vertx.io", new Handler<AsyncResult<List<String>>>() {
-  //      @Override
-  //      public void handle(AsyncResult<List<String>> event) {
-  //        tu.checkThread();
-  //        List<String> result = event.result();
-  //        tu.azzert(!result.isEmpty());
-  //        tu.azzert(result.size() == 1);
-  //        tu.azzert(ns.equals(result.get(0)));
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testResolveTXT(): Unit = {
+    val txt: String = "vertx is awesome"
+    val server: TestDnsServer = TestDnsServer.testResolveTXT(txt)  
+    val dns: DnsClient = prepareDns(server)
+
+    dns.resolveTXT("vertx.io", { ar: AsyncResult[List[String]] =>
+      if (ar.succeeded()) {
+        val result: List[String] = ar.result()
+        assertTrue(!result.isEmpty)
+        assertEquals(result.size, 1)
+        assertEquals(txt, result(0))
+        server.stop()
+        testComplete
+      } else {
+        fail("ResolveMX failed: " + ar.cause())
+      }
+    })
+  }
 
   @Test
-  def testResolveCNAME(): Unit = fail("not implemented test")
-  //    final String cname = "cname.vertx.io";
-  //    DnsClient dns = prepareDns(TestDnsServer.testResolveCNAME(cname));
-  //
-  //    dns.resolveCNAME("vertx.io", new Handler<AsyncResult<List<String>>>() {
-  //      @Override
-  //      public void handle(AsyncResult<List<String>> event) {
-  //        tu.checkThread();
-  //        List<String> result = event.result();
-  //        tu.azzert(!result.isEmpty());
-  //        tu.azzert(result.size() == 1);
-  //
-  //        String record = result.get(0);
-  //
-  //        tu.azzert(!record.isEmpty());
-  //        tu.azzert(cname.equals(record));
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testResolveNS(): Unit = {
+    val ns: String = "ns.vertx.io"
+    val server: TestDnsServer = TestDnsServer.testResolveNS(ns)  
+    val dns: DnsClient = prepareDns(server)
+
+    dns.resolveNS("vertx.io", { ar: AsyncResult[List[String]] =>
+      if (ar.succeeded()) {
+        val result: List[String] = ar.result()
+        assertTrue(!result.isEmpty)
+        assertEquals(result.size, 1)
+        assertEquals(ns, result(0))
+        server.stop()
+        testComplete
+      } else {
+        fail("Failed " + ar.cause())
+      }
+    })
+  }
 
   @Test
-  def testResolvePTR(): Unit = fail("not implemented test")
-  //    final String ptr = "ptr.vertx.io";
-  //    DnsClient dns = prepareDns(TestDnsServer.testResolvePTR(ptr));
-  //
-  //    dns.resolvePTR("10.0.0.1.in-addr.arpa", new Handler<AsyncResult<String>>() {
-  //      @Override
-  //      public void handle(AsyncResult<String> event) {
-  //        tu.checkThread();
-  //        String result = event.result();
-  //        tu.azzert(result != null);
-  //
-  //        tu.azzert(ptr.equals(result));
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testResolveCNAME(): Unit = {
+    val cname: String = "cname.vertx.io"
+    val server: TestDnsServer = TestDnsServer.testResolveCNAME(cname)
+    val dns: DnsClient = prepareDns(server)
+
+    dns.resolveCNAME("vertx.io", { ar: AsyncResult[List[String]] =>
+      if (ar.succeeded()) {
+        val result: List[String] = ar.result()
+        val record: String = result(0)
+        assertTrue(!result.isEmpty)
+        assertEquals(result.size, 1)
+        assertTrue(!record.isEmpty)
+        assertEquals(cname, record)
+        server.stop()
+        testComplete
+      } else {
+        fail("Failed " + ar.cause())
+      }
+    })
+  }
 
   @Test
-  def testResolveSRV(): Unit = fail("not implemented test")
-  //    final int priority = 10;
-  //    final int weight = 1;
-  //    final int port = 80;
-  //    final String target = "vertx.io";
-  //
-  //    DnsClient dns = prepareDns(TestDnsServer.testResolveSRV(priority, weight, port, target));
-  //
-  //    dns.resolveSRV("vertx.io", new Handler<AsyncResult<List<SrvRecord>>>() {
-  //      @Override
-  //      public void handle(AsyncResult<List<SrvRecord>> event) {
-  //        tu.checkThread();
-  //        List<SrvRecord> result = event.result();
-  //        tu.azzert(!result.isEmpty());
-  //        tu.azzert(result.size() == 1);
-  //
-  //        SrvRecord record = result.get(0);
-  //
-  //        tu.azzert(priority == record.priority());
-  //        tu.azzert(weight == record.weight());
-  //        tu.azzert(port == record.port());
-  //        tu.azzert(target.equals(record.target()));
-  //
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testResolvePTR(): Unit = {
+    val ptr: String = "ptr.vertx.io"
+    val server: TestDnsServer = TestDnsServer.testResolvePTR(ptr)
+    val dns: DnsClient = prepareDns(server)
+
+    dns.resolvePTR("10.0.0.1.in-addr.arpa", { ar: AsyncResult[String] =>
+      if (ar.succeeded()) {
+        val result: String = ar.result()
+        assertTrue(!result.isEmpty)
+        assertEquals(ptr, result)
+        server.stop()
+        testComplete
+      } else {
+        fail("Failed " + ar.cause())
+      }
+    })
+  }
 
   @Test
-  def testLookup4(): Unit = fail("not implemented test")
-  //    final String ip = "10.0.0.1";
-  //    DnsClient dns = prepareDns(TestDnsServer.testLookup4(ip));
-  //
-  //    dns.lookup4("vertx.io", new Handler<AsyncResult<Inet4Address>>() {
-  //      @Override
-  //      public void handle(AsyncResult<Inet4Address> event) {
-  //        tu.checkThread();
-  //        InetAddress result = event.result();
-  //        tu.azzert(result != null);
-  //        tu.azzert(ip.equals(result.getHostAddress()));
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testResolveSRV(): Unit = {
+    val priority: Int = 10
+    val weight: Int = 1
+    val port: Int = 80
+    val target: String = "vertx.io"
+    val server: TestDnsServer = TestDnsServer.testResolveSRV(priority, weight, port, target)
+    val dns: DnsClient = prepareDns(server)
+
+    dns.resolveSRV("vertx.io", { ar: AsyncResult[List[SrvRecord]] =>
+      if (ar.succeeded()) {
+        val result: List[SrvRecord] = ar.result()
+        val record: SrvRecord = result(0)
+        assertTrue(!result.isEmpty)
+        assertEquals(result.size, 1)
+        assertEquals(priority, record.priority)
+        assertEquals(weight, record.weight)
+        assertEquals(port, record.port)
+        assertEquals(target, record.target)
+        server.stop()
+        testComplete
+      } else {
+        fail("Failed " + ar.cause())
+      }
+    })
+  }
 
   @Test
-  def testLookup6(): Unit = fail("not implemented test")
-  //    DnsClient dns = prepareDns(TestDnsServer.testLookup6());
-  //
-  //    dns.lookup6("vertx.io", new Handler<AsyncResult<Inet6Address>>() {
-  //      @Override
-  //      public void handle(AsyncResult<Inet6Address> event) {
-  //        tu.checkThread();
-  //        Inet6Address result = event.result();
-  //        tu.azzert(result != null);
-  //        tu.azzert(Arrays.equals(IP6_BYTES, result.getAddress()));
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testLookup4(): Unit = {
+    val ip: String = "10.0.0.1"
+    val server: TestDnsServer = TestDnsServer.testLookup4(ip)
+    val dns: DnsClient = prepareDns(server)
+
+    dns.lookup4("vertx.io", { ar: AsyncResult[Inet4Address] =>
+      if (ar.succeeded()) {
+        val result: InetAddress = ar.result()
+        assertEquals(ip, result.getHostAddress())
+        server.stop()
+        testComplete
+      } else {
+        fail("Lookup4 failed: " + ar.cause())
+      }
+
+    })
+  }
 
   @Test
-  def testLookup(): Unit = fail("not implemented test")
-  //    final String ip = "10.0.0.1";
-  //    DnsClient dns = prepareDns(TestDnsServer.testLookup(ip));
-  //
-  //    dns.lookup("vertx.io", new Handler<AsyncResult<InetAddress>>() {
-  //      @Override
-  //      public void handle(AsyncResult<InetAddress> event) {
-  //        tu.checkThread();
-  //        InetAddress result = event.result();
-  //        tu.azzert(result != null);
-  //        tu.azzert(ip.equals(result.getHostAddress()));
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testLookup6(): Unit = {
+    val server: TestDnsServer = TestDnsServer.testLookup6()
+    val dns: DnsClient = prepareDns(server)
+
+    dns.lookup6("vertx.io", { ar: AsyncResult[Inet6Address] =>
+      if (ar.succeeded()) {
+        val result: Inet6Address = ar.result()
+        (0 to IP6_BYTES.length - 1) map (i => assertEquals(IP6_BYTES(i),result.getAddress()(i)))
+        server.stop()
+        testComplete
+      } else {
+        fail("Lookup4 failed: " + ar.cause())
+      }
+    })
+  }
 
   @Test
-  def testLookupNonExisting(): Unit = fail("not implemented test")
-  //    DnsClient dns = prepareDns(TestDnsServer.testLookupNonExisting());
-  //    dns.lookup("gfegjegjf.sg1", new Handler<AsyncResult<InetAddress>>() {
-  //      @Override
-  //      public void handle(AsyncResult<InetAddress> event) {
-  //        tu.checkThread();
-  //        DnsException cause = (DnsException) event.cause();
-  //        tu.azzert(cause.code() == DnsResponseCode.NXDOMAIN);
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testLookup(): Unit = {
+    val ip: String = "10.0.0.1"
+      val server: TestDnsServer = TestDnsServer.testLookup(ip)
+    val dns: DnsClient = prepareDns(server)
+
+    dns.lookup("vertx.io", { ar: AsyncResult[InetAddress] =>
+      if (ar.succeeded()) {
+        val result: InetAddress = ar.result()
+        assertEquals(ip, result.getHostAddress())
+        server.stop()
+        testComplete
+      } else {
+        fail("Failed " + ar.cause())
+      }
+    })
+  }
 
   @Test
-  def testReverseLookupIpv4(): Unit = fail("not implemented test")
-  //    final byte[] address = InetAddress.getByName("10.0.0.1").getAddress();
-  //    final String ptr = "ptr.vertx.io";
-  //    DnsClient dns = prepareDns(TestDnsServer.testReverseLookup(ptr));
-  //
-  //    dns.reverseLookup("10.0.0.1", new Handler<AsyncResult<InetAddress>>() {
-  //      @Override
-  //      public void handle(AsyncResult<InetAddress> event) {
-  //        tu.checkThread();
-  //        InetAddress result = event.result();
-  //        tu.azzert(result != null);
-  //        tu.azzert(result instanceof Inet4Address);
-  //        tu.azzert(ptr.equals(result.getHostName()));
-  //        tu.azzert(Arrays.equals(address, result.getAddress()));
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testLookupNonExisting(): Unit = {
+    val server: TestDnsServer = TestDnsServer.testLookupNonExisting()
+    val dns: DnsClient = prepareDns(server)
+
+    dns.lookup("gfegjegjf.sg1", { ar: AsyncResult[InetAddress] =>
+        val cause: DnsException = ar.cause().asInstanceOf[DnsException]
+        assertEquals(cause.code, DnsResponseCode.fromJava(JDnsResponseCode.NXDOMAIN))
+        server.stop()
+        testComplete
+    })
+  }
 
   @Test
-  def testReverseLookupIpv6(): Unit = fail("not implemented test")
-  //    final byte[] address = InetAddress.getByName("::1").getAddress();
-  //    final String ptr = "ptr.vertx.io";
-  //
-  //    DnsClient dns = prepareDns(TestDnsServer.testReverseLookup(ptr));
-  //
-  //    dns.reverseLookup("::1", new Handler<AsyncResult<InetAddress>>() {
-  //      @Override
-  //      public void handle(AsyncResult<InetAddress> event) {
-  //        tu.checkThread();
-  //        InetAddress result = event.result();
-  //        tu.azzert(result != null);
-  //        tu.azzert(result instanceof Inet6Address);
-  //        tu.azzert(ptr.equals(result.getHostName()));
-  //        tu.azzert(Arrays.equals(address, result.getAddress()));
-  //        tu.testComplete();
-  //      }
-  //    });
+  def testReverseLookupIpv4(): Unit = {
+    val address: Array[Byte] = InetAddress.getByName("10.0.0.1").getAddress()
+    val ptr: String = "ptr.vertx.io"
+    val server: TestDnsServer = TestDnsServer.testReverseLookup(ptr)
+    val dns: DnsClient = prepareDns(server)
 
-  //  private DnsClient prepareDns(TestDnsServer server) throws Exception {
-  //    dnsServer = server;
-  //    dnsServer.start();
-  //    InetSocketAddress addr = (InetSocketAddress) dnsServer.getTransports()[0].getAcceptor().getLocalAddress();
-  //    return vertx.createDnsClient(addr);
-  //  }
+    dns.reverseLookup("10.0.0.1", { ar: AsyncResult[InetAddress] =>
+      if (ar.succeeded()) {
+        val result: InetAddress = ar.result()
+        assertTrue(result.isInstanceOf[Inet4Address])
+        assertEquals(ptr, result.getHostName())
+        (0 to address.length - 1) map (i => assertEquals(address(i),result.getAddress()(i)))
+        server.stop()
+        testComplete
+      } else {
+        fail("Failed " + ar.cause())
+      }
+    })
+  }
+
+  @Test
+  def testReverseLookupIpv6(): Unit = {
+    val address: Array[Byte] = InetAddress.getByName("::1").getAddress()
+    val ptr: String = "prt.vertx.io"
+    val server: TestDnsServer = TestDnsServer.testReverseLookup(ptr)
+    val dns: DnsClient = prepareDns(server)
+
+    dns.reverseLookup("::1", { ar: AsyncResult[InetAddress] =>
+      if (ar.succeeded()) {
+        val result: InetAddress = ar.result()
+        assertTrue(result.isInstanceOf[Inet6Address])
+        assertEquals(ptr, result.getHostName())
+        (0 to address.length - 1) map (i => assertEquals(address(i),result.getAddress()(i)))
+        server.stop()
+        testComplete
+      } else {
+        fail("Failed " + ar.cause())
+      }
+    })
+  }
+
+  private def prepareDns(server: TestDnsServer): DnsClient = {
+    val dnsServer = server
+    dnsServer.start()
+    val addr: InetSocketAddress = dnsServer.getTransports()(0).getAcceptor().getLocalAddress().asInstanceOf[InetSocketAddress]
+    vertx.createDnsClient(addr)
+  }
 
 }
