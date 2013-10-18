@@ -15,16 +15,21 @@
  */
 import org.vertx.scala.core.http._
 import org.vertx.testtools.VertxAssert._
+import org.vertx.testtools.VertxAssert
 
-VertxAssert.initialize()
+VertxAssert.initialize(vertx.internal)
+
 vertx.createHttpServer.requestHandler { req: HttpServerRequest =>
-  req.response.end("Hello verticle script!")
+  req.response.end("Hello verticle test script!")
 }.listen(8080, { ar: AsyncResult[HttpServer] => {
-  startTests()
-})
+  testHttpServer()
+}})
 
 def testHttpServer(): Unit = {
   vertx.createHttpClient.setPort(8080).getNow("/", { resp => 
-    resp.bodyHandler({ buf => assertEquals("Hello verticle script!", buf.toString()) })
+    resp.bodyHandler({ buf =>
+      assertEquals("Hello verticle test script!", buf.toString)
+      testComplete()
+    })
   })
 }

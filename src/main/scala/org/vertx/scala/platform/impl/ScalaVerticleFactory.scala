@@ -18,7 +18,6 @@ package org.vertx.scala.platform.impl
 
 import java.io.{ File, FilenameFilter }
 
-import scala.Array.canBuildFrom
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.Results.Success
 import scala.util.matching.Regex
@@ -26,9 +25,9 @@ import scala.util.matching.Regex
 import org.vertx.java.core.{ Vertx => JVertx }
 import org.vertx.java.core.logging.Logger
 import org.vertx.java.platform.{ Container => JContainer, Verticle => JVerticle, VerticleFactory }
-import org.vertx.scala.core.Vertx
 import org.vertx.scala.lang.ScalaInterpreter
 import org.vertx.scala.platform.Verticle
+import java.net.URL
 
 /**
  * @author swilliams
@@ -63,7 +62,10 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   @throws(classOf[Exception])
   override def createVerticle(main: String): JVerticle = {
-    val loadedVerticle = if (!main.endsWith(SUFFIX)) Some(loader.loadClass(main)) else load(main)
+    val loadedVerticle = 
+      if (!main.endsWith(SUFFIX)) Some(loader.loadClass(main)) 
+      else load(resolveVerticlePath(main))
+    
     loadedVerticle match {
       case Some(verticleClass) =>
         val vcInstance = verticleClass.newInstance()
@@ -71,6 +73,20 @@ class ScalaVerticleFactory extends VerticleFactory {
         ScalaVerticle.newVerticle(delegate, jvertx, jcontainer)
       case None =>
         DummyVerticle // run directly as script
+    }
+  }
+
+  private def resolveVerticlePath(main: String): URL = {
+    // Check if path exists
+    val file = new File(main)
+    if (file.exists())
+      file.toURI.toURL
+    else {
+      val url = loader.getResource(main)
+      if (url == null)
+        throw new IllegalArgumentException(
+            s"Cannot find main script: '$main' on classpath")
+      url
     }
   }
 
@@ -83,18 +99,19 @@ class ScalaVerticleFactory extends VerticleFactory {
   }
 
   @throws(classOf[Exception])
-  private def load(verticlePath: String): Option[Class[_]] = {
-    println(s"Try running $verticlePath as script")
+  private def load(verticleUrl: URL): Option[Class[_]] = {
+    println(s"Try running $verticleUrl as script")
     // Try running it as a script
-    val result = interpreter.runScript(new File(verticlePath))
+    val result = interpreter.runScript(verticleUrl)
     if (result != Success) {
       // Might be a Scala class
-      println(s"Not a script, try running $verticlePath as class")
-      val resolved = loader.getResource(verticlePath).toExternalForm
-      val className = verticlePath.replaceFirst(".scala$", "").replaceAll("/", ".")
+      println(s"Not a script, try running $verticleUrl as class")
+      val resolved = verticleUrl.toExternalForm
+      val className = resolved.replaceFirst(".scala$", "").replaceAll("/", ".")
       val classFile = new File(resolved.replaceFirst("file:", ""))
       val verticleClass = interpreter.compileClass(classFile, className).getOrElse {
-        throw new Exception(s"$verticlePath is neither a Scala script nor a Scala class")
+        throw new IllegalArgumentException(
+            s"$verticleUrl is neither a Scala script nor a Scala class")
       }
       Some(verticleClass)
     } else {

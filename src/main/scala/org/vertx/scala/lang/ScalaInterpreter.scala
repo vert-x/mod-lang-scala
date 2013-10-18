@@ -12,6 +12,7 @@ import scala.tools.nsc.interpreter.Results.{ Error, Incomplete, Result, Success 
 import org.vertx.scala.core.Vertx
 import scala.tools.nsc.NewLinePrintWriter
 import scala.tools.nsc.ConsoleWriter
+import java.net.URL
 
 /**
  * Scala interpreter
@@ -31,8 +32,8 @@ class ScalaInterpreter(
 
   def close(): Unit = interpreter.close()
 
-  def runScript(script: File): Result = {
-    val content = Source.fromFile(script).mkString
+  def runScript(script: URL): Result = {
+    val content = Source.fromURL(script).mkString
     val ops = List(
       () => addImports(
         "org.vertx.scala._",
