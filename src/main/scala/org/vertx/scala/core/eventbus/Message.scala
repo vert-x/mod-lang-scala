@@ -18,8 +18,10 @@ package org.vertx.scala.core.eventbus
 
 import org.vertx.java.core.eventbus.{ Message => JMessage }
 import org.vertx.scala.core.FunctionConverters._
+import org.vertx.scala.VertxWrapper
 
-class Message[T <% MessageData](internal: JMessage[T]) {
+class Message[T <% MessageData](protected val internal: JMessage[T]) extends VertxWrapper {
+  override type InternalType = JMessage[T]
 
   /**
    * The body of the message.
@@ -60,6 +62,7 @@ class Message[T <% MessageData](internal: JMessage[T]) {
    * to receive the reply to the reply.
    */
   def reply[B <% MessageData](handler: Message[B] => Unit) = internal.reply(messageFnToJMessageHandler(handler))
+
 }
 
 /**

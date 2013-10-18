@@ -11,19 +11,14 @@ import org.vertx.scala.platform.impl.ScalaVerticle
 import org.vertx.scala.platform.Verticle
 import scala.tools.nsc.Settings
 
-/**
- * // TODO: Document this
- * @author Galder Zamarreño
- * @since // TODO
- */
 class ScalaInterpreterTest extends TestVerticle {
 
   @Test
   def runScriptTest(): Unit = {
-    val path = "src/test/scripts/VerticleScript.scala"
+    val path = new File("src/test/scripts/VerticleScript.scala").toURI.toURL
     val out = new StringWriter()
     val interpreter = createInterpreter(out)
-    assertInterpret(out, interpreter.runScript(new File(path)))
+    assertInterpret(out, interpreter.runScript(path))
     assertHttpClientGetNow("Hello verticle script!")
   }
 
