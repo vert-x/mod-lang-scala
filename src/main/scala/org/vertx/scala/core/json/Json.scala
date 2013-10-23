@@ -71,22 +71,6 @@ object JsonElemOps {
 object Json {
 
   /**
-   * Constructs a JsonObject from a fieldName -> value pairs.
-   *
-   * @param fields The fieldName -> value pairs
-   * @return A JsonObject containing the name -> value pairs.
-   */
-  def apply(fields: (String, Any)*): JsonObject = obj(fields: _*)
-
-  /**
-   * Creates a JsonArray from a sequence of values.
-   *
-   * @param elements The elements to put into the JsonArray.
-   * @return A JsonArray containing the provided elements.
-   */
-  def apply(elements: Seq[Any]): JsonArray = arr(elements)
-
-  /**
    * Creates a JsonArray from an encoded JSON string.
    *
    * @param json The JSON string.
@@ -133,7 +117,7 @@ object Json {
    * @param elements The elements to put into the JsonArray.
    * @return A JsonArray containing the provided elements.
    */
-  def arr(fields: Seq[Any]): JsonArray = {
+  def arr(fields: Any*): JsonArray = {
     val a = new JsonArray()
     fields.foreach(f => addToArray(a, f))
     a
