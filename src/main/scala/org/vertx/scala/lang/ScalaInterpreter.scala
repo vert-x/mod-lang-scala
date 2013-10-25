@@ -61,7 +61,7 @@ class ScalaInterpreter(
   private def interpret(content: String): Result =
     verboseOrQuiet(
       interpreter.interpret(content),
-      interpreter.quietRun(content))
+      interpreter.beSilentDuring(interpreter.interpret(content)))
 
   private def verboseOrQuiet(verbose: => Result, quiet: => Result): Result = {
     if (ScalaInterpreter.isVerbose) verbose else quiet

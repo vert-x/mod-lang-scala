@@ -65,7 +65,7 @@ class ScalaVerticleFactory extends VerticleFactory {
   override def createVerticle(main: String): JVerticle = {
     val loadedVerticle = 
       if (!main.endsWith(SUFFIX)) Some(loader.loadClass(main)) 
-      else load(resolveVerticlePath(main))
+      else load(main)
     
     loadedVerticle match {
       case Some(verticleClass) =>
@@ -100,22 +100,26 @@ class ScalaVerticleFactory extends VerticleFactory {
   }
 
   @throws(classOf[Exception])
-  private def load(verticleUrl: URL): Option[Class[_]] = {
-    println(s"Try running $verticleUrl as script")
+  private def load(main: String): Option[Class[_]] = {
+    println(s"Compiling $main as Scala script")
     // Try running it as a script
-    val result = interpreter.runScript(verticleUrl)
+    val url = resolveVerticlePath(main)
+    val result = interpreter.runScript(url)
     if (result != Success) {
       // Might be a Scala class
-      println(s"Not a script, try running $verticleUrl as class")
-      val resolved = verticleUrl.toExternalForm
-      val className = resolved.replaceFirst(".scala$", "").replaceAll("/", ".")
+      println(s"Script contains compilation errors, or $main is a Scala class (pass -Dvertx.scala.interpreter.verbose=true to find out more)")
+      println(s"Compiling as a Scala class")
+      val resolved = loader.getResource(main).toExternalForm
+      val className = main.replaceFirst(".scala$", "").replaceAll("/", ".")
       val classFile = new File(resolved.replaceFirst("file:", ""))
       val verticleClass = interpreter.compileClass(classFile, className).getOrElse {
         throw new IllegalArgumentException(
-            s"$verticleUrl is neither a Scala script nor a Scala class")
+            s"Unable to run $main as neither Scala script nor Scala class")
       }
+      println(s"Starting $className")
       Some(verticleClass)
     } else {
+      println(s"Starting $main")
       None
     }
   }
@@ -129,7 +133,7 @@ class ScalaVerticleFactory extends VerticleFactory {
       settings.bootclasspath.append(jar.getAbsolutePath)
     }
 
-    val modLangScala = loader.getResource("./").toExternalForm
+    val modLangScala = this.getClass.getClassLoader.getResource("./").toExternalForm
     settings.bootclasspath.append(modLangScala.replaceFirst("file:", ""))
     settings.usejavacp.value = true
     settings.verbose.value = ScalaInterpreter.isVerbose
