@@ -26,7 +26,7 @@ import org.vertx.java.core.{ Vertx => JVertx }
 import org.vertx.java.core.logging.Logger
 import org.vertx.java.platform.{ Container => JContainer, Verticle => JVerticle, VerticleFactory }
 import org.vertx.scala.lang.ScalaInterpreter
-import org.vertx.scala.platform.Verticle
+import org.vertx.scala.platform.{Container, Verticle}
 import java.net.URL
 
 /**
@@ -56,8 +56,9 @@ class ScalaVerticleFactory extends VerticleFactory {
     this.loader = aloader
 
     val sVertx = Vertx(jvertx)
+    val sContainer = Container(jcontainer)
     val settings = interpreterSettings()
-    interpreter = new ScalaInterpreter(settings, sVertx)
+    interpreter = new ScalaInterpreter(settings, sVertx, sContainer)
   }
 
   @throws(classOf[Exception])

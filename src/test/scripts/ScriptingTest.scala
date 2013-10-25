@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.vertx.scala.core.http._
+
+import org.vertx.scala.tests.util.TestUtils._
 import org.vertx.testtools.VertxAssert._
 import org.vertx.testtools.VertxAssert
 
@@ -22,7 +23,7 @@ VertxAssert.initialize(vertx.internal)
 vertx.createHttpServer.requestHandler { req: HttpServerRequest =>
   req.response.end("Hello verticle test script!")
 }.listen(8080, { ar: AsyncResult[HttpServer] => {
-  testHttpServer()
+  startTests(this, container)
 }})
 
 def testHttpServer(): Unit = {
