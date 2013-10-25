@@ -13,6 +13,7 @@ import org.vertx.scala.core.Vertx
 import scala.tools.nsc.NewLinePrintWriter
 import scala.tools.nsc.ConsoleWriter
 import java.net.URL
+import org.vertx.scala.platform.Container
 
 /**
  * Scala interpreter
@@ -22,6 +23,7 @@ import java.net.URL
 class ScalaInterpreter(
     settings: Settings,
     vertx: Vertx,
+    container: Container,
     out: PrintWriter = new NewLinePrintWriter(new ConsoleWriter, true)) {
 
   private val interpreter = new IMain(settings, out)
@@ -40,6 +42,7 @@ class ScalaInterpreter(
         "org.vertx.scala.core._",
         "org.vertx.scala.core.http._"),
       () => bind("vertx", "org.vertx.scala.core.Vertx", vertx),
+      () => bind("container", "org.vertx.scala.platform.Container", container),
       () => interpret(content)
     )
     interpret(ops, Incomplete)

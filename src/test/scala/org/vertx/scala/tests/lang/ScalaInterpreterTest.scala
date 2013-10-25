@@ -39,7 +39,7 @@ class ScalaInterpreterTest extends TestVerticle {
     val settings = new Settings()
     settings.usejavacp.value = true
     settings.verbose.value = ScalaInterpreter.isVerbose
-    new ScalaInterpreter(settings, vertx, new PrintWriter(out))
+    new ScalaInterpreter(settings, vertx, container, new PrintWriter(out))
   }
 
   private def assertInterpret(out: Writer, result: Result) {
