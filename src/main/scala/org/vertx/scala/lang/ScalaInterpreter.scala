@@ -40,7 +40,15 @@ class ScalaInterpreter(
       () => addImports(
         "org.vertx.scala._",
         "org.vertx.scala.core._",
-        "org.vertx.scala.core.http._"),
+        "org.vertx.scala.core.buffer._",
+        "org.vertx.scala.core.dns._",
+        "org.vertx.scala.core.eventbus._",
+        "org.vertx.scala.core.file._",
+        "org.vertx.scala.core.http._",
+        "org.vertx.scala.core.json._",
+        "org.vertx.scala.core.net._",
+        "org.vertx.scala.core.streams._"
+      ),
       () => bind("vertx", "org.vertx.scala.core.Vertx", vertx),
       () => bind("container", "org.vertx.scala.platform.Container", container),
       () => interpret(content)
