@@ -19,6 +19,8 @@ package org.vertx.scala.core.eventbus
 import org.vertx.java.core.eventbus.{ Message => JMessage }
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.VertxWrapper
+import org.vertx.scala.core.AsyncResult
+import org.vertx.scala.core.Handler
 
 class Message[T <% MessageData](protected val internal: JMessage[T]) extends VertxWrapper {
   override type InternalType = JMessage[T]
@@ -40,32 +42,61 @@ class Message[T <% MessageData](protected val internal: JMessage[T]) extends Ver
    * called when it has received a reply. If the message wasn't sent specifying a receipt handler
    * this method does nothing.
    */
-  def reply() = internal.reply()
+  def reply(): Unit = internal.reply()
 
   /**
    * Reply to this message. If the message was sent specifying a reply handler, that handler will be
    * called when it has received a reply. If the message wasn't sent specifying a receipt handler
    * this method does nothing.
    *
-   * @param value Some data to send with the reply.
+   * @param value The data to send with the reply.
    */
-  def reply(value: MessageData) = value.reply(internal)
+  def reply(value: MessageData): Unit = value.reply(internal)
 
   /**
    * The same as {@code reply(MessageData)} but you can specify handler for the reply - i.e.
    * to receive the reply to the reply.
+   *
+   * @param value The value to send.
+   * @param handler Handling the reply.
    */
-  def reply[B <% MessageData](value: MessageData, handler: Message[B] => Unit) = value.reply(internal, fnToHandler(handler.compose(Message.apply)))
+  def reply[B <% MessageData](value: MessageData, handler: Message[B] => Unit): Unit = value.reply(internal, fnToHandler(handler.compose(Message.apply)))
 
   /**
    * The same as {@code reply()} but you can specify handler for the reply - i.e.
    * to receive the reply to the reply.
+   *
+   * @param handler Handling the reply.
    */
-  def reply[B <% MessageData](handler: Message[B] => Unit) = internal.reply(messageFnToJMessageHandler(handler))
+  def reply[B <% MessageData](handler: Message[B] => Unit): Unit = internal.reply(messageFnToJMessageHandler(handler))
 
+  /**
+   * Reply to this message. Specifying a timeout and a reply handler.
+   *
+   * @param timeout The timeout in ms to wait for an answer.
+   * @param handler Handling the reply (success) or the timeout (failed).
+   */
+  def replyWithTimeout[T <% MessageData](timeout: Long, replyHandler: AsyncResult[Message[T]] => Unit): Unit =
+    internal.replyWithTimeout(timeout, asyncResultConverter({ x: JMessage[T] => Message.apply(x) })(replyHandler))
+
+  /**
+   * Reply to this message with data. Specifying a timeout and a reply handler.
+   *
+   * @param value The value to send.
+   * @param timeout The timeout in ms to wait for an answer.
+   * @param handler Handling the reply (success) or the timeout (failed).
+   */
+  def replyWithTimeout[T <% MessageData](value: MessageData, timeout: Long, replyHandler: AsyncResult[Message[T]] => Unit): Unit =
+    value.replyWithTimeout(internal, timeout, convertArHandler(replyHandler))
+
+  private def convertArHandler[T <% MessageData](handler: AsyncResult[Message[T]] => Unit): Handler[AsyncResult[JMessage[T]]] = {
+    asyncResultConverter({x: JMessage[T] => Message.apply(x)})(handler)
+  }
 }
 
 /**
+ * Companion object for Message.
+ *
  * @author pidster
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */

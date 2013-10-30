@@ -8,6 +8,12 @@ import org.vertx.scala.core.json.Json
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import org.vertx.scala.core.json.JsonObject
+import org.vertx.scala.core.AsyncResult
+import org.vertx.scala.core.FunctionConverters._
+import scala.util.Try
+import scala.util.Failure
+import scala.util.Success
+import org.vertx.java.core.eventbus.ReplyException
 
 class EventBusTest extends TestVerticle {
 
@@ -151,4 +157,5 @@ class EventBusTest extends TestVerticle {
       })
     })
   }
+
 }
