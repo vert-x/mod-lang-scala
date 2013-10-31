@@ -39,6 +39,10 @@ trait FunctionConverters {
     override def handle(event: T) = func(event)
   }
 
+  implicit def fnToVoidHandler(func: Unit => Unit): Handler[Void] = new Handler[Void]() {
+    override def handle(void:Void) = func()
+  }
+
   implicit def messageFnToJMessageHandler[T](func: Message[T] => Unit): Handler[JMessage[T]] = new Handler[JMessage[T]]() {
     override def handle(event: JMessage[T]) = func.compose(Message.apply).apply(event)
   }
