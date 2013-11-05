@@ -110,6 +110,16 @@ class HttpServer(protected[this] val internal: JHttpServer) extends WrappedClose
   def websocketHandler(wsHandler: ServerWebSocket => Unit): HttpServer =
     wrap(internal.websocketHandler(serverWebSocketFnConverter(wsHandler)))
 
+  /**
+   * Set if the {@link HttpServer} should compress the http response if the connected client supports it.
+   */
+  def setCompressionSupported(compressionSupported: Boolean): HttpServer = wrap(internal.setCompressionSupported(compressionSupported))
+
+  /**
+   * Returns {@code true} if the {@link HttpServer} should compress the http response if the connected client supports it.
+   */
+  def isCompressionSupported(): Boolean = internal.isCompressionSupported()
+
   private def arHttpServerFnConverter(handler: AsyncResult[HttpServer] => Unit): Handler[AsyncResult[JHttpServer]] =
     asyncResultConverter(HttpServer.apply)(handler)
 

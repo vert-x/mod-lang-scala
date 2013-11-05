@@ -263,6 +263,16 @@ class HttpClient(protected[this] val internal: JHttpClient) extends WrappedTCPSu
    */
   def getConnectTimeout(): Int = internal.getConnectTimeout()
 
+  /**
+   * Set if the {@link HttpClient} should try to use compression.
+   */
+  def setTryUseCompression(tryUseCompression: Boolean): HttpClient = wrap(internal.setTryUseCompression(tryUseCompression))
+
+  /**
+   * Returns {@code true} if the {@link HttpClient} should try to use compression.
+   */
+  def getTryUseCompression(): Boolean = internal.getTryUseCompression()
+
   private def httpClientRequestFnConverter(handler: HttpClientRequest => Unit) =
     fnToHandler(handler.compose(HttpClientRequest.apply))
 
