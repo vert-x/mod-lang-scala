@@ -19,7 +19,7 @@ class EventBusTest extends TestVerticle {
 
   @Test
   def registerHandler(): Unit = {
-    vertx.eventBus.registerHandler("hello", { msg: Message[_] =>
+    vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
       testComplete
     })
 
@@ -158,4 +158,36 @@ class EventBusTest extends TestVerticle {
     })
   }
 
+  @Test
+  def unregisteringHandler(): Unit = {
+    var rh: vertx.eventBus.RegisteredHandler[String] = null
+
+    def unregister() {
+      vertx.setTimer(200, { timerId =>
+        rh.unregister({ ar =>
+          if (ar.succeeded()) {
+            vertx.eventBus.sendWithTimeout("hello", "test", 500, { ar2: AsyncResult[_] =>
+              if (ar2.succeeded()) {
+                fail("Should not be able to send a message to unregistered handler")
+              } else {
+                testComplete()
+              }
+            })
+          } else {
+            fail("Should be able to unregister handler, but got " + ar.cause().getMessage())
+          }
+        })
+      })
+    }
+
+    rh = vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      fail("should not get here!")
+    }, { ar =>
+      if (ar.succeeded()) {
+        unregister()
+      } else {
+        fail("Should be able to register handler")
+      }
+    })
+  }
 }
