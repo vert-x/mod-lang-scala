@@ -10,6 +10,8 @@ import org.junit.Test
 import scala.util.Success
 import org.vertx.java.core.eventbus.ReplyException
 import org.junit.Ignore
+import org.vertx.scala.core.AsyncResult
+import org.vertx.java.core.eventbus.ReplyFailure
 
 class EventBusTimeoutsTest extends TestVerticle {
   @Test
@@ -135,4 +137,24 @@ class EventBusTimeoutsTest extends TestVerticle {
     })
   }
 
+  @Test
+  def replyWithFailure(): Unit = {
+    val failText = "there's something strange... in the neighborhood."
+    vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      msg.fail(123, failText)
+    })
+
+    vertx.eventBus.sendWithTimeout("hello", "who you gonna call?", 200, { ar: AsyncResult[Message[String]] =>
+      if (ar.succeeded()) {
+        fail("Should not succeed!")
+      } else {
+        assertTrue("Should be a ReplyException", ar.cause().isInstanceOf[ReplyException])
+        val ex = ar.cause().asInstanceOf[ReplyException]
+        assertEquals("Should get 123 as failureCode", 123, ex.failureCode())
+        assertEquals("Should get RECIPIENT_FAILURE as failureType", ReplyFailure.RECIPIENT_FAILURE, ex.failureType())
+        assertEquals("Should get " + failText + " as message", failText, ex.getMessage())
+        testComplete()
+      }
+    })
+  }
 }
