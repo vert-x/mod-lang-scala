@@ -20,7 +20,7 @@ import org.vertx.java.core.eventbus.{ EventBus => JEventBus, Message => JMessage
 import org.vertx.scala.VertxWrapper
 import org.vertx.scala.core.{ AsyncResult, Handler }
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.AsyncResultHandler
+import org.vertx.java.core.{Handler => JHandler}
 import org.vertx.java.core.eventbus.ReplyException
 import org.vertx.java.core.impl.DefaultFutureResult
 
@@ -59,11 +59,22 @@ import org.vertx.java.core.impl.DefaultFutureResult
 class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
   override type InternalType = JEventBus
 
-  sealed private trait SendOrPublish
-  private case class Publish(address: String, value: MessageData) extends SendOrPublish
-  private case class Send[X](address: String, value: MessageData,
-    replyHandler: Option[Either[Handler[JMessage[X]], Handler[AsyncResult[JMessage[X]]]]])
-    extends SendOrPublish
+  /**
+   * A RegisteredHandler can be unregistered at a later point in time.
+   * @param address The address the handler is listening on.
+   * @param hander The (java) handler that is registered at the address.
+   */
+  case class RegisteredHandler[X <% MessageData](address: String, handler: JHandler[JMessage[X]]) {
+    /**
+     * Unregisters the registered handler from the event bus.
+     */
+    def unregister() = internal.unregisterHandler(address, handler)
+    /**
+     * Unregisters the registered handler from the event bus.
+     * @param resultHandler Fires when the unregistration event propagated through the whole cluster.
+     */
+    def unregister(resultHandler: AsyncResult[Void] => Unit) = internal.unregisterHandler(address, handler, resultHandler)
+  }
 
   /**
    * Publish a message.
@@ -109,76 +120,43 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
   def close(doneHandler: AsyncResult[Void] => Unit): Unit = internal.close(doneHandler)
 
   /**
-   * Registers a handler against the specified address.
-   * @param address The address to register it at.
-   * @param handler The handler.
-   */
-  def registerUnregisterableHandler[X](address: String, handler: Handler[org.vertx.java.core.eventbus.Message[X]]): EventBus = wrap({
-    internal.registerHandler(address, handler)
-  })
-
-  /**
-   * Registers a handler against the specified address.
-   * @param address The address to register it at.
-   * @param handler The handler.
-   * @param resultHandler Optional completion handler. If specified, when the register has been
-   * propagated to all nodes of the event bus, the handler will be called.
-   */
-  def registerUnregisterableHandler[X](address: String, handler: Handler[org.vertx.java.core.eventbus.Message[X]], resultHandler: AsyncResult[Void] => Unit): EventBus = wrap({
-    internal.registerHandler(address, handler, resultHandler)
-  })
-
-  /**
    * Registers a handler against the specified address. Please bear in mind that you cannot
    * unregister handlers you register with this method.
    * @param address The address to register it at.
    * @param handler The handler.
    */
-  def registerHandler[T <% MessageData](address: String, handler: Message[T] => Unit): EventBus =
-    wrap(internal.registerHandler(address, fnToHandler(handler.compose(Message.apply))))
+  def registerHandler[T <% MessageData](address: String, handler: Message[T] => Unit): RegisteredHandler[T] = {
+    val registeredHandler = RegisteredHandler(address, fnToHandler(handler.compose(Message.apply)))
+    internal.registerHandler(registeredHandler.address, registeredHandler.handler)
+    registeredHandler
+  }
 
   /**
-   * Registers a handler against the specified address. Please bear in mind that you cannot
-   * unregister handlers you register with this method.
+   * Registers a handler against the specified address. To unregister this handler, use the 
+   * resulting RegisteredHandler object.
    * @param address The address to register it at.
    * @param handler The handler.
    * @param resultHandler Optional completion handler. If specified, when the register has been
    * propagated to all nodes of the event bus, the handler will be called.
    */
-  def registerHandler[T <% MessageData](address: String, handler: Message[T] => Unit, resultHandler: AsyncResult[Void] => Unit): EventBus = wrap({
-    internal.registerHandler(address, handler.compose(Message.apply), resultHandler)
-  })
+  def registerHandler[T <% MessageData](address: String, handler: Message[T] => Unit, resultHandler: AsyncResult[Void] => Unit): RegisteredHandler[T] = {
+    val registeredHandler = RegisteredHandler(address, fnToHandler(handler.compose(Message.apply)))
+    internal.registerHandler(registeredHandler.address, registeredHandler.handler, resultHandler)
+    registeredHandler
+  }
 
   /**
    * Registers a local handler against the specified address. The handler info won't
    * be propagated across the cluster. Please bear in mind that you cannot unregister handlers you
    * register with this method.
-   * @param address The address to register it at
-   * @param handler The handler
+   * @param address The address to register it at.
+   * @param handler The handler to register.
    */
-  def registerLocalHandler[T <% MessageData](address: String, handler: Message[T] => Unit): EventBus = wrap({
-    internal.registerLocalHandler(address, handler.compose(Message.apply))
-  })
-
-  /**
-   * Unregisters a handler given the address and the handler
-   * @param address The address the handler was registered at
-   * @param handler The handler
-   */
-  def unregisterHandler[T <% MessageData](address: String, handler: Handler[JMessage[T]]): EventBus = wrap({
-    internal.unregisterHandler(address, handler)
-  })
-
-  /**
-   * Unregisters a handler given the address and the handler
-   * @param address The address the handler was registered at
-   * @param handler The handler
-   * @param resultHandler Optional completion handler. If specified, when the unregister has been
-   * propagated to all nodes of the event bus, the handler will be called.
-   */
-  def unregisterHandler[T <% MessageData](address: String, handler: Handler[JMessage[T]], resultHandler: AsyncResult[Void] => Unit): EventBus = wrap({
-    internal.unregisterHandler(address, handler, resultHandler)
-  })
+  def registerLocalHandler[T <% MessageData](address: String, handler: Message[T] => Unit): RegisteredHandler[T] = {
+    val registeredHandler = RegisteredHandler(address, fnToHandler(handler.compose(Message.apply)))
+    internal.registerLocalHandler(registeredHandler.address, registeredHandler.handler)
+    registeredHandler
+  }
 
   /**
    * Sets a default timeout, in ms, for replies. If a messages is sent specify a reply handler
@@ -193,6 +171,12 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
    * Return the value for default send timeout.
    */
   def getDefaultReplyTimeout(): Long = internal.getDefaultReplyTimeout()
+
+  sealed private trait SendOrPublish
+  private case class Publish(address: String, value: MessageData) extends SendOrPublish
+  private case class Send[X](address: String, value: MessageData,
+    replyHandler: Option[Either[Handler[JMessage[X]], Handler[AsyncResult[JMessage[X]]]]])
+    extends SendOrPublish
 
   private def mapHandler[T <% MessageData](handler: Message[T] => Unit): Handler[JMessage[T]] = {
     fnToHandler(handler.compose(Message.apply))
