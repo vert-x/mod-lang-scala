@@ -1,6 +1,6 @@
 == Scala Module for Vert.x
 
-Scala language implementation for vert.x 2.0
+Scala language implementation for Vert.x 2.1
 
 === Quickstart
 
@@ -8,12 +8,11 @@ To use it, we've added a first "Hello World"-like example to the
 https://github.com/vert-x/vertx-examples/blob/master/src/raw/scala[Vert.x Examples repository]
 which can be run like this:
 
-1. Download latest Vert.x distribution. Preferably 2.0.3 or higher, which
-includes DNS support.
+1. Download Vert.x distribution 2.1-M1 or higher.
 2. Open [VERTX_HOME]/conf/langs.properties file and these lines:
 +
 ...............................................................................
-scala=io.vertx~lang-scala~0.1.1:org.vertx.scala.platform.impl.ScalaVerticleFactory
+scala=io.vertx~lang-scala~0.2.0:org.vertx.scala.platform.impl.ScalaVerticleFactory
 .scala=scala
 ...............................................................................
 +
@@ -22,11 +21,11 @@ scala=io.vertx~lang-scala~0.1.1:org.vertx.scala.platform.impl.ScalaVerticleFacto
 4. Change directory to `src/raw/scala` and type:
 +
 ...............................................................................
-[VERTX_HOME]/bin/vertx run httphelloworld/HelloWorldServer.scala
+[VERTX_HOME]/bin/vertx run http/Server.scala
 ...............................................................................
 +
 
-5. Go to http://localhost:8080/ and you should see the message: "Hello Scala World!"
+5. Go to http://localhost:8080/ and you should see the message: ""This is a Verticle script!"
 
 === Current issues 
 
