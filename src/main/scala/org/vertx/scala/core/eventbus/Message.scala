@@ -89,6 +89,14 @@ class Message[T <% MessageData](protected val internal: JMessage[T]) extends Ver
   def replyWithTimeout[T <% MessageData](value: MessageData, timeout: Long, replyHandler: AsyncResult[Message[T]] => Unit): Unit =
     value.replyWithTimeout(internal, timeout, convertArHandler(replyHandler))
 
+  /**
+   * Signal that processing of this message failed. If the message was sent specifying a result handler
+   * the handler will be called with a failure corresponding to the failure code and message specified here
+   * @param failureCode A failure code to pass back to the sender
+   * @param message A message to pass back to the sender
+   */
+  def fail(failureCode: Int, message: String): Unit = internal.fail(failureCode, message)
+
   private def convertArHandler[T <% MessageData](handler: AsyncResult[Message[T]] => Unit): Handler[AsyncResult[JMessage[T]]] = {
     asyncResultConverter({x: JMessage[T] => Message.apply(x)})(handler)
   }
