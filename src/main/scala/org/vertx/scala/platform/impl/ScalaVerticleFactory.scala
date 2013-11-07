@@ -16,7 +16,7 @@
 
 package org.vertx.scala.platform.impl
 
-import java.io.{ File, FilenameFilter }
+import java.io.{PrintWriter, Writer, File, FilenameFilter}
 
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.Results.Success
@@ -28,8 +28,12 @@ import org.vertx.java.platform.{ Container => JContainer, Verticle => JVerticle,
 import org.vertx.scala.lang.ScalaInterpreter
 import org.vertx.scala.platform.{Container, Verticle}
 import java.net.URL
+import org.vertx.java.core.logging.impl.LoggerFactory
+import java.security.{PrivilegedAction, AccessController}
 
 /**
+ * Scala verticle factory.
+ *
  * @author swilliams
  * @author Ranie Jade Ramiso
  * @author Galder Zamarreño
@@ -39,8 +43,6 @@ class ScalaVerticleFactory extends VerticleFactory {
   import org.vertx.scala.core._
 
   import ScalaVerticleFactory._
-
-  protected val SUFFIX: String = ".scala"
 
   private var jvertx: JVertx = null
 
@@ -58,13 +60,14 @@ class ScalaVerticleFactory extends VerticleFactory {
     val sVertx = Vertx(jvertx)
     val sContainer = Container(jcontainer)
     val settings = interpreterSettings()
-    interpreter = new ScalaInterpreter(settings, sVertx, sContainer)
+    interpreter = new ScalaInterpreter(
+        settings, sVertx, sContainer, new LogPrintWriter(logger))
   }
 
   @throws(classOf[Exception])
   override def createVerticle(main: String): JVerticle = {
     val loadedVerticle = 
-      if (!main.endsWith(SUFFIX)) Some(loader.loadClass(main)) 
+      if (!main.endsWith(Suffix)) Some(loader.loadClass(main))
       else load(main)
     
     loadedVerticle match {
@@ -101,14 +104,14 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   @throws(classOf[Exception])
   private def load(main: String): Option[Class[_]] = {
-    println(s"Compiling $main as Scala script")
+    logger.info(s"Compiling $main as Scala script")
     // Try running it as a script
     val url = resolveVerticlePath(main)
     val result = interpreter.runScript(url)
     if (result != Success) {
       // Might be a Scala class
-      println(s"Script contains compilation errors, or $main is a Scala class (pass -Dvertx.scala.interpreter.verbose=true to find out more)")
-      println(s"Compiling as a Scala class")
+      logger.info(s"Script contains compilation errors, or $main is a Scala class (pass -Dvertx.scala.interpreter.verbose=true to find out more)")
+      logger.info(s"Compiling as a Scala class")
       val resolved = loader.getResource(main).toExternalForm
       val className = main.replaceFirst(".scala$", "").replaceAll("/", ".")
       val classFile = new File(resolved.replaceFirst("file:", ""))
@@ -116,10 +119,10 @@ class ScalaVerticleFactory extends VerticleFactory {
         throw new IllegalArgumentException(
             s"Unable to run $main as neither Scala script nor Scala class")
       }
-      println(s"Starting $className")
+      logger.info(s"Starting $className")
       Some(verticleClass)
     } else {
-      println(s"Starting $main")
+      logger.info(s"Starting $main")
       None
     }
   }
@@ -133,11 +136,28 @@ class ScalaVerticleFactory extends VerticleFactory {
       settings.bootclasspath.append(jar.getAbsolutePath)
     }
 
-    val modLangScala = this.getClass.getClassLoader.getResource("./").toExternalForm
-    settings.bootclasspath.append(modLangScala.replaceFirst("file:", ""))
-    settings.usejavacp.value = true
-    settings.verbose.value = ScalaInterpreter.isVerbose
-    settings
+    val moduleLocation = getRootModuleLocation
+    moduleLocation match {
+      case None =>
+        throw new IllegalStateException("Unable to resolve mod-lang-scala root location")
+      case Some(loc) =>
+        settings.bootclasspath.append(loc)
+        settings.usejavacp.value = true
+        settings.verbose.value = ScalaInterpreter.isVerbose
+        settings
+    }
+  }
+
+  private def getRootModuleLocation: Option[String] = {
+    AccessController.doPrivileged(new PrivilegedAction[Option[String]]() {
+      def run(): Option[String] = {
+        for {
+          pd <- Option(classOf[ScalaVerticleFactory].getProtectionDomain)
+          cs <- Option(pd.getCodeSource)
+          loc <- Option(cs.getLocation)
+        } yield loc.toExternalForm
+      }
+    })
   }
 
   private object DummyVerticle extends JVerticle
@@ -146,7 +166,11 @@ class ScalaVerticleFactory extends VerticleFactory {
 
 object ScalaVerticleFactory {
 
+  val logger = LoggerFactory.getLogger(classOf[ScalaVerticleFactory].getName)
+
   val JarFileRegex = "^(.*\\.jar)$".r
+
+  val Suffix = ".scala"
 
   /**
    * Find all files matching the given regular expression in the directory.
@@ -178,11 +202,24 @@ object ScalaVerticleFactory {
    *         the regular expression
    */
   def findAll(classLoader: ClassLoader, path: String, regex: Regex): Array[File] = {
-    if (classLoader.getResources(path).hasMoreElements()) {
+    if (classLoader.getResources(path).hasMoreElements) {
       findAll(new File(classLoader.getResources(path).nextElement().toURI), regex)
     } else {
       Array[File]()
     }
   }
 
+}
+
+private class LogPrintWriter(logger: Logger)
+  extends PrintWriter(new LogWriter(logger), true)
+
+private class LogWriter(logger: Logger) extends Writer {
+  override def close(): Unit = {}
+  override def flush(): Unit = {}
+  override def write(str: String): Unit = logger.info(str)
+  override def write(cbuf: Array[Char], off: Int, len: Int): Unit = {
+    if (len > 0)
+      write(new String(cbuf.slice(off, off+len)))
+  }
 }
