@@ -12,6 +12,7 @@ import org.vertx.java.core.eventbus.ReplyException
 import org.junit.Ignore
 import org.vertx.scala.core.AsyncResult
 import org.vertx.java.core.eventbus.ReplyFailure
+import org.hamcrest.Matchers.instanceOf
 
 class EventBusTimeoutsTest extends TestVerticle {
   @Test
@@ -57,7 +58,7 @@ class EventBusTimeoutsTest extends TestVerticle {
     vertx.eventBus.sendWithTimeout("hello", "late-reply-within-timeout", 100, {
       case Success(result) => fail("Should not receive a message within time, but got one: " + result.body)
       case Failure(ex) =>
-        assertTrue("exception should be of kind ReplyException", ex.isInstanceOf[ReplyException])
+        assertThat("exception should be of kind ReplyException", ex, instanceOf(classOf[ReplyException]))
         assertEquals("exception should be a TIMEOUT", "TIMEOUT", ex.asInstanceOf[ReplyException].failureType().name())
         // Wait to complete test, so if a message still comes, it shouldn't be received here anymore
         vertx.setTimer(300, timer => testComplete)
@@ -107,7 +108,7 @@ class EventBusTimeoutsTest extends TestVerticle {
       msg.replyWithTimeout("hello " + msg.body, 200, {
         case Success(reply) => fail("Should not get a reply in time, but got " + reply.body)
         case Failure(ex) =>
-          assertTrue("exception should be of kind ReplyException", ex.isInstanceOf[ReplyException])
+          assertThat("exception should be of kind ReplyException", ex, instanceOf(classOf[ReplyException]))
           assertEquals("exception should be a NO_HANDLERS", "NO_HANDLERS", ex.asInstanceOf[ReplyException].failureType().name())
           testComplete
       }: Try[Message[String]] => Unit)
@@ -124,7 +125,7 @@ class EventBusTimeoutsTest extends TestVerticle {
       msg.replyWithTimeout("late-reply", 100, {
         case Success(result) => fail("Should not receive a message within time, but got one: " + result.body)
         case Failure(ex) =>
-          assertTrue("exception should be of kind ReplyException", ex.isInstanceOf[ReplyException])
+          assertThat("exception should be of kind ReplyException", ex, instanceOf(classOf[ReplyException]))
           assertEquals("exception should be a TIMEOUT", "TIMEOUT", ex.asInstanceOf[ReplyException].failureType().name())
           // Wait to complete test, so if a message still comes, it shouldn't be received here anymore
           vertx.setTimer(300, timer => testComplete)
@@ -148,7 +149,7 @@ class EventBusTimeoutsTest extends TestVerticle {
       if (ar.succeeded()) {
         fail("Should not succeed!")
       } else {
-        assertTrue("Should be a ReplyException", ar.cause().isInstanceOf[ReplyException])
+        assertThat("exception should be of kind ReplyException", ar.cause(), instanceOf(classOf[ReplyException]))
         val ex = ar.cause().asInstanceOf[ReplyException]
         assertEquals("Should get 123 as failureCode", 123, ex.failureCode())
         assertEquals("Should get RECIPIENT_FAILURE as failureType", ReplyFailure.RECIPIENT_FAILURE, ex.failureType())
