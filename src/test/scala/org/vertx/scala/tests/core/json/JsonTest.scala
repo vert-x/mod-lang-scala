@@ -90,6 +90,8 @@ class JsonTest {
           "port" -> 8080,
           "ssl" -> false,
           "bridge" -> true,
+          "some_nested" -> Json.arr(1, 2, Json.obj("next" -> Json.arr(3, 4))),
+          "some_list" -> Json.arr(1, 2, Json.arr(3, 4)),
           "inbound_permitted" -> Json.arr(
             Json.obj(
               "address" -> "acme.bar",
@@ -105,6 +107,78 @@ class JsonTest {
     assertEquals(jsonString, obj.encode())
   }
 
+  @Test
+  def nestedObjectsWithListsTest() {
+    val obj =
+      Json.obj(
+        "webappconf" -> Json.obj(
+          "port" -> 8080,
+          "ssl" -> false,
+          "bridge" -> true,
+          "some_nested" -> List(1, 2, Json.obj("next" -> List(3, 4))),
+          "some_list" -> List(1, 2, List(3, 4)),
+          "inbound_permitted" -> List(
+            Json.obj(
+              "address" -> "acme.bar",
+              "match" -> Json.obj(
+                "action" -> "foo")),
+            Json.obj(
+              "address" -> "acme.baz",
+              "match" -> Json.obj(
+                "action" -> "index"))),
+          "outbound_permitted" -> List(new JsonObject())))
+
+    assertEquals(jsonString, obj.encode())
+  }
+
+  @Test
+  def nestedObjectsWithArraysTest() {
+    val obj =
+      Json.obj(
+        "webappconf" -> Json.obj(
+          "port" -> 8080,
+          "ssl" -> false,
+          "bridge" -> true,
+          "some_nested" -> Array(1, 2, Json.obj("next" -> Array(3, 4))),
+          "some_list" -> Array(1, 2, Array(3, 4)),
+          "inbound_permitted" -> Array(
+            Json.obj(
+              "address" -> "acme.bar",
+              "match" -> Json.obj(
+                "action" -> "foo")),
+            Json.obj(
+              "address" -> "acme.baz",
+              "match" -> Json.obj(
+                "action" -> "index"))),
+          "outbound_permitted" -> Array(new JsonObject())))
+
+    assertEquals(jsonString, obj.encode())
+  }
+
+  @Test
+  def mixedNestedObjectsTest() {
+    val obj =
+      Json.obj(
+        "webappconf" -> Json.obj(
+          "port" -> 8080,
+          "ssl" -> false,
+          "bridge" -> true,
+          "some_nested" -> Vector(1, 2, Json.obj("next" -> List(3, 4))),
+          "some_list" -> Json.arr(1, 2, Vector(3, 4)),
+          "inbound_permitted" -> List(
+            Json.obj(
+              "address" -> "acme.bar",
+              "match" -> Json.obj(
+                "action" -> "foo")),
+            Json.obj(
+              "address" -> "acme.baz",
+              "match" -> Json.obj(
+                "action" -> "index"))),
+          "outbound_permitted" -> Array(new JsonObject())))
+
+    assertEquals(jsonString, obj.encode())
+  }
+
   private def jsonString = {
     """
       |{
@@ -112,6 +186,8 @@ class JsonTest {
       |          "port": 8080,
       |          "ssl": false,
       |          "bridge": true,
+      |          "some_nested": [1, 2, { "next": [3, 4] }],
+      |          "some_list": [1, 2, [3, 4]],
       |          "inbound_permitted": [
       |            {
       |              "address" : "acme.bar",
