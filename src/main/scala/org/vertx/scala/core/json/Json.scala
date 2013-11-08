@@ -107,7 +107,11 @@ object Json {
    */
   def obj(fields: (String, Any)*): JsonObject = {
     val o = new JsonObject()
-    fields.foreach(f => addToObject(o, f._1, f._2))
+    fields.foreach {
+      case (key, l: Array[_]) => addToObject(o, key, listToJsArr(l))
+      case (key, l: Seq[_]) => addToObject(o, key, listToJsArr(l))
+      case (key, value) => addToObject(o, key, value)
+    }
     o
   }
 
@@ -119,10 +123,15 @@ object Json {
    */
   def arr(fields: Any*): JsonArray = {
     val a = new JsonArray()
-    fields.foreach(f => addToArray(a, f))
+    fields.foreach {
+      case array: Array[_] => addToArray(a, listToJsArr(array))
+      case seq: Seq[_] => addToArray(a, listToJsArr(seq))
+      case f => addToArray(a, f)
+    }
     a
   }
 
+  private def listToJsArr(a: Seq[_]) = Json.arr(a: _*)
   private def addToArray[T: JsonElemOps](a: JsonArray, fieldValue: T) = {
     implicitly[JsonElemOps[T]].addToArr(a, fieldValue)
   }
