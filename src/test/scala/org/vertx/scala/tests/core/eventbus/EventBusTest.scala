@@ -20,6 +20,7 @@ class EventBusTest extends TestVerticle {
   @Test
   def registerHandler(): Unit = {
     vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      assertEquals("hello", msg.address())
       testComplete
     })
 

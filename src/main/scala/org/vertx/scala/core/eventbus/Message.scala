@@ -26,6 +26,11 @@ class Message[T <% MessageData](protected val internal: JMessage[T]) extends Ver
   override type InternalType = JMessage[T]
 
   /**
+   * The address the message was sent to
+   */
+  def address(): String = internal.address()
+
+  /**
    * The body of the message.
    */
   def body(): T = anyToMessageData(internal.body()).data.asInstanceOf[T]
