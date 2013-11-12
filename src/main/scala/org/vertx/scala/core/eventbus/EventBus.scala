@@ -120,8 +120,8 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
   def close(doneHandler: AsyncResult[Void] => Unit): Unit = internal.close(doneHandler)
 
   /**
-   * Registers a handler against the specified address. Please bear in mind that you cannot
-   * unregister handlers you register with this method.
+   * Registers a handler against the specified address. To unregister this handler, use the
+   * resulting RegisteredHandler object.
    * @param address The address to register it at.
    * @param handler The handler.
    */
@@ -147,8 +147,8 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
 
   /**
    * Registers a local handler against the specified address. The handler info won't
-   * be propagated across the cluster. Please bear in mind that you cannot unregister handlers you
-   * register with this method.
+   * be propagated across the cluster. To unregister this handler, use the
+   * resulting RegisteredHandler object.
    * @param address The address to register it at.
    * @param handler The handler to register.
    */
