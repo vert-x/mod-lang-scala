@@ -7,7 +7,7 @@ import org.vertx.scala.tests.util.TestUtils.completeWithArFailed
 import org.vertx.scala.testtools.TestVerticle
 import org.vertx.testtools.VertxAssert.{ assertEquals, fail, testComplete }
 
-class HttpTestForSimpleApi extends TestVerticle {
+trait HttpTestForSimpleApi extends TestVerticle {
   val testPort = 8844
 
   val html = <html>
@@ -19,14 +19,12 @@ class HttpTestForSimpleApi extends TestVerticle {
                </body>
              </html>.toString()
 
-  @Test
   def createHttpServer() {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
       c.getNow("/", correctHeadAndBodyHandler(testComplete))
     }))
   }
 
-  @Test
   def httpsServer(): Unit = {
     val server = vertx.createHttpServer.setSSL(true)
 
@@ -41,49 +39,47 @@ class HttpTestForSimpleApi extends TestVerticle {
     }))
   }
 
-  @Test
   def invalidPort(): Unit = {
     vertx.createHttpServer.requestHandler({ r => }).listen(1128371831, completeWithArFailed[HttpServer])
   }
 
-  @Test
   def invalidHost(): Unit = {
     vertx.createHttpServer.requestHandler({ r => }) listen (testPort, "iqwjdoqiwjdoiqwdiojwd", completeWithArFailed)
   }
 
-  @Test def postMethod(): Unit = {
+  def postMethod(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
       c.post("/", correctHeadAndBodyHandler(testComplete)).end()
     }))
   }
 
-  @Test def getMethod(): Unit = {
+  def getMethod(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
       c.get("/", correctHeadAndBodyHandler(testComplete)).end()
     }))
   }
 
-  @Test def headMethod(): Unit = {
+  def headMethod(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
       c.head("/", correctHeadAndEmptyBodyHandler(testComplete)).end()
     }))
   }
 
-  @Test def connectMethod(): Unit = {
+  def connectMethod(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
       c.connect("/", correctHeadAndEmptyBodyHandler(testComplete)).end()
     }))
   }
 
-  @Test def getRequestMethod(): Unit = headAndBodyRequest("GET")
-  @Test def postRequestMethod(): Unit = headAndBodyRequest("POST")
-  @Test def putRequestMethod(): Unit = headAndBodyRequest("PUT")
-  @Test def deleteRequestMethod(): Unit = headAndBodyRequest("DELETE")
-  @Test def headRequestMethod(): Unit = headOnlyRequest("HEAD")
-  @Test def traceRequestMethod(): Unit = headAndBodyRequest("TRACE")
-  @Test def connectRequestMethod(): Unit = headOnlyRequest("CONNECT")
-  @Test def optionsRequestMethod(): Unit = headAndBodyRequest("OPTIONS")
-  @Test def patchRequestMethod(): Unit = headAndBodyRequest("PATCH")
+  def getRequestMethod(): Unit = headAndBodyRequest("GET")
+  def postRequestMethod(): Unit = headAndBodyRequest("POST")
+  def putRequestMethod(): Unit = headAndBodyRequest("PUT")
+  def deleteRequestMethod(): Unit = headAndBodyRequest("DELETE")
+  def headRequestMethod(): Unit = headOnlyRequest("HEAD")
+  def traceRequestMethod(): Unit = headAndBodyRequest("TRACE")
+  def connectRequestMethod(): Unit = headOnlyRequest("CONNECT")
+  def optionsRequestMethod(): Unit = headAndBodyRequest("OPTIONS")
+  def patchRequestMethod(): Unit = headAndBodyRequest("PATCH")
 
   private def simpleRequest(fn: (() => Unit) => HttpClientResponse => Unit)(name: String): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
@@ -125,10 +121,12 @@ class HttpTestForSimpleApi extends TestVerticle {
   private def checkServer(clientFn: HttpClient => Unit) = { ar: AsyncResult[HttpServer] =>
     if (ar.succeeded()) {
       val httpClient = vertx.createHttpClient.setPort(testPort)
+      httpClient.setTryUseCompression(compression)
       clientFn(httpClient)
     } else {
       fail("listening did not succeed: " + ar.cause().getMessage())
     }
   }
 
+  protected def compression: Boolean
 }
