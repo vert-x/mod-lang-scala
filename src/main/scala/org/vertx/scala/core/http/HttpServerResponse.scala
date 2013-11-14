@@ -19,9 +19,8 @@ package org.vertx.scala.core.http
 import org.vertx.java.core.http.{ HttpServerResponse => JHttpServerResponse }
 import org.vertx.scala.core.buffer._
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.Handler
+import org.vertx.scala.core.{AsyncResult, MultiMap}
 import org.vertx.scala.core.streams.WrappedWriteStream
-import org.vertx.scala.core.MultiMap
 import collection.JavaConverters._
 
 /**
@@ -158,6 +157,22 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * @return A reference to this for a fluent API.
    */
   def sendFile(filename: String): HttpServerResponse = wrap(internal.sendFile(filename))
+
+  /**
+   * Same as {@link #sendFile(String)} but also takes a handler that will be called when the send has completed or
+   * a failure has occurred
+   */
+  def sendFile(filename: String, resultHandler: AsyncResult[Unit] => Unit): HttpServerResponse = {
+    wrap(internal.sendFile(filename, voidAsyncHandler(resultHandler)))
+  }
+
+  /**
+   * Same as {@link #sendFile(String, String)} but also takes a handler that will be called when the send has completed or
+   * a failure has occurred
+   */
+  def sendFile(filename: String, notFoundFile: String, resultHandler: AsyncResult[Unit] => Unit): HttpServerResponse = {
+    wrap(internal.sendFile(filename, notFoundFile, voidAsyncHandler(resultHandler)))
+  }
 
   /**
    * If {@code chunked} is {@code true}, this response will use HTTP chunked encoding, and each call to write to the body
