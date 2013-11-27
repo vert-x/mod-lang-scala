@@ -1,27 +1,27 @@
 package org.vertx.scala.core.streams
 
 import org.vertx.scala.core.buffer._
-import org.vertx.java.core.streams.{ ReadStream => JReadStream }
-import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
-import org.vertx.scala.VertxWrapper
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.Handler
 
 /**
+ * Wrapper for Vert.x Java [[org.vertx.java.core.streams.ReadStream]] class.
+ *
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
-trait WrappedReadStream extends WrappedExceptionSupport with ReadStream {
-  override def dataHandler(handler: Handler[Buffer]): this.type = wrap(internal.dataHandler(bufferHandlerToJava(handler)))
+trait WrappedReadStream extends WrappedReadSupport[Buffer] with ReadStream {
 
-  override def dataHandler(handler: Buffer => Unit): this.type = dataHandler(fnToHandler(handler))
+  /**
+   * Set a data handler. As data is read, the handler will be called with the data.
+   */
+  override def dataHandler(handler: Buffer => Unit): this.type =
+    wrap(internal.dataHandler(bufferHandlerToJava(handler)))
 
-  override def endHandler(handler: Handler[Void]): this.type = wrap(internal.endHandler(handler))
+  /**
+   * Set an end handler. Once the stream has ended, and there is no more data
+   * to be read, this handler will be called.
+   */
+  override def endHandler(handler: => Unit): this.type =
+    wrap(internal.endHandler(lazyToVoidHandler(handler)))
 
-  override def endHandler(handler: => Unit): this.type = endHandler(lazyToVoidHandler(handler))
-
-  override def pause(): this.type = wrap(internal.pause())
-
-  override def resume(): this.type = wrap(internal.resume())
-
-  override def toJava(): InternalType = internal
 }
