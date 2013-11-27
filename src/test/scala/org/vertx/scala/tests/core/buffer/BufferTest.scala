@@ -3,9 +3,7 @@ package org.vertx.scala.tests.core.buffer
 import org.junit.Test
 import org.junit.Assert._
 import org.vertx.scala.core.buffer._
-import scala.util.matching.Regex
-import org.vertx.scala.testframework.TestUtils
-import java.util.Arrays
+import org.vertx.scala.tests.util.TestUtils
 
 class BufferTest {
 

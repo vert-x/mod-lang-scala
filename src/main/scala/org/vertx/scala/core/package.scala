@@ -18,9 +18,9 @@ package org.vertx.scala
 
 import org.vertx.java.core.{ Vertx => JVertx }
 import org.vertx.java.core.{ VertxFactory => JVertxFactory }
-import org.vertx.java.core.{ Future => JFuture }
+import org.vertx.scala.core.datagram.InternetProtocolFamily._
 import org.vertx.scala.core.eventbus.EventBus
-import org.vertx.scala.core.http.{ HttpClient, HttpServerRequest, HttpServer }
+import org.vertx.scala.core.http.{ HttpClient, HttpServer }
 import org.vertx.scala.core.net.{ NetServer, NetClient }
 import org.vertx.scala.core.sockjs.SockJSServer
 import org.vertx.scala.core.file.FileSystem
@@ -29,6 +29,7 @@ import org.vertx.scala.core.shareddata.SharedData
 import org.vertx.java.core.Context
 import java.net.InetSocketAddress
 import org.vertx.scala.core.dns.DnsClient
+import org.vertx.scala.core.datagram.{DatagramSocket, InternetProtocolFamily}
 
 package object core {
 
@@ -63,6 +64,17 @@ package object core {
      * Create a HTTP/HTTPS client.
      */
     def createHttpClient(): HttpClient = HttpClient(internal.createHttpClient())
+
+    /**
+     * Create a new [[org.vertx.scala.core.datagram.DatagramSocket]].
+     *
+     * @param family  optional user provided [[org.vertx.scala.core.datagram.InternetProtocolFamily]]
+     *                to use for multicast. If [[scala.None]], it's up to the
+     *                operation system to detect it's default.
+     *@return socket the created [[org.vertx.scala.core.datagram.DatagramSocket]].
+     */
+    def createDatagramSocket(family: Option[InternetProtocolFamily] = None): DatagramSocket =
+      DatagramSocket(internal.createDatagramSocket(toJavaIpFamily(family).getOrElse(null)))
 
     /**
      * Create a SockJS server that wraps an HTTP server.

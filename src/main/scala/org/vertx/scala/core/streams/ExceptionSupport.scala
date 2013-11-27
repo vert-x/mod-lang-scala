@@ -16,16 +16,14 @@
 
 package org.vertx.scala.core.streams
 
-import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.streams.{ ReadStream => JReadStream }
 import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
-import org.vertx.java.core.Handler
-import org.vertx.scala.VertxWrapper
-import org.vertx.scala.core.FunctionConverters._
 
 /**
+ * Exception handler.
+ *
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
 trait ExceptionSupport {
   type InternalType <: JExceptionSupport[_]
@@ -33,19 +31,12 @@ trait ExceptionSupport {
   /**
    * Set an exception handler.
    */
-  def exceptionHandler(handler: Handler[Throwable]): this.type
-
-  /**
-   * Set an exception handler.
-   */
   def exceptionHandler(handler: Throwable => Unit): this.type
 
+  /**
+   * Provide the corresponding Java version of this class.
+   */
   def toJava(): InternalType
+
 }
 
-trait WrappedExceptionSupport extends ExceptionSupport with VertxWrapper {
-  type InternalType <: JExceptionSupport[_]
-  override def exceptionHandler(handler: Handler[Throwable]): this.type = wrap(internal.exceptionHandler(handler))
-  override def exceptionHandler(handler: Throwable => Unit): this.type = exceptionHandler(fnToHandler(handler))
-  override def toJava(): InternalType = internal
-}
