@@ -1,17 +1,27 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.vertx.scala.core.datagram
 
 import org.vertx.java.core.datagram.{DatagramSocket => JDatagramSocket}
-import org.vertx.scala.VertxWrapper
-import org.vertx.scala.core.streams.{WrappedReadSupport, WrappedDrainSupport}
+import org.vertx.scala.core.streams.{ReadSupport, DrainSupport}
 import org.vertx.scala.core._
 import org.vertx.scala.core.buffer._
 import org.vertx.scala.core.FunctionConverters._
 import java.net.InetSocketAddress
-
-/** Factory for [[org.vertx.scala.core.datagram.DatagramSocket]] instances by wrapping a Java instance. */
-object DatagramSocket {
-  def apply(actual: JDatagramSocket) = new DatagramSocket(actual)
-}
+import org.vertx.scala.Self
 
 /**
  * A Datagram socket which can be used to send [[org.vertx.scala.core.datagram.DatagramPacket]]'s to
@@ -28,12 +38,13 @@ object DatagramSocket {
  * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  * @author Galder Zamarreño
  */
-class DatagramSocket(protected[this] val internal: JDatagramSocket)
-    extends VertxWrapper
-    with WrappedDrainSupport
-    with WrappedNetworkSupport
-    with WrappedReadSupport[DatagramPacket] {
-  override type InternalType = JDatagramSocket
+final class DatagramSocket private[scala] (val asJava: JDatagramSocket) extends Self
+  with DrainSupport
+  with NetworkSupport
+  with ReadSupport[DatagramPacket]
+  with Closeable {
+
+  override type J = JDatagramSocket
 
   /**
    * Write the given [[org.vertx.scala.core.buffer.Buffer]] to the [[java.net.InetSocketAddress]].
@@ -45,8 +56,8 @@ class DatagramSocket(protected[this] val internal: JDatagramSocket)
    * @param handler   the handler to notify once the write completes.
    * @return self     itself for method chaining
    */
-  def send(packet: Buffer, host: String, port: Int, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.send(packet.toJava(), host, port, dataSocketAsyncResult(handler)))
+  def send(packet: Buffer, host: String, port: Int, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.send(packet.asJava, host, port, dataSocketAsyncResult(handler)))
 
   /**
    * Write the given String to the [[java.net.InetSocketAddress]].
@@ -58,8 +69,8 @@ class DatagramSocket(protected[this] val internal: JDatagramSocket)
    * @param handler   the handler to notify once the write completes.
    * @return self     itself for method chaining
    */
-  def send(str: String, host: String, port: Int, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.send(str, host, port, dataSocketAsyncResult(handler)))
+  def send(str: String, host: String, port: Int, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.send(str, host, port, dataSocketAsyncResult(handler)))
 
   /**
    * Write the given String to the [[java.net.InetSocketAddress]] using the given encoding.
@@ -72,72 +83,60 @@ class DatagramSocket(protected[this] val internal: JDatagramSocket)
    * @param handler   the handler to notify once the write completes.
    * @return self     itself for method chaining
    */
-  def send(str: String, enc: String, host: String, port: Int, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.send(str, enc, host, port, dataSocketAsyncResult(handler)))
+  def send(str: String, enc: String, host: String, port: Int, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.send(str, enc, host, port, dataSocketAsyncResult(handler)))
 
   /**
    * Gets the [[java.net.StandardSocketOptions.SO_BROADCAST]] option.
    */
-  def isBroadcast: Boolean = internal.isBroadcast
+  def isBroadcast: Boolean = asJava.isBroadcast
 
   /**
    * Sets the [[java.net.StandardSocketOptions.SO_BROADCAST]] option.
    */
-  def setBroadcast(broadcast: Boolean): this.type = wrap(internal.setBroadcast(broadcast))
+  def setBroadcast(broadcast: Boolean): DatagramSocket = wrap(asJava.setBroadcast(broadcast))
 
   /**
    * Gets the [[java.net.StandardSocketOptions.IP_MULTICAST_LOOP]] option.
    *
    * @return `true` if and only if the loopback mode has been disabled
    */
-  def isMulticastLoopbackMode: Boolean = internal.isMulticastLoopbackMode
+  def isMulticastLoopbackMode: Boolean = asJava.isMulticastLoopbackMode
 
   /**
    * Sets the [[java.net.StandardSocketOptions.IP_MULTICAST_LOOP]] option.
    *
    * @param loopbackModeDisabled `true` if and only if the loopback mode has been disabled
    */
-  def setMulticastLoopbackMode(loopbackModeDisabled: Boolean): this.type =
-    wrap(internal.setMulticastLoopbackMode(loopbackModeDisabled))
+  def setMulticastLoopbackMode(loopbackModeDisabled: Boolean): DatagramSocket =
+    wrap(asJava.setMulticastLoopbackMode(loopbackModeDisabled))
 
   /**
    * Gets the [[java.net.StandardSocketOptions.IP_MULTICAST_TTL]] option.
    */
-  def getMulticastTimeToLive: Int = internal.getMulticastTimeToLive
+  def getMulticastTimeToLive: Int = asJava.getMulticastTimeToLive
 
   /**
    * Sets the [[java.net.StandardSocketOptions.IP_MULTICAST_TTL]] option.
    */
-  def setMulticastTimeToLive(ttl: Int): this.type = wrap(internal.setMulticastTimeToLive(ttl))
+  def setMulticastTimeToLive(ttl: Int): DatagramSocket = wrap(asJava.setMulticastTimeToLive(ttl))
 
   /**
    * Gets the [[java.net.StandardSocketOptions.IP_MULTICAST_IF]] option.
    */
-  def getMulticastNetworkInterface: String = internal.getMulticastNetworkInterface
+  def getMulticastNetworkInterface: String = asJava.getMulticastNetworkInterface
 
   /**
    * Sets the [[java.net.StandardSocketOptions.IP_MULTICAST_IF]] option.
    */
-  def setMulticastNetworkInterface(iface: String): this.type =
-    wrap(internal.setMulticastNetworkInterface(iface))
-
-  /**
-   * Close the [[org.vertx.scala.core.datagram.DatagramSocket]]
-   * implementation asynchronous and notifies the handler once done.
-   */
-  def close(doneHandler: AsyncResult[Void] => Unit): Unit =
-    internal.close(fnToHandler(doneHandler))
-
-  /**
-   * Close the [[org.vertx.scala.core.datagram.DatagramSocket]] implementation asynchronous.
-   */
-  def close(): Unit = internal.close()
+  def setMulticastNetworkInterface(iface: String): DatagramSocket =
+    wrap(asJava.setMulticastNetworkInterface(iface))
 
   /**
    * Return the [[java.net.InetSocketAddress]] to which this
    * [[org.vertx.scala.core.datagram.DatagramSocket]] is bound too.
    */
-  def localAddress(): InetSocketAddress = internal.localAddress()
+  def localAddress(): InetSocketAddress = asJava.localAddress()
 
   /**
    * Joins a multicast group and so start listen for packets send to it.
@@ -147,8 +146,8 @@ class DatagramSocket(protected[this] val internal: JDatagramSocket)
    * @param   handler           then handler to notify once the operation completes
    * @return  this              returns itself for method-chaining
    */
-  def listenMulticastGroup(multicastAddress: String, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.listenMulticastGroup(multicastAddress, dataSocketAsyncResult(handler)))
+  def listenMulticastGroup(multicastAddress: String, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.listenMulticastGroup(multicastAddress, dataSocketAsyncResult(handler)))
 
   /**
    * Joins a multicast group and so start listen for packets send to it on
@@ -161,8 +160,8 @@ class DatagramSocket(protected[this] val internal: JDatagramSocket)
    * @param   handler           then handler to notify once the operation completes
    * @return  this              returns itself for method-chaining
    */
-  def listenMulticastGroup(multicastAddress: String, networkInterface: String, source: String, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.listenMulticastGroup(multicastAddress, networkInterface, source, dataSocketAsyncResult(handler)))
+  def listenMulticastGroup(multicastAddress: String, networkInterface: String, source: String, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.listenMulticastGroup(multicastAddress, networkInterface, source, dataSocketAsyncResult(handler)))
 
   /**
    * Leaves a multicast group and so stop listen for packets send to it.
@@ -173,9 +172,8 @@ class DatagramSocket(protected[this] val internal: JDatagramSocket)
    * @param   handler           then handler to notify once the operation completes
    * @return  this              returns itself for method-chaining
    */
-  def unlistenMulticastGroup(multicastAddress: String, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.unlistenMulticastGroup(multicastAddress, dataSocketAsyncResult(handler)))
-
+  def unlistenMulticastGroup(multicastAddress: String, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.unlistenMulticastGroup(multicastAddress, dataSocketAsyncResult(handler)))
 
   /**
    * Leaves a multicast group and so stop listen for packets send to it on the given network interface.
@@ -188,8 +186,8 @@ class DatagramSocket(protected[this] val internal: JDatagramSocket)
    * @param   handler           then handler to notify once the operation completes
    * @return  this              returns itself for method-chaining
    */
-  def unlistenMulticastGroup(multicastAddress: String, networkInterface: String, source: String, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.unlistenMulticastGroup(multicastAddress, networkInterface, source, dataSocketAsyncResult(handler)))
+  def unlistenMulticastGroup(multicastAddress: String, networkInterface: String, source: String, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.unlistenMulticastGroup(multicastAddress, networkInterface, source, dataSocketAsyncResult(handler)))
 
   /**
    * Block the given sourceToBlock address for the given multicastAddress and
@@ -202,8 +200,8 @@ class DatagramSocket(protected[this] val internal: JDatagramSocket)
    * @param   handler           then handler to notify once the operation completes
    * @return  this              returns itself for method-chaining
    */
-  def blockMulticastGroup(multicastAddress: String, sourceToBlock: String, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.blockMulticastGroup(multicastAddress, sourceToBlock, dataSocketAsyncResult(handler)))
+  def blockMulticastGroup(multicastAddress: String, sourceToBlock: String, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.blockMulticastGroup(multicastAddress, sourceToBlock, dataSocketAsyncResult(handler)))
 
   /**
    * Block the given sourceToBlock address for the given multicastAddress on
@@ -217,20 +215,20 @@ class DatagramSocket(protected[this] val internal: JDatagramSocket)
    * @param   handler           then handler to notify once the operation completes
    * @return  this              returns itself for method-chaining
    */
-  def blockMulticastGroup(multicastAddress: String, networkInterface: String, sourceToBlock: String, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.blockMulticastGroup(multicastAddress, networkInterface, sourceToBlock, dataSocketAsyncResult(handler)))
+  def blockMulticastGroup(multicastAddress: String, networkInterface: String, sourceToBlock: String, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.blockMulticastGroup(multicastAddress, networkInterface, sourceToBlock, dataSocketAsyncResult(handler)))
 
   /**
    * @see [[org.vertx.scala.core.datagram.DatagramSocket.listen(java.net.InetSocketAddress, org.vertx.java.core.Handler)]]
    */
-  def listen(address: String, port: Int, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.listen(address, port, dataSocketAsyncResult(handler)))
+  def listen(address: String, port: Int, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.listen(address, port, dataSocketAsyncResult(handler)))
 
   /**
    * @see [[org.vertx.scala.core.datagram.DatagramSocket.listen(java.net.InetSocketAddress, org.vertx.java.core.Handler)]]
    */
-  def listen(port: Int, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.listen(port, dataSocketAsyncResult(handler)))
+  def listen(port: Int, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.listen(port, dataSocketAsyncResult(handler)))
 
   /**
    * Makes this [[org.vertx.scala.core.datagram.DatagramSocket]]} listen to
@@ -243,14 +241,20 @@ class DatagramSocket(protected[this] val internal: JDatagramSocket)
    * @param handler   the handler to notify once the operation completes
    * @return this     itself for method-chaining
    */
-  def listen(local: InetSocketAddress, handler: AsyncResult[DatagramSocket] => Unit): this.type =
-    wrap(internal.listen(local, dataSocketAsyncResult(handler)))
+  def listen(local: InetSocketAddress, handler: AsyncResult[DatagramSocket] => Unit): DatagramSocket =
+    wrap(asJava.listen(local, dataSocketAsyncResult(handler)))
 
   /**
    * Set a data handler. As data is read, the handler will be called with the data.
    */
   override def dataHandler(handler: DatagramPacket => Unit): this.type =
-    wrap(internal.dataHandler(dataPacketHandlerToJava(handler)))
+    wrap(asJava.dataHandler(dataPacketHandlerToJava(handler)))
 
   private def dataSocketAsyncResult = asyncResultConverter(DatagramSocket.apply) _
+
+}
+
+/** Factory for [[org.vertx.scala.core.datagram.DatagramSocket]] instances by wrapping a Java instance. */
+object DatagramSocket {
+  def apply(actual: JDatagramSocket) = new DatagramSocket(actual)
 }

@@ -30,7 +30,7 @@ class ScalaInterpreterTest extends TestVerticle {
     val classLoader = interpreter.compileClass(new File(filePath))
     val className = "org.vertx.scala.tests.lang.VerticleClass"
     val delegate = ClassLoaders.newInstance[Verticle](className, classLoader.get)
-    val verticle = ScalaVerticle.newVerticle(delegate.get, vertx.internal, container.internal)
+    val verticle = ScalaVerticle.newVerticle(delegate.get, vertx, container)
     verticle.start()
     assertHttpClientGetNow("Hello verticle class!")
   }

@@ -50,7 +50,7 @@ class ScalaVerticleFactoryTest extends TestVerticle {
 
   private def createScalaVerticleFactory(): ScalaVerticleFactory = {
     val factory = new ScalaVerticleFactory
-    factory.init(vertx.internal, container.internal, this.getClass.getClassLoader)
+    factory.init(vertx.asJava, container.asJava, this.getClass.getClassLoader)
     factory
   }
 

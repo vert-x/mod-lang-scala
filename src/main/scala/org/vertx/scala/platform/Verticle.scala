@@ -18,7 +18,6 @@ package org.vertx.scala.platform
 
 import scala.concurrent.Promise
 import org.vertx.scala.core.{ Vertx, VertxExecutionContext }
-import scala.concurrent.Future
 import org.vertx.scala.core.logging.Logger
 import org.vertx.scala.core.VertxAccess
 
@@ -33,8 +32,8 @@ import org.vertx.scala.core.VertxAccess
  */
 trait Verticle extends VertxExecutionContext with VertxAccess {
 
-  private var _vertx: Vertx = null
-  private var _container: Container = null
+  private var _vertx: Vertx = _
+  private var _container: Container = _
 
   /**
    * A reference to the Vert.x runtime.

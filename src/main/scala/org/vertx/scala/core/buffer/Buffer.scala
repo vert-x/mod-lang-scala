@@ -1,7 +1,7 @@
 package org.vertx.scala.core.buffer
 
 import org.vertx.java.core.buffer.{ Buffer => JBuffer }
-import org.vertx.scala.VertxWrapper
+import org.vertx.scala.Self
 import io.netty.buffer.ByteBuf
 import java.nio.ByteBuffer
 
@@ -22,9 +22,10 @@ import java.nio.ByteBuffer
  * Instances of this class are not thread-safe.<p>
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
-class Buffer(protected val internal: JBuffer) extends VertxWrapper {
-  override type InternalType = JBuffer
+final class Buffer private[scala] (val asJava: JBuffer) extends Self {
 
   /**
    * Appends the specified {@code T} to the end of the Buffer. The buffer will expand as necessary
@@ -34,178 +35,178 @@ class Buffer(protected val internal: JBuffer) extends VertxWrapper {
    * @param value The value to append to the Buffer.
    * @return A reference to {@code this} so multiple operations can be appended together.
    */
-  def append[T: BufferType](value: T): Buffer = wrap(implicitly[BufferType[T]].appendToBuffer(internal, value))
+  def append[T: BufferType](value: T): Buffer = wrap(implicitly[BufferType[T]].appendToBuffer(asJava, value))
 
   /**
    * Returns a {@code String} representation of the Buffer assuming it contains a {@code String} encoding in UTF-8.
    * @return A string representation of the Buffer.
    */
-  override def toString(): String = internal.toString()
+  override def toString(): String = asJava.toString()
 
   /**
    * Returns a {@code String} representation of the Buffer with the encoding specified by {@code enc}
    * @param enc The encoding to use to compute the String.
    * @return A string representation of the Buffer.
    */
-  def toString(enc: String): String = internal.toString(enc)
+  def toString(enc: String): String = asJava.toString(enc)
 
   /**
    * Returns the {@code byte} at position {@code pos} in the Buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code pos} is less than {@code 0} or {@code pos + 1} is greater than the length of the Buffer.
    */
-  def getByte(pos: Int): Byte = internal.getByte(pos)
+  def getByte(pos: Int): Byte = asJava.getByte(pos)
 
   /**
    * Returns the {@code int} at position {@code pos} in the Buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code pos} is less than {@code 0} or {@code pos + 4} is greater than the length of the Buffer.
    */
-  def getInt(pos: Int): Int = internal.getInt(pos)
+  def getInt(pos: Int): Int = asJava.getInt(pos)
 
   /**
    * Returns the {@code long} at position {@code pos} in the Buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code pos} is less than {@code 0} or {@code pos + 8} is greater than the length of the Buffer.
    */
-  def getLong(pos: Int): Long = internal.getLong(pos)
+  def getLong(pos: Int): Long = asJava.getLong(pos)
 
   /**
    * Returns the {@code double} at position {@code pos} in the Buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code pos} is less than {@code 0} or {@code pos + 8} is greater than the length of the Buffer.
    */
-  def getDouble(pos: Int): Double = internal.getDouble(pos)
+  def getDouble(pos: Int): Double = asJava.getDouble(pos)
 
   /**
    * Returns the {@code float} at position {@code pos} in the Buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code pos} is less than {@code 0} or {@code pos + 4} is greater than the length of the Buffer.
    */
-  def getFloat(pos: Int): Float = internal.getFloat(pos)
+  def getFloat(pos: Int): Float = asJava.getFloat(pos)
 
   /**
    * Returns the {@code short} at position {@code pos} in the Buffer.
    *
    * @throws IndexOutOfBoundsException if the specified {@code pos} is less than {@code 0} or {@code pos + 2} is greater than the length of the Buffer.
    */
-  def getShort(pos: Int): Short = internal.getShort(pos)
+  def getShort(pos: Int): Short = asJava.getShort(pos)
 
   /**
    * Returns a copy of the entire Buffer as a {@code byte[]}
    */
-  def getBytes(): Array[Byte] = internal.getBytes()
+  def getBytes(): Array[Byte] = asJava.getBytes()
 
   /**
    * Returns a copy of a sub-sequence the Buffer as a {@code byte[]} starting at position {@code start}
    * and ending at position {@code end - 1}
    */
-  def getBytes(start: Int, end: Int): Array[Byte] = internal.getBytes(start, end)
+  def getBytes(start: Int, end: Int): Array[Byte] = asJava.getBytes(start, end)
 
   /**
    * Returns a copy of a sub-sequence the Buffer as a {@link Buffer} starting at position {@code start}
    * and ending at position {@code end - 1}
    */
-  def getBuffer(start: Int, end: Int): Buffer = wrap(internal.getBuffer(start, end))
+  def getBuffer(start: Int, end: Int): Buffer = wrap(asJava.getBuffer(start, end))
 
   /**
    * Returns a copy of a sub-sequence the Buffer as a {@code String} starting at position {@code start}
    * and ending at position {@code end - 1} interpreted as a String in the specified encoding
    */
-  def getString(start: Int, end: Int, enc: String): String = internal.getString(start, end, enc)
+  def getString(start: Int, end: Int, enc: String): String = asJava.getString(start, end, enc)
 
   /**
    * Returns a copy of a sub-sequence the Buffer as a {@code String} starting at position {@code start}
    * and ending at position {@code end - 1} interpreted as a String in UTF-8 encoding
    */
-  def getString(start: Int, end: Int): String = internal.getString(start, end)
+  def getString(start: Int, end: Int): String = asJava.getString(start, end)
 
   /**
    * Sets the {@code byte} at position {@code pos} in the Buffer to the value {@code b}.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
-  def setByte(pos: Int, b: Byte): Buffer = wrap(internal.setByte(pos, b))
+  def setByte(pos: Int, b: Byte): Buffer = wrap(asJava.setByte(pos, b))
 
   /**
    * Sets the {@code int} at position {@code pos} in the Buffer to the value {@code i}.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
-  def setInt(pos: Int, i: Int): Buffer = wrap(internal.setInt(pos, i))
+  def setInt(pos: Int, i: Int): Buffer = wrap(asJava.setInt(pos, i))
 
   /**
    * Sets the {@code long} at position {@code pos} in the Buffer to the value {@code l}.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
-  def setLong(pos: Int, l: Long): Buffer = wrap(internal.setLong(pos, l))
+  def setLong(pos: Int, l: Long): Buffer = wrap(asJava.setLong(pos, l))
 
   /**
    * Sets the {@code double} at position {@code pos} in the Buffer to the value {@code d}.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
-  def setDouble(pos: Int, d: Double): Buffer = wrap(internal.setDouble(pos, d))
+  def setDouble(pos: Int, d: Double): Buffer = wrap(asJava.setDouble(pos, d))
 
   /**
    * Sets the {@code float} at position {@code pos} in the Buffer to the value {@code f}.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
-  def setFloat(pos: Int, f: Float): Buffer = wrap(internal.setFloat(pos, f))
+  def setFloat(pos: Int, f: Float): Buffer = wrap(asJava.setFloat(pos, f))
 
   /**
    * Sets the {@code short} at position {@code pos} in the Buffer to the value {@code s}.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
-  def setShort(pos: Int, s: Short): Buffer = wrap(internal.setShort(pos, s))
+  def setShort(pos: Int, s: Short): Buffer = wrap(asJava.setShort(pos, s))
 
   /**
    * Sets the bytes at position {@code pos} in the Buffer to the bytes represented by the {@code Buffer b}.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
-  def setBuffer(pos: Int, b: Buffer): Buffer = wrap(internal.setBuffer(pos, b.internal))
+  def setBuffer(pos: Int, b: Buffer): Buffer = wrap(asJava.setBuffer(pos, b.asJava))
 
   /**
    * Sets the bytes at position {@code pos} in the Buffer to the bytes represented by the {@code ByteBuffer b}.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
-  def setBytes(pos: Int, b: ByteBuffer): Buffer = wrap(internal.setBytes(pos, b))
+  def setBytes(pos: Int, b: ByteBuffer): Buffer = wrap(asJava.setBytes(pos, b))
 
   /**
    * Sets the bytes at position {@code pos} in the Buffer to the bytes represented by the {@code byte[] b}.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
-  def setBytes(pos: Int, b: Array[Byte]): Buffer = wrap(internal.setBytes(pos, b))
+  def setBytes(pos: Int, b: Array[Byte]): Buffer = wrap(asJava.setBytes(pos, b))
 
   /**
    * Sets the bytes at position {@code pos} in the Buffer to the value of {@code str} encoded in UTF-8.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
-  def setString(pos: Int, str: String): Buffer = wrap(internal.setString(pos, str))
+  def setString(pos: Int, str: String): Buffer = wrap(asJava.setString(pos, str))
 
   /**
    * Sets the bytes at position {@code pos} in the Buffer to the value of {@code str} encoded in encoding {@code enc}.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
-  def setString(pos: Int, str: String, enc: String): Buffer = wrap(internal.setString(pos, str, enc))
+  def setString(pos: Int, str: String, enc: String): Buffer = wrap(asJava.setString(pos, str, enc))
 
   /**
    * Returns the length of the buffer, measured in bytes.
    * All positions are indexed from zero.
    */
-  def length(): Int = internal.length()
+  def length(): Int = asJava.length()
 
   /**
    * Returns a copy of the entire Buffer.
    */
-  def copy(): Buffer = new Buffer(internal.copy())
+  def copy(): Buffer = new Buffer(asJava.copy())
 
   /**
    * Returns the Buffer as a Netty {@code ByteBuf}.<p>
    * This method is meant for internal use only.
    */
-  def getByteBuf(): ByteBuf = internal.getByteBuf()
+  def getByteBuf(): ByteBuf = asJava.getByteBuf()
 
   override def equals(other: Any): Boolean = other match {
-    case that: JBuffer => that.isInstanceOf[JBuffer] && this.internal == that
-    case that: Buffer => (that canEqual this) && (this.internal == that.internal)
+    case that: JBuffer => that.isInstanceOf[JBuffer] && this.asJava == that
+    case that: Buffer => (that canEqual this) && (this.asJava == that.asJava)
     case _ => false
   }
 

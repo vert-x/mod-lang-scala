@@ -13,24 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.vertx.scala.core.eventbus
 
-import org.vertx.scala.tests.util.TestUtils._
-import org.vertx.testtools.VertxAssert._
-import org.vertx.testtools.VertxAssert
+import org.vertx.scala.core._
+import org.vertx.java.core.eventbus.{ Message => JMessage }
 
-VertxAssert.initialize(vertx.asJava)
-
-vertx.createHttpServer.requestHandler { req: HttpServerRequest =>
-  req.response.end("Hello verticle test script!")
-}.listen(8080, { ar: AsyncResult[HttpServer] => {
-  startTests(this, container)
-}})
-
-def testHttpServer(): Unit = {
-  vertx.createHttpClient.setPort(8080).getNow("/", { resp => 
-    resp.bodyHandler({ buf =>
-      assertEquals("Hello verticle test script!", buf.toString)
-      testComplete()
-    })
-  })
-}
+/**
+ * Send/Publish message wrappers.
+ *
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
+ */
+private[eventbus] trait SendOrPublish
+private case class Publish(address: String, value: MessageData) extends SendOrPublish
+private case class Send[X](address: String, value: MessageData,
+  replyHandler: Option[Either[Handler[JMessage[X]], Handler[AsyncResult[JMessage[X]]]]])
+  extends SendOrPublish

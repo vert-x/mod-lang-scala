@@ -16,14 +16,8 @@
 
 package org.vertx.scala.core.http
 
-import org.vertx.java.core.buffer.Buffer
-import org.vertx.java.core.http.{ WebSocketBase => JWebSocketBase }
 import org.vertx.java.core.http.{ WebSocket => JWebSocket }
-import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.Handler
-import scala.xml.Node
-import org.vertx.scala.VertxWrapper
-import org.vertx.scala.core.streams.WrappedReadStream
+import org.vertx.scala.Self
 
 /**
  * Represents a client side WebSocket.<p>
@@ -34,11 +28,14 @@ import org.vertx.scala.core.streams.WrappedReadStream
  * @author Galder Zamarreño
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class WebSocket(protected[this] val internal: JWebSocket) extends WrappedWebSocketBase {
-  override type InternalType = JWebSocket
+final class WebSocket private[scala] (val asJava: JWebSocket) extends Self
+  with WebSocketBase {
+
+  override type J = JWebSocket
+
 }
 
-/** Factory for [[http.WebSocket]] instances. */
+/** Factory for [[org.vertx.scala.core.http.WebSocket]] instances. */
 object WebSocket {
   def apply(jsocket: JWebSocket) = new WebSocket(jsocket)
 }

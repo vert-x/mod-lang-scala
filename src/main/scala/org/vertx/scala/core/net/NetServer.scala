@@ -17,12 +17,12 @@
 package org.vertx.scala.core.net
 
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.net.{ NetServer => JNetServer, NetSocket => JNetSocket }
-import org.vertx.java.core.{ Handler, AsyncResult, ServerTCPSupport, ServerSSLSupport }
-import org.vertx.java.core.impl.DefaultFutureResult
-import org.vertx.scala.core.WrappedServerSSLSupport
-import org.vertx.scala.core.WrappedServerTCPSupport
-import org.vertx.scala.core.WrappedCloseable
+import org.vertx.java.core.net.{ NetServer => JNetServer }
+import org.vertx.java.core.AsyncResult
+import org.vertx.scala.core.ServerSSLSupport
+import org.vertx.scala.core.ServerTCPSupport
+import org.vertx.scala.core.Closeable
+import org.vertx.scala.Self
 
 /**
  * Represents a TCP or SSL server<p>
@@ -36,9 +36,14 @@ import org.vertx.scala.core.WrappedCloseable
  * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
-class NetServer(protected[this] val internal: JNetServer) extends WrappedCloseable with WrappedServerSSLSupport with WrappedServerTCPSupport {
-  override type InternalType = JNetServer
+final class NetServer private[scala] (val asJava: JNetServer) extends Self
+  with ServerSSLSupport
+  with ServerTCPSupport
+  with Closeable {
+
+  override type J = JNetServer
 
   /**
    * Supply a connect handler for this server. The server can only have at most one connect handler at any one time.
@@ -46,47 +51,48 @@ class NetServer(protected[this] val internal: JNetServer) extends WrappedCloseab
    * connect handler.
    * @return a reference to this so multiple method calls can be chained together
    */
-  def connectHandler(connectHandler: NetSocket => Unit): NetServer = wrap(internal.connectHandler(connectHandler.compose(NetSocket.apply)))
+  def connectHandler(connectHandler: NetSocket => Unit): NetServer = wrap(asJava.connectHandler(connectHandler.compose(NetSocket.apply)))
 
   /**
    * Tell the server to start listening on all available interfaces and port {@code port}. Be aware this is an
    * async operation and the server may not bound on return of the method.
    */
-  def listen(port: Int): NetServer = wrap(internal.listen(port))
+  def listen(port: Int): NetServer = wrap(asJava.listen(port))
 
   /**
    * Instruct the server to listen for incoming connections on the specified {@code port} and all available interfaces.
    */
-  def listen(port: Int, listenHandler: AsyncResult[NetServer] => Unit): NetServer = wrap(internal.listen(port, arNetServer(listenHandler)))
+  def listen(port: Int, listenHandler: AsyncResult[NetServer] => Unit): NetServer = wrap(asJava.listen(port, arNetServer(listenHandler)))
 
   /**
    * Tell the server to start listening on port {@code port} and hostname or ip address given by {@code host}. Be aware this is an
    * async operation and the server may not bound on return of the method.
    *
    */
-  def listen(port: Int, host: String): NetServer = wrap(internal.listen(port, host))
+  def listen(port: Int, host: String): NetServer = wrap(asJava.listen(port, host))
 
   /**
    * Instruct the server to listen for incoming connections on the specified {@code port} and {@code host}. {@code host} can
    * be a host name or an IP address.
    */
-  def listen(port: Int, host: String, listenHandler: AsyncResult[NetServer] => Unit): NetServer = wrap(internal.listen(port, host, arNetServer(listenHandler)))
+  def listen(port: Int, host: String, listenHandler: AsyncResult[NetServer] => Unit): NetServer = wrap(asJava.listen(port, host, arNetServer(listenHandler)))
 
   /**
    * The actual port the server is listening on. This is useful if you bound the server specifying 0 as port number
    * signifying an ephemeral port
    */
-  def port(): Int = internal.port()
+  def port(): Int = asJava.port()
 
   /**
    * The host.
    */
-  def host(): String = internal.host()
+  def host(): String = asJava.host()
 
   private def arNetServer = asyncResultConverter(NetServer.apply) _
+
 }
 
-/** Factory for [[net.NetServer]] instances. */
+/** Factory for [[org.vertx.scala.core.net.NetServer]] instances. */
 object NetServer {
   def apply(actual: JNetServer) = new NetServer(actual)
 }
