@@ -13,32 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vertx.scala.core.dns
+package org.vertx.scala.core
 
-import org.vertx.java.core.dns.{ MxRecord => JMxRecord }
+import org.vertx.java.core.{ ServerTCPSupport => JServerTCPSupport }
+import org.vertx.scala.Self
 
 /**
- * Represent a Mail-Exchange-Record (MX) which was resolved for a domain.
+ * Supports [[org.vertx.java.core.ServerTCPSupport]] functionality.
+ * @tparam S self type to help provide fluent APIs
  *
- * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  * @author Galder Zamarreño
  */
-final class MxRecord private[scala] (val asJava: JMxRecord) extends AnyVal {
+trait ServerTCPSupport extends Self
+  with TCPSupport {
+
+  override type J <: JServerTCPSupport[_]
 
   /**
-   * The priority of the MX record.
+   * Set the accept backlog
+   * @return a reference to this so multiple method calls can be chained together
    */
-  def priority(): Int = asJava.priority()
+  def setAcceptBacklog(backlog: Int): this.type = wrap(asJava.setAcceptBacklog(backlog))
 
   /**
-   * The name of the MX record
+   *
+   * @return The accept backlog
    */
-  def name(): String = asJava.name()
-
-}
-
-/** Factory for [[org.vertx.scala.core.dns.MxRecord]] instances. */
-object MxRecord {
-  def apply(internal: JMxRecord) = new MxRecord(internal)
+  def getAcceptBacklog(): Int = asJava.getAcceptBacklog()
 }

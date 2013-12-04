@@ -45,9 +45,9 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   import ScalaVerticleFactory._
 
-  private var vertx: Vertx = null
+  private var vertx: Vertx = _
 
-  private var container: Container = null
+  private var container: Container = _
 
   private var loader: ClassLoader = null
 
@@ -57,7 +57,7 @@ class ScalaVerticleFactory extends VerticleFactory {
     this.loader = aloader
 
     vertx = Vertx(jvertx)
-    container = Container(jcontainer)
+    container = new Container(jcontainer)
     val settings = interpreterSettings()
     interpreter = new ScalaInterpreter(
         settings.get, vertx, container, new LogPrintWriter(logger))

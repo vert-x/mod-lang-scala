@@ -13,24 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.vertx.scala
 
-import org.vertx.scala.tests.util.TestUtils._
-import org.vertx.testtools.VertxAssert._
-import org.vertx.testtools.VertxAssert
+/**
+ * This trait shows that this type is a wrapper around a Vert.x Java class.
+ * Traits that require access to the Java object should extend this trait.
+ * Concrete implementations will provide final information on the exact Java
+ * type and they'd provide access to the actual java object.
+ *
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
+ */
+private[scala] trait AsJava {
 
-VertxAssert.initialize(vertx.asJava)
+  /** The internal type of the Java wrapped class. */
+  type J
 
-vertx.createHttpServer.requestHandler { req: HttpServerRequest =>
-  req.response.end("Hello verticle test script!")
-}.listen(8080, { ar: AsyncResult[HttpServer] => {
-  startTests(this, container)
-}})
+  /** The internal instance of the Java wrapped class. */
+  val asJava: J
 
-def testHttpServer(): Unit = {
-  vertx.createHttpClient.setPort(8080).getNow("/", { resp => 
-    resp.bodyHandler({ buf =>
-      assertEquals("Hello verticle test script!", buf.toString)
-      testComplete()
-    })
-  })
 }

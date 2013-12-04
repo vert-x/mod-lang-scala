@@ -16,16 +16,12 @@
 
 package org.vertx.scala.core.http
 
-import scala.collection.JavaConverters._
 import org.vertx.java.core.http.{ HttpClientResponse => JHttpClientResponse }
-import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.Handler
 import org.vertx.scala.core.MultiMap
 import org.vertx.scala.core.buffer._
 import org.vertx.scala.core.net.NetSocket
-import org.vertx.scala.core.streams.WrappedReadWriteStream
-import org.vertx.scala.core.streams.WrappedReadStream
-import org.vertx.scala.core.streams.WrappedReadStream
+import org.vertx.scala.core.streams.ReadStream
+import org.vertx.scala.Self
 
 /**
  * Represents a client-side HTTP response.<p>
@@ -41,53 +37,55 @@ import org.vertx.scala.core.streams.WrappedReadStream
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class HttpClientResponse(protected[this] val internal: JHttpClientResponse) extends WrappedReadStream {
-  override type InternalType = JHttpClientResponse
+class HttpClientResponse private[scala] (val asJava: JHttpClientResponse) extends Self
+  with ReadStream {
+
+  override type J = JHttpClientResponse
 
   /**
    * Returns the HTTP status code of the response.
    *
    * @return The HTTP status code of the response.
    */
-  def statusCode(): Int = internal.statusCode
+  def statusCode(): Int = asJava.statusCode
 
   /**
    * Returns the HTTP status message of the response.
    *
    * @return The HTTP status message of the response.
    */
-  def statusMessage(): String = internal.statusMessage
+  def statusMessage(): String = asJava.statusMessage
 
   /**
    * Returns the HTTP headers.
    *
    * @return The HTTP headers.
    */
-  def headers(): MultiMap = internal.headers
+  def headers(): MultiMap = asJava.headers
 
   /**
    * Returns the HTTP trailers.
    *
    * @return The HTTP trailers.
    */
-  def trailers(): MultiMap = internal.trailers
+  def trailers(): MultiMap = asJava.trailers
 
   /**
    * Returns the Set-Cookie headers (including trailers).
    *
    * @return The Set-Cookie headers (including trailers).
    */
-  def cookies(): java.util.List[String] = internal.cookies()
+  def cookies(): java.util.List[String] = asJava.cookies()
 
   /**
    * Convenience method for receiving the entire request body in one piece. This saves the user having to manually
    * set a data and end handler and append the chunks of the body until the whole body received.
    * Don't use this if your request body is large - you could potentially run out of RAM.
    *
-   * @param bodyHandler This handler will be called after all the body has been received.
+   * @param handler This handler will be called after all the body has been received.
    */
   def bodyHandler(handler: Buffer => Unit): HttpClientResponse =
-    wrap(internal.bodyHandler(bufferHandlerToJava(handler)))
+    wrap(asJava.bodyHandler(bufferHandlerToJava(handler)))
 
   /**
    * Get a net socket for the underlying connection of this request. USE THIS WITH CAUTION!
@@ -95,11 +93,11 @@ class HttpClientResponse(protected[this] val internal: JHttpClientResponse) exte
    *
    * @return the net socket
    */
-  def netSocket(): NetSocket = NetSocket(internal.netSocket())
+  def netSocket(): NetSocket = NetSocket(asJava.netSocket())
 
 }
 
-/** Factory for [[http.HttpClient]] instances by wrapping a Java instance. */
+/** Factory for [[org.vertx.scala.core.http.HttpClient]] instances by wrapping a Java instance. */
 object HttpClientResponse {
   def apply(internal: JHttpClientResponse) = new HttpClientResponse(internal)
 }

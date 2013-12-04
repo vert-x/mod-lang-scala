@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.vertx.scala.tests.core.datagram
 
 import org.vertx.scala.testtools.TestVerticle
@@ -17,268 +32,303 @@ import scala.util.Success
  */
 class DatagramTest extends TestVerticle {
 
-  var peer1: DatagramSocket = _
-  var peer2: DatagramSocket = _
+  var peer1: Option[DatagramSocket] = None
+  var peer2: Option[DatagramSocket] = None
 
   @Test def sendReceive() {
-    peer1 = vertx.createDatagramSocket()
-    peer2 = vertx.createDatagramSocket()
-    peer2.exceptionHandler(t => fail(s"Unexpected throwable $t"))
-    peer2.listen("127.0.0.1", 1234, { h =>
-      assertTrue(h.succeeded())
-      val buffer = generateRandomBuffer(128)
-
-      peer2.dataHandler { h =>
-        assertEquals(buffer, h.data())
-        testComplete()
-      }
-
-      peer2.send(buffer, "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] =>
+    peer2 = Some(vertx.createDatagramSocket())
+    for (p <- peer2) yield {
+      p.exceptionHandler(t => fail(s"Unexpected throwable $t"))
+      p.listen("127.0.0.1", 1234, { h =>
         assertTrue(h.succeeded())
+        val buffer = generateRandomBuffer(128)
+
+        p.dataHandler { h =>
+          assertEquals(buffer, h.data())
+          testComplete()
+        }
+
+        p.send(buffer, "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] =>
+          assertTrue(h.succeeded())
+        })
       })
-    })
+    }
   }
 
   @Test def listenHostPort() {
-    peer2 = vertx.createDatagramSocket()
-    peer2.listen("127.0.0.1", 1234, { h =>
-      assertTrue(h.succeeded())
-      testComplete()
-    })
+    peer2 = Some(vertx.createDatagramSocket())
+    for (p <- peer2) yield {
+      p.listen("127.0.0.1", 1234, { h =>
+        assertTrue(h.succeeded())
+        testComplete()
+      })
+    }
   }
 
   @Test def listenPort() {
-    peer2 = vertx.createDatagramSocket()
-    // Due to overloading, type information needs to be provided
-    peer2.listen(1234, { h: AsyncResult[DatagramSocket] =>
-      assertTrue(h.succeeded())
-      testComplete()
-    })
+    peer2 = Some(vertx.createDatagramSocket())
+    for (p <- peer2) yield {
+      // Due to overloading, type information needs to be provided
+      p.listen(1234, { h: AsyncResult[DatagramSocket] =>
+        assertTrue(h.succeeded())
+        testComplete()
+      })
+    }
   }
 
   @Test def listenInetSocketAddress() {
-    peer2 = vertx.createDatagramSocket()
-    peer2.listen(new InetSocketAddress("127.0.0.1", 1234), { h: AsyncResult[DatagramSocket] =>
-      assertTrue(h.succeeded())
-      testComplete()
-    })
+    peer2 = Some(vertx.createDatagramSocket())
+    for (p <- peer2) yield {
+      p.listen(new InetSocketAddress("127.0.0.1", 1234), { h: AsyncResult[DatagramSocket] =>
+        assertTrue(h.succeeded())
+        testComplete()
+      })
+    }
   }
 
   @Test def listenSamePortMultipleTimes() {
-    peer1 = vertx.createDatagramSocket()
-    peer2 = vertx.createDatagramSocket()
-    peer2.listen(1234, { h: AsyncResult[DatagramSocket] =>
-      assertTrue(h.succeeded())
-      peer1.listen(1234, { h: AsyncResult[DatagramSocket] =>
+    peer1 = Some(vertx.createDatagramSocket())
+    peer2 = Some(vertx.createDatagramSocket())
+    for {
+      p1 <- peer1
+      p2 <- peer2
+    } yield {
+      p2.listen(1234, { h: AsyncResult[DatagramSocket] =>
+        assertTrue(h.succeeded())
+        p1.listen(1234, { h: AsyncResult[DatagramSocket] =>
           assertTrue(h.failed())
           testComplete()
+        })
+        ()
       })
-      ()
-    })
+    }
   }
 
   @Test def echo() {
-    peer1 = vertx.createDatagramSocket()
-    peer2 = vertx.createDatagramSocket()
-    peer1.exceptionHandler(h => fail("Failed"))
-    peer2.exceptionHandler(h => fail("Failed"))
+    peer1 = Some(vertx.createDatagramSocket())
+    peer2 = Some(vertx.createDatagramSocket())
+    for {
+      p1 <- peer1
+      p2 <- peer2
+    } yield {
+      p1.exceptionHandler(h => fail("Failed"))
+      p2.exceptionHandler(h => fail("Failed"))
 
-    peer2.listen("127.0.0.1", 1234, { h =>
-      assertTrue(h.succeeded())
-      val buffer = generateRandomBuffer(128)
-      peer2.dataHandler { h =>
-        assertEquals(new InetSocketAddress("127.0.0.1", 1235), h.sender())
-        assertEquals(buffer, h.data())
-        peer2.send(h.data(), "127.0.0.1", 1235, { h: AsyncResult[DatagramSocket] =>
-          assertTrue(h.succeeded())
-        })
-      }
-
-      peer1.listen("127.0.0.1", 1235, { h =>
-        peer1.dataHandler { h =>
-           assertEquals(buffer, h.data())
-           assertEquals(new InetSocketAddress("127.0.0.1", 1234), h.sender())
-           testComplete()
+      p2.listen("127.0.0.1", 1234, { h =>
+        assertTrue(h.succeeded())
+        val buffer = generateRandomBuffer(128)
+        p2.dataHandler { h =>
+          assertEquals(new InetSocketAddress("127.0.0.1", 1235), h.sender())
+          assertEquals(buffer, h.data())
+          p2.send(h.data(), "127.0.0.1", 1235, { h: AsyncResult[DatagramSocket] =>
+            assertTrue(h.succeeded())
+          })
         }
 
-        peer1.send(buffer, "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] =>
-          assertTrue(h.succeeded())
+        p1.listen("127.0.0.1", 1235, { h =>
+          p1.dataHandler { h =>
+            assertEquals(buffer, h.data())
+            assertEquals(new InetSocketAddress("127.0.0.1", 1234), h.sender())
+            testComplete()
+          }
+
+          p1.send(buffer, "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] =>
+            assertTrue(h.succeeded())
+          })
         })
       })
-    })
+    }
   }
 
   @Test def sendAfterCloseFails() {
-    peer1 = vertx.createDatagramSocket()
-    peer2 = vertx.createDatagramSocket()
-    peer1.close { h =>
-      peer1.send("Test", "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] =>
-        assertTrue(h.failed())
-        peer1 = null
-        peer2.close { h =>
-          peer2.send("Test", "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] =>
-            assertTrue(h.failed())
-            peer2 = null
-            testComplete()
-          })
-        }
-      })
+    peer1 = Some(vertx.createDatagramSocket())
+    peer2 = Some(vertx.createDatagramSocket())
+    for {
+      p1 <- peer1
+      p2 <- peer2
+    } yield {
+      p1.close { h =>
+        p1.send("Test", "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] =>
+          assertTrue(h.failed())
+          // peer1 = null
+          p2.close { h =>
+            p2.send("Test", "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] =>
+              assertTrue(h.failed())
+              // peer2 = null
+              testComplete()
+            })
+          }
+        })
+      }
     }
   }
 
   def testBroadcast() {
-    peer1 = vertx.createDatagramSocket()
-    peer2 = vertx.createDatagramSocket()
-    peer2.exceptionHandler(h => fail("Failed"))
+    peer1 = Some(vertx.createDatagramSocket())
+    peer2 = Some(vertx.createDatagramSocket())
+    for {
+      p1 <- peer1
+      p2 <- peer2
+    } yield {
+      p2.exceptionHandler(h => fail("Failed"))
 
-    peer1.setBroadcast(broadcast = true)
-    peer2.setBroadcast(broadcast = true)
+      p1.setBroadcast(broadcast = true)
+      p2.setBroadcast(broadcast = true)
 
-    peer2.listen(new InetSocketAddress(1234), { h: AsyncResult[DatagramSocket] =>
-      assertTrue(h.succeeded())
-      val buffer = generateRandomBuffer(128)
-      peer2.dataHandler { h =>
-        assertEquals(buffer, h.data())
-        testComplete()
-      }
-      peer1.send(buffer, "255.255.255.255", 1234, { h: AsyncResult[DatagramSocket] =>
+      p2.listen(new InetSocketAddress(1234), { h: AsyncResult[DatagramSocket] =>
         assertTrue(h.succeeded())
+        val buffer = generateRandomBuffer(128)
+        p2.dataHandler { h =>
+          assertEquals(buffer, h.data())
+          testComplete()
+        }
+        p1.send(buffer, "255.255.255.255", 1234, { h: AsyncResult[DatagramSocket] =>
+          assertTrue(h.succeeded())
+        })
+        ()
       })
-      ()
-    })
+    }
   }
 
   @Test def broadcastFailsIfNotConfigured() {
-    peer1 = vertx.createDatagramSocket()
-    peer1.send("test", "255.255.255.255", 1234, { h: AsyncResult[DatagramSocket] =>
-      assertTrue(h.failed())
-      testComplete()
-    })
+    peer1 = Some(vertx.createDatagramSocket())
+    for (p <- peer1) yield {
+      p.send("test", "255.255.255.255", 1234, { h: AsyncResult[DatagramSocket] =>
+        assertTrue(h.failed())
+        testComplete()
+      })
+    }
   }
 
   @Test def configureAfterSendString() {
-    peer1 = vertx.createDatagramSocket()
-    peer1.send("test", "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] => })
-    checkConfigure(peer1)
-    peer1.close()
+    peer1 = Some(vertx.createDatagramSocket())
+    for (p <- peer1) yield {
+      p.send("test", "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] => })
+      checkConfigure(p)
+      p.close()
+    }
   }
 
   @Test def configureAfterSendStringWithEnc() {
-    peer1 = vertx.createDatagramSocket()
-    peer1.send("test", "UTF-8", "127.0.0.1", 1234, { h => })
-    checkConfigure(peer1)
+    peer1 = Some(vertx.createDatagramSocket())
+    for (p <- peer1) yield {
+      p.send("test", "UTF-8", "127.0.0.1", 1234, { h => })
+      checkConfigure(p)
+    }
   }
 
   @Test def configureAfterSendBuffer() {
-    peer1 = vertx.createDatagramSocket()
-    peer1.send(generateRandomBuffer(64), "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] => })
-    checkConfigure(peer1)
+    peer1 = Some(vertx.createDatagramSocket())
+    for (p <- peer1) yield {
+      p.send(generateRandomBuffer(64), "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] => })
+      checkConfigure(p)
+    }
   }
 
   @Test def configureAfterListen() {
-    peer1 = vertx.createDatagramSocket()
-    peer1.listen("127.0.0.1", 1234, { h => })
-    checkConfigure(peer1)
+    peer1 = Some(vertx.createDatagramSocket())
+    for (p <- peer1) yield {
+      p.listen("127.0.0.1", 1234, { h => })
+      checkConfigure(p)
+    }
   }
 
   @Test def configureAfterListenWithInetSocketAddress() {
-    peer1 = vertx.createDatagramSocket()
-    peer1.listen(new InetSocketAddress("127.0.0.1", 1234), { h: AsyncResult[DatagramSocket] => })
-    checkConfigure(peer1)
+    peer1 = Some(vertx.createDatagramSocket())
+    for (p <- peer1) yield {
+      p.listen(new InetSocketAddress("127.0.0.1", 1234), { h: AsyncResult[DatagramSocket] => })
+      checkConfigure(p)
+    }
   }
 
   @Test def configure() {
-    peer1 = vertx.createDatagramSocket(Some(IPv4))
+    peer1 = Some(vertx.createDatagramSocket(Some(IPv4)))
 
-    assertFalse(peer1.isBroadcast)
-    peer1.setBroadcast(broadcast = true)
-    assertTrue(peer1.isBroadcast)
+    for (p <- peer1) yield {
+      assertFalse(p.isBroadcast)
+      p.setBroadcast(broadcast = true)
+      assertTrue(p.isBroadcast)
 
-    assertTrue(peer1.isMulticastLoopbackMode)
-    peer1.setMulticastLoopbackMode(loopbackModeDisabled = false)
-    assertFalse(peer1.isMulticastLoopbackMode)
+      assertTrue(p.isMulticastLoopbackMode)
+      p.setMulticastLoopbackMode(loopbackModeDisabled = false)
+      assertFalse(p.isMulticastLoopbackMode)
 
-    for (iface <- getNetworkInterface)
-    yield {
-      assertNull(peer1.getMulticastNetworkInterface)
-      peer1.setMulticastNetworkInterface(iface.getName)
-      assertEquals(iface.getName, peer1.getMulticastNetworkInterface)
+      for (iface <- getNetworkInterface)
+      yield {
+        assertNull(p.getMulticastNetworkInterface)
+        p.setMulticastNetworkInterface(iface.getName)
+        assertEquals(iface.getName, p.getMulticastNetworkInterface)
+      }
+
+      p.setReceiveBufferSize(1024)
+      p.setSendBufferSize(1024)
+
+      assertFalse(p.isReuseAddress)
+      p.setReuseAddress(reuse = true)
+      assertTrue(p.isReuseAddress)
+
+      assertNotSame(2, p.getMulticastTimeToLive)
+      p.setMulticastTimeToLive(2)
+      assertEquals(2, p.getMulticastTimeToLive)
+
+      testComplete()
     }
-
-    peer1.setReceiveBufferSize(1024)
-    peer1.setSendBufferSize(1024)
-
-    assertFalse(peer1.isReuseAddress)
-    peer1.setReuseAddress(reuse = true)
-    assertTrue(peer1.isReuseAddress)
-
-    assertNotSame(2, peer1.getMulticastTimeToLive)
-    peer1.setMulticastTimeToLive(2)
-    assertEquals(2, peer1.getMulticastTimeToLive)
-
-    testComplete()
   }
 
   @Test def multicastJoinLeave() {
     val buffer = generateRandomBuffer(128)
     val groupAddress = "230.0.0.1"
 
-    peer1 = vertx.createDatagramSocket()
-    peer2 = vertx.createDatagramSocket(Some(IPv4))
+    peer1 = Some(vertx.createDatagramSocket())
+    peer2 = Some(vertx.createDatagramSocket(Some(IPv4)))
 
-    peer2.dataHandler(h => assertEquals(buffer, h.data()))
-    peer2.listen("127.0.0.1", 1234, { h =>
-      assertTrue(h.succeeded())
-      peer2.listenMulticastGroup(groupAddress, { h =>
+    for {
+      p1 <- peer1
+      p2 <- peer2
+    } yield {
+      p2.dataHandler(h => assertEquals(buffer, h.data()))
+      p2.listen("127.0.0.1", 1234, { h =>
         assertTrue(h.succeeded())
-        peer1.send(buffer, groupAddress, 1234, { h: AsyncResult[DatagramSocket] =>
+        p2.listenMulticastGroup(groupAddress, { h =>
           assertTrue(h.succeeded())
-          // leave group
-          peer2.unlistenMulticastGroup(groupAddress, { h =>
+          p1.send(buffer, groupAddress, 1234, { h: AsyncResult[DatagramSocket] =>
             assertTrue(h.succeeded())
-            val received = Promise[Boolean]()
-            val future = received.future
-            peer2.dataHandler { h =>
+            // leave group
+            p2.unlistenMulticastGroup(groupAddress, { h =>
+              assertTrue(h.succeeded())
+              val received = Promise[Boolean]()
+              val future = received.future
+              p2.dataHandler { h =>
               // Should not receive any more event as it left the group
-              received.complete(Success(true))
-            }
-            peer1.send(buffer, groupAddress, 1234, { h: AsyncResult[DatagramSocket] =>
+                received.complete(Success(true))
+              }
+              p1.send(buffer, groupAddress, 1234, { h: AsyncResult[DatagramSocket] =>
               // schedule a timer which will check in 1 second if we received
               // a message after the group was left before
-              vertx.setTimer(1000, { h =>
-                if (!future.isCompleted) {
-                  // Should not have completed
-                  testComplete()
-                } else {
-                  fail("Should not receive any more event after leaving the group")
-                }
+                vertx.setTimer(1000, { h =>
+                  if (!future.isCompleted) {
+                    // Should not have completed
+                    testComplete()
+                  } else {
+                    fail("Should not receive any more event after leaving the group")
+                  }
+                })
+                ()
               })
-              ()
             })
+            ()
           })
-          ()
         })
       })
-    })
+    }
   }
 
   override def stop() {
     stopDatagramSocket(List(peer1, peer2))
   }
 
-  private def stopDatagramSocket(sockets: List[DatagramSocket]) {
-    sockets match {
-      case Nil => super.stop() // Final stop
-      case x::xs => // Stop each socket
-        if (x != null) {
-          x.close({ h =>
-            stopDatagramSocket(xs)
-          })
-        } else {
-          stopDatagramSocket(xs)
-        }
-        // Not tail recursive, but that's fine since list is small
-    }
+  private def stopDatagramSocket(sockets: List[Option[DatagramSocket]]) {
+    sockets.foreach(_.map(_.close()))
   }
 
   private def checkConfigure(endpoint: DatagramSocket) {

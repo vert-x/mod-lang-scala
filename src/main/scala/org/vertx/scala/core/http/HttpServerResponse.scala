@@ -19,10 +19,10 @@ package org.vertx.scala.core.http
 import org.vertx.java.core.http.{ HttpServerResponse => JHttpServerResponse }
 import org.vertx.scala.core.buffer._
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.Handler
-import org.vertx.scala.core.streams.WrappedWriteStream
+import org.vertx.scala.core.streams.WriteStream
 import org.vertx.scala.core.MultiMap
 import collection.JavaConverters._
+import org.vertx.scala.Self
 
 /**
  * Represents a server-side HTTP response.<p>
@@ -41,51 +41,55 @@ import collection.JavaConverters._
  * Instances of this class are not thread-safe<p>
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
-class HttpServerResponse(protected[this] val internal: JHttpServerResponse) extends WrappedWriteStream {
-  override type InternalType = JHttpServerResponse
+final class HttpServerResponse private[scala] (val asJava: JHttpServerResponse) extends Self
+  with WriteStream {
+
+  override type J = JHttpServerResponse
 
   /**
    * Close the underlying TCP connection
    */
-  def close(): Unit = internal.close()
+  def close(): Unit = asJava.close()
 
   /**
    * Set a close handler for the response. This will be called if the underlying connection closes before the response
    * is complete.
    * @param handler
    */
-  def closeHandler(handler: => Unit): HttpServerResponse = wrap(internal.closeHandler(handler))
+  def closeHandler(handler: => Unit): HttpServerResponse = wrap(asJava.closeHandler(handler))
 
   /**
    * Ends the response. If no data has been written to the response body,
    * the actual response won't get written until this method gets called.<p>
    * Once the response has ended, it cannot be used any more.
    */
-  def end(): Unit = internal.end()
+  def end(): Unit = asJava.end()
 
   /**
    * Same as {@link #end()} but writes some data to the response body before ending. If the response is not chunked and
    * no other data has been written then the Content-Length header will be automatically set
    */
-  def end(chunk: Buffer): Unit = internal.end(chunk.toJava)
+  def end(chunk: Buffer): Unit = asJava.end(chunk.asJava)
 
   /**
    * Same as {@link #end(Buffer)} but writes a String with the specified encoding before ending the response.
    */
-  def end(chunk: String, enc: String): Unit = internal.end(chunk, enc)
+  def end(chunk: String, enc: String): Unit = asJava.end(chunk, enc)
 
   /**
    * Same as {@link #end(Buffer)} but writes a String with the default encoding before ending the response.
    */
-  def end(chunk: String): Unit = internal.end(chunk)
+  def end(chunk: String): Unit = asJava.end(chunk)
 
   /**
    * The HTTP status code of the response. The default is {@code 200} representing {@code OK}.
    *
    * @return The status code.
    */
-  def getStatusCode(): Int = internal.getStatusCode()
+  def getStatusCode(): Int = asJava.getStatusCode()
 
   /**
    * The HTTP status message of the response. If this is not specified a default value will be used depending on what
@@ -93,19 +97,19 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    *
    * @return The status message.
    */
-  def getStatusMessage(): String = internal.getStatusMessage()
+  def getStatusMessage(): String = asJava.getStatusMessage()
 
   /**
    * Returns the HTTP headers.
    *
    * @return The HTTP headers.
    */
-  def headers(): org.vertx.java.core.MultiMap = internal.headers()
+  def headers(): org.vertx.java.core.MultiMap = asJava.headers()
 
   /**
    * Is the response chunked?
    */
-  def isChunked(): Boolean = internal.isChunked()
+  def isChunked(): Boolean = asJava.isChunked()
 
   /**
    * Put an HTTP header - fluent API.
@@ -114,7 +118,7 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * @param values  The header values.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def putHeader(name: String, values: java.lang.Iterable[String]): HttpServerResponse = wrap(internal.putHeader(name, values))
+  def putHeader(name: String, values: java.lang.Iterable[String]): HttpServerResponse = wrap(asJava.putHeader(name, values))
 
   /**
    * Put an HTTP header - fluent API.
@@ -123,7 +127,7 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * @param value The header value.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def putHeader(name: String, value: String): HttpServerResponse = wrap(internal.putHeader(name, value))
+  def putHeader(name: String, value: String): HttpServerResponse = wrap(asJava.putHeader(name, value))
 
   /**
    * Put an HTTP trailer - fluent API.
@@ -132,7 +136,7 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * @param values  The trailer values
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def putTrailer(name: String, values: Seq[String]): HttpServerResponse = wrap(internal.putTrailer(name, values.asJava))
+  def putTrailer(name: String, values: Seq[String]): HttpServerResponse = wrap(asJava.putTrailer(name, values.asJava))
 
   /**
    * Put an HTTP trailer - fluent API.
@@ -141,12 +145,12 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * @param value The trailer value
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def putTrailer(name: String, value: String): HttpServerResponse = wrap(internal.putTrailer(name, value))
+  def putTrailer(name: String, value: String): HttpServerResponse = wrap(asJava.putTrailer(name, value))
 
   /**
    * Same as {@link #sendFile(String)} but also takes the path to a resource to serve if the resource is not found.
    */
-  def sendFile(filename: String, notFoundFile: String): HttpServerResponse = wrap(internal.sendFile(filename, notFoundFile))
+  def sendFile(filename: String, notFoundFile: String): HttpServerResponse = wrap(asJava.sendFile(filename, notFoundFile))
 
   /**
    * Tell the kernel to stream a file as specified by {@code filename} directly
@@ -157,7 +161,7 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * @param filename The file to send.
    * @return A reference to this for a fluent API.
    */
-  def sendFile(filename: String): HttpServerResponse = wrap(internal.sendFile(filename))
+  def sendFile(filename: String): HttpServerResponse = wrap(asJava.sendFile(filename))
 
   /**
    * If {@code chunked} is {@code true}, this response will use HTTP chunked encoding, and each call to write to the body
@@ -172,7 +176,7 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * @param chunked Sets the mode to chunked (true) or not (false).
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def setChunked(chunked: Boolean): HttpServerResponse = wrap(internal.setChunked(chunked))
+  def setChunked(chunked: Boolean): HttpServerResponse = wrap(asJava.setChunked(chunked))
 
   /**
    * Set the status code.
@@ -180,7 +184,7 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * @param statusCode The status code.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def setStatusCode(statusCode: Int): HttpServerResponse = wrap(internal.setStatusCode(statusCode))
+  def setStatusCode(statusCode: Int): HttpServerResponse = wrap(asJava.setStatusCode(statusCode))
 
   /**
    * Set the status message.
@@ -188,14 +192,14 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * @param statusMessage The status message.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def setStatusMessage(statusMessage: String): HttpServerResponse = wrap(internal.setStatusMessage(statusMessage))
+  def setStatusMessage(statusMessage: String): HttpServerResponse = wrap(asJava.setStatusMessage(statusMessage))
 
   /**
    * Returns the HTTP trailers.
    *
    * @return The HTTP trailers.
    */
-  def trailers(): MultiMap = internal.trailers()
+  def trailers(): MultiMap = asJava.trailers()
 
   /**
    * Write a {@link String} to the response body, encoded in UTF-8.
@@ -203,7 +207,7 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * @param chunk The String to write.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def write(chunk: String): HttpServerResponse = wrap(internal.write(chunk))
+  def write(chunk: String): HttpServerResponse = wrap(asJava.write(chunk))
 
   /**
    * Write a {@link String} to the response body, encoded using the encoding {@code enc}.
@@ -212,12 +216,12 @@ class HttpServerResponse(protected[this] val internal: JHttpServerResponse) exte
    * @param enc The encoding to use.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def write(chunk: String, enc: String): HttpServerResponse = wrap(internal.write(chunk, enc))
+  def write(chunk: String, enc: String): HttpServerResponse = wrap(asJava.write(chunk, enc))
 
 }
 
 /**
- * Factory for [[http.HttpServerResponse]] instances.
+ * Factory for [[org.vertx.scala.core.http.HttpServerResponse]] instances.
  *
  * @author swilliams
  * @author nfmelendez

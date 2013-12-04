@@ -16,7 +16,6 @@
 package org.vertx.scala.core
 
 import org.vertx.java.core.buffer.{ Buffer => JBuffer }
-import org.vertx.scala.VertxWrapper
 import org.vertx.scala.core.FunctionConverters._
 
 /**
@@ -30,7 +29,7 @@ package object buffer {
     def appendToBuffer(buffer: JBuffer, value: T): JBuffer
   }
   implicit object BufferElem extends BufferType[Buffer] {
-    override def appendToBuffer(buffer: JBuffer, value: Buffer) = buffer.appendBuffer(value.toJava)
+    override def appendToBuffer(buffer: JBuffer, value: Buffer) = buffer.appendBuffer(value.asJava)
   }
   implicit object ByteElem extends BufferType[Byte] {
     override def appendToBuffer(buffer: JBuffer, value: Byte) = buffer.appendByte(value)

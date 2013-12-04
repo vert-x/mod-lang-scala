@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.vertx.scala.core.dns
 
 import java.net.{ Inet4Address, Inet6Address, InetAddress }
@@ -5,7 +20,7 @@ import java.net.{ Inet4Address, Inet6Address, InetAddress }
 import scala.collection.JavaConversions.asScalaBuffer
 
 import org.vertx.java.core.dns.{ DnsClient => JDnsClient, DnsException => JDnsException, MxRecord => JMxRecord, SrvRecord => JSrvRecord }
-import org.vertx.scala.VertxWrapper
+import org.vertx.scala.Self
 import org.vertx.scala.core.AsyncResult
 import org.vertx.scala.core.FunctionConverters.{ asyncResultConverter, convertFunctionToParameterisedAsyncHandler, handlerToFn }
 
@@ -15,8 +30,7 @@ import org.vertx.scala.core.FunctionConverters.{ asyncResultConverter, convertFu
  * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
-  override type InternalType = JDnsClient
+final class DnsClient private[scala] (val asJava: JDnsClient) extends Self {
 
   /**
    * Try to lookup the A (ipv4) or AAAA (ipv6) record for the given name. The first found will be used.
@@ -28,7 +42,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def lookup(name: String, handler: AsyncResult[InetAddress] => Unit): DnsClient = wrap(internal.lookup(name, mapDnsException(handler)))
+  def lookup(name: String, handler: AsyncResult[InetAddress] => Unit): DnsClient = wrap(asJava.lookup(name, mapDnsException(handler)))
 
   /**
    * Try to lookup the A (ipv4) record for the given name. The first found will be used.
@@ -40,7 +54,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def lookup4(name: String, handler: AsyncResult[Inet4Address] => Unit): DnsClient = wrap(internal.lookup4(name, mapDnsException(handler)))
+  def lookup4(name: String, handler: AsyncResult[Inet4Address] => Unit): DnsClient = wrap(asJava.lookup4(name, mapDnsException(handler)))
 
   /**
    * Try to lookup the AAAA (ipv6) record for the given name. The first found will be used.
@@ -52,7 +66,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def lookup6(name: String, handler: AsyncResult[Inet6Address] => Unit): DnsClient = wrap(internal.lookup6(name, mapDnsException(handler)))
+  def lookup6(name: String, handler: AsyncResult[Inet6Address] => Unit): DnsClient = wrap(asJava.lookup6(name, mapDnsException(handler)))
 
   /**
    * Try to resolve all A (ipv4) records for the given name.
@@ -66,7 +80,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def resolveA(name: String, handler: AsyncResult[List[Inet4Address]] => Unit): DnsClient = wrap(internal.resolveA(name, mapDnsException(asyncResultConverter(listMapper[Inet4Address])(handler))))
+  def resolveA(name: String, handler: AsyncResult[List[Inet4Address]] => Unit): DnsClient = wrap(asJava.resolveA(name, mapDnsException(asyncResultConverter(listMapper[Inet4Address])(handler))))
 
   /**
    * Try to resolve all AAAA (ipv6) records for the given name.
@@ -79,7 +93,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def resolveAAAA(name: String, handler: AsyncResult[List[Inet6Address]] => Unit): DnsClient = wrap(internal.resolveAAAA(name, mapDnsException(asyncResultConverter(listMapper[Inet6Address])(handler))))
+  def resolveAAAA(name: String, handler: AsyncResult[List[Inet6Address]] => Unit): DnsClient = wrap(asJava.resolveAAAA(name, mapDnsException(asyncResultConverter(listMapper[Inet6Address])(handler))))
 
   /**
    * Try to resolve the CNAME record for the given name.
@@ -91,7 +105,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def resolveCNAME(name: String, handler: AsyncResult[List[String]] => Unit): DnsClient = wrap(internal.resolveCNAME(name, mapDnsException(asyncResultConverter(listMapper[String])(handler))))
+  def resolveCNAME(name: String, handler: AsyncResult[List[String]] => Unit): DnsClient = wrap(asJava.resolveCNAME(name, mapDnsException(asyncResultConverter(listMapper[String])(handler))))
 
   /**
    * Try to resolve the MX records for the given name.
@@ -104,7 +118,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def resolveMX(name: String, handler: AsyncResult[List[MxRecord]] => Unit): DnsClient = wrap(internal.resolveMX(name, mapDnsException(asyncResultConverter(mappedListMapper[JMxRecord, MxRecord](MxRecord.apply))(handler))))
+  def resolveMX(name: String, handler: AsyncResult[List[MxRecord]] => Unit): DnsClient = wrap(asJava.resolveMX(name, mapDnsException(asyncResultConverter(mappedListMapper[JMxRecord, MxRecord](new MxRecord(_)))(handler))))
 
   /**
    * Try to resolve the TXT records for the given name.
@@ -116,7 +130,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def resolveTXT(name: String, handler: AsyncResult[List[String]] => Unit): DnsClient = wrap(internal.resolveTXT(name, mapDnsException(asyncResultConverter(listMapper[String])(handler))))
+  def resolveTXT(name: String, handler: AsyncResult[List[String]] => Unit): DnsClient = wrap(asJava.resolveTXT(name, mapDnsException(asyncResultConverter(listMapper[String])(handler))))
 
   /**
    * Try to resolve the PTR record for the given name.
@@ -128,7 +142,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def resolvePTR(name: String, handler: AsyncResult[String] => Unit): DnsClient = wrap(internal.resolvePTR(name, mapDnsException(handler)))
+  def resolvePTR(name: String, handler: AsyncResult[String] => Unit): DnsClient = wrap(asJava.resolvePTR(name, mapDnsException(handler)))
 
   /**
    * Try to resolve the NS records for the given name.
@@ -140,7 +154,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def resolveNS(name: String, handler: AsyncResult[List[String]] => Unit): DnsClient = wrap(internal.resolveNS(name, mapDnsException(asyncResultConverter(listMapper[String])(handler))))
+  def resolveNS(name: String, handler: AsyncResult[List[String]] => Unit): DnsClient = wrap(asJava.resolveNS(name, mapDnsException(asyncResultConverter(listMapper[String])(handler))))
 
   /**
    * Try to resolve the SRV records for the given name.
@@ -152,7 +166,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def resolveSRV(name: String, handler: AsyncResult[List[SrvRecord]] => Unit): DnsClient = wrap(internal.resolveSRV(name, mapDnsException(asyncResultConverter(mappedListMapper[JSrvRecord, SrvRecord](SrvRecord.apply))(handler))))
+  def resolveSRV(name: String, handler: AsyncResult[List[SrvRecord]] => Unit): DnsClient = wrap(asJava.resolveSRV(name, mapDnsException(asyncResultConverter(mappedListMapper[JSrvRecord, SrvRecord](new SrvRecord(_)))(handler))))
 
   /**
    * Try to do a reverse lookup of an ipaddress. This is basically the same as doing trying to resolve a PTR record
@@ -165,7 +179,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
    *                  If an error accours it will get failed.
    * @return          itself for method-chaining.
    */
-  def reverseLookup(ipaddress: String, handler: AsyncResult[InetAddress] => Unit): DnsClient = wrap(internal.reverseLookup(ipaddress, mapDnsException(handler)))
+  def reverseLookup(ipaddress: String, handler: AsyncResult[InetAddress] => Unit): DnsClient = wrap(asJava.reverseLookup(ipaddress, mapDnsException(handler)))
 
   private def listMapper[X](jList: java.util.List[X]): List[X] = jList.toList
   private def mappedListMapper[JT, ST](mappedFn: JT => ST)(jList: java.util.List[JT]): List[ST] = jList.toList.map(mappedFn)
@@ -182,6 +196,7 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
       }
     }
   }
+
 }
 
 object DnsClient {
