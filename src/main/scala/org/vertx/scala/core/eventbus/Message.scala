@@ -13,41 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.vertx.scala.core.eventbus
 
 import org.vertx.java.core.eventbus.{ Message => JMessage }
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.VertxWrapper
+import org.vertx.scala.AsJava
 import org.vertx.scala.core.AsyncResult
 import org.vertx.scala.core.Handler
 
-class Message[T <% MessageData](protected val internal: JMessage[T]) extends VertxWrapper {
-  override type InternalType = JMessage[T]
+/**
+ * Represents a message on the event bus.<p>
+ *
+ * Instances of this class are not thread-safe<p>
+ *
+ * @author <a href="http://tfox.org">Tim Fox</a>
+ * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
+ */
+final class Message[T <% MessageData] private[scala] (val asJava: JMessage[T]) extends AsJava {
+  // Consider converting to AnyVal if it affects performance.
+  // Current design offers a good, type safe way to support multiple message
+  // types without having to add all the methods for each supported type
+
+  override type J = JMessage[T]
 
   /**
    * The address the message was sent to
    */
-  def address(): String = internal.address()
+  def address(): String = asJava.address()
 
   /**
    * The body of the message.
    */
-  def body(): T = anyToMessageData(internal.body()).data.asInstanceOf[T]
+  def body(): T = anyToMessageData(asJava.body()).data.asInstanceOf[T]
 
   /**
    * The reply address (if any).
    *
    * @return An optional String containing the reply address.
    */
-  def replyAddress(): Option[String] = Option(internal.replyAddress())
+  def replyAddress(): Option[String] = Option(asJava.replyAddress())
 
   /**
    * Reply to this message. If the message was sent specifying a reply handler, that handler will be
    * called when it has received a reply. If the message wasn't sent specifying a receipt handler
    * this method does nothing.
    */
-  def reply(): Unit = internal.reply()
+  def reply(): Unit = asJava.reply()
 
   /**
    * Reply to this message. If the message was sent specifying a reply handler, that handler will be
@@ -56,7 +68,7 @@ class Message[T <% MessageData](protected val internal: JMessage[T]) extends Ver
    *
    * @param value The data to send with the reply.
    */
-  def reply(value: MessageData): Unit = value.reply(internal)
+  def reply(value: MessageData): Unit = value.reply(asJava)
 
   /**
    * The same as {@code reply(MessageData)} but you can specify handler for the reply - i.e.
@@ -65,7 +77,7 @@ class Message[T <% MessageData](protected val internal: JMessage[T]) extends Ver
    * @param value The value to send.
    * @param handler Handling the reply.
    */
-  def reply[B <% MessageData](value: MessageData, handler: Message[B] => Unit): Unit = value.reply(internal, fnToHandler(handler.compose(Message.apply)))
+  def reply[B <% MessageData](value: MessageData, handler: Message[B] => Unit): Unit = value.reply(asJava, fnToHandler(handler.compose(Message.apply)))
 
   /**
    * The same as {@code reply()} but you can specify handler for the reply - i.e.
@@ -73,7 +85,7 @@ class Message[T <% MessageData](protected val internal: JMessage[T]) extends Ver
    *
    * @param handler Handling the reply.
    */
-  def reply[B <% MessageData](handler: Message[B] => Unit): Unit = internal.reply(messageFnToJMessageHandler(handler))
+  def reply[B <% MessageData](handler: Message[B] => Unit): Unit = asJava.reply(messageFnToJMessageHandler(handler))
 
   /**
    * Reply to this message. Specifying a timeout and a reply handler.
@@ -82,7 +94,7 @@ class Message[T <% MessageData](protected val internal: JMessage[T]) extends Ver
    * @param handler Handling the reply (success) or the timeout (failed).
    */
   def replyWithTimeout[T <% MessageData](timeout: Long, replyHandler: AsyncResult[Message[T]] => Unit): Unit =
-    internal.replyWithTimeout(timeout, asyncResultConverter({ x: JMessage[T] => Message.apply(x) })(replyHandler))
+    asJava.replyWithTimeout(timeout, asyncResultConverter({ x: JMessage[T] => Message.apply(x) })(replyHandler))
 
   /**
    * Reply to this message with data. Specifying a timeout and a reply handler.
@@ -92,7 +104,7 @@ class Message[T <% MessageData](protected val internal: JMessage[T]) extends Ver
    * @param handler Handling the reply (success) or the timeout (failed).
    */
   def replyWithTimeout[T <% MessageData](value: MessageData, timeout: Long, replyHandler: AsyncResult[Message[T]] => Unit): Unit =
-    value.replyWithTimeout(internal, timeout, convertArHandler(replyHandler))
+    value.replyWithTimeout(asJava, timeout, convertArHandler(replyHandler))
 
   /**
    * Signal that processing of this message failed. If the message was sent specifying a result handler
@@ -100,7 +112,7 @@ class Message[T <% MessageData](protected val internal: JMessage[T]) extends Ver
    * @param failureCode A failure code to pass back to the sender
    * @param message A message to pass back to the sender
    */
-  def fail(failureCode: Int, message: String): Unit = internal.fail(failureCode, message)
+  def fail(failureCode: Int, message: String): Unit = asJava.fail(failureCode, message)
 
   private def convertArHandler[T <% MessageData](handler: AsyncResult[Message[T]] => Unit): Handler[AsyncResult[JMessage[T]]] = {
     asyncResultConverter({x: JMessage[T] => Message.apply(x)})(handler)

@@ -17,10 +17,9 @@
 package org.vertx.scala.core.net
 
 import org.vertx.java.core.net.{ NetClient => JNetClient }
-import org.vertx.scala.core.net.{ NetSocket => JNetSocket }
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.WrappedTCPSupport
-import org.vertx.scala.core.WrappedClientSSLSupport
+import org.vertx.scala.core.TCPSupport
+import org.vertx.scala.core.ClientSSLSupport
 import org.vertx.scala.core.AsyncResult
 
 /**
@@ -38,9 +37,16 @@ import org.vertx.scala.core.AsyncResult
  * @author swilliams
  * @author Edgar Chan
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
-class NetClient(protected[this] val internal: JNetClient) extends WrappedTCPSupport with WrappedClientSSLSupport {
-  override type InternalType = JNetClient
+// constructor is private because users should use apply in companion
+// extends AnyVal to avoid object allocation and improve performance
+final class NetClient private[scala] (val asJava: JNetClient) extends AnyVal
+  with TCPSupport[NetClient]
+  with ClientSSLSupport[NetClient] {
+
+  override type J = JNetClient
+  override protected[this] def self: NetClient = this
 
   /**
    * Attempt to open a connection to a server at the specific {@code port} and host {@code localhost}
@@ -50,7 +56,7 @@ class NetClient(protected[this] val internal: JNetClient) extends WrappedTCPSupp
    * @return A reference to this so multiple method calls can be chained together.
    */
   def connect(port: Int, connectCallback: AsyncResult[NetSocket] => Unit): NetClient =
-    wrap(internal.connect(port, arNetSocket(connectCallback)))
+    wrap(asJava.connect(port, arNetSocket(connectCallback)))
 
   /**
    * Attempt to open a connection to a server at the specific {@code port} and {@code host}.
@@ -60,34 +66,34 @@ class NetClient(protected[this] val internal: JNetClient) extends WrappedTCPSupp
    * @return a reference to this so multiple method calls can be chained together
    */
   def connect(port: Int, host: String, connectHandler: AsyncResult[NetSocket] => Unit): NetClient =
-    wrap(internal.connect(port, host, arNetSocket(connectHandler)))
+    wrap(asJava.connect(port, host, arNetSocket(connectHandler)))
 
   /**
    * Set the number of reconnection attempts. In the event a connection attempt fails, the client will attempt
    * to connect a further number of times, before it fails. Default value is zero.
    */
   def setReconnectAttempts(attempts: Int): NetClient =
-    wrap(internal.setReconnectAttempts(attempts))
+    wrap(asJava.setReconnectAttempts(attempts))
 
   /**
    * Get the number of reconnect attempts.
    *
    * @return The number of reconnect attempts.
    */
-  def getReconnectAttempts(): Int = internal.getReconnectAttempts()
+  def getReconnectAttempts(): Int = asJava.getReconnectAttempts()
 
   /**
    * Set the reconnect interval, in milliseconds.
    */
   def setReconnectInterval(interval: Long): NetClient =
-    wrap(internal.setReconnectInterval(interval))
+    wrap(asJava.setReconnectInterval(interval))
 
   /**
    * Get the reconnect interval, in milliseconds.
    *
    * @return The reconnect interval in milliseconds.
    */
-  def getReconnectInterval(): Long = internal.getReconnectInterval()
+  def getReconnectInterval(): Long = asJava.getReconnectInterval()
 
   /**
    * Set the connect timeout in milliseconds.
@@ -95,24 +101,24 @@ class NetClient(protected[this] val internal: JNetClient) extends WrappedTCPSupp
    * @return a reference to this so multiple method calls can be chained together
    */
   def setConnectTimeout(timeout: Int): NetClient =
-    wrap(internal.setConnectTimeout(timeout))
+    wrap(asJava.setConnectTimeout(timeout))
 
   /**
    * Returns the connect timeout in milliseconds.
    *
    * @return The connect timeout in milliseconds.
    */
-  def getConnectTimeout(): Int = internal.getConnectTimeout()
+  def getConnectTimeout(): Int = asJava.getConnectTimeout()
 
   /**
    * Close the client. Any sockets which have not been closed manually will be closed here.
    */
-  def close(): Unit = internal.close()
+  def close(): Unit = asJava.close()
 
   private def arNetSocket = asyncResultConverter(NetSocket.apply) _
 }
 
-/** Factory for [[net.NetClient]] instances. */
+/** Factory for [[org.vertx.scala.core.net.NetClient]] instances. */
 object NetClient {
   def apply(actual: JNetClient) = new NetClient(actual)
 }

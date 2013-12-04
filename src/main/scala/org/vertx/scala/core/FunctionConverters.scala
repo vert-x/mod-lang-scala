@@ -20,7 +20,6 @@ import org.vertx.java.core.AsyncResultHandler
 import org.vertx.java.core.eventbus.{ Message => JMessage }
 import org.vertx.scala.core.eventbus.Message
 import org.vertx.java.core.impl.DefaultFutureResult
-import org.vertx.scala.VertxWrapper
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
@@ -28,6 +27,7 @@ import scala.util.Failure
 /**
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
 trait FunctionConverters {
 

@@ -57,7 +57,7 @@ class ScalaVerticleFactory extends VerticleFactory {
     this.jcontainer = jcontainer
     this.loader = aloader
 
-    val sVertx = Vertx(jvertx)
+    val sVertx = new Vertx(jvertx)
     val sContainer = Container(jcontainer)
     val settings = interpreterSettings()
     interpreter = new ScalaInterpreter(
@@ -74,7 +74,7 @@ class ScalaVerticleFactory extends VerticleFactory {
       case Some(verticleClass) =>
         val vcInstance = verticleClass.newInstance()
         val delegate = vcInstance.asInstanceOf[Verticle]
-        ScalaVerticle.newVerticle(delegate, jvertx, jcontainer)
+        ScalaVerticle.newVerticle(delegate, new Vertx(jvertx), new Container(jcontainer))
       case None =>
         DummyVerticle // run directly as script
     }

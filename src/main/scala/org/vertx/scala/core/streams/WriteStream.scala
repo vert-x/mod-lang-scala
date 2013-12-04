@@ -18,6 +18,8 @@ package org.vertx.scala.core.streams
 
 import org.vertx.java.core.streams.{ WriteStream => JWriteStream }
 import org.vertx.scala.core.buffer.Buffer
+import org.vertx.scala.{Self, AsJava}
+import org.vertx.scala.core.FunctionConverters._
 
 /**
  * Represents a stream of data that can be written to<p>
@@ -32,8 +34,12 @@ import org.vertx.scala.core.buffer.Buffer
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  * @author Galder Zamarreño
  */
-trait WriteStream extends ExceptionSupport {
-  override type InternalType <: JWriteStream[_]
+trait WriteStream[+S <: WriteStream[S]] extends Any
+  with ExceptionSupport[S]
+  with Self[S]
+  with AsJava {
+
+  override type J <: JWriteStream[_]
 
   /**
    * Write some data to the stream. The data is put on an internal write queue, and the write actually happens
@@ -41,24 +47,25 @@ trait WriteStream extends ExceptionSupport {
    * check the [[org.vertx.scala.core.streams.WriteStream.writeQueueFull()]]
    * method before writing. This is done automatically if using a [[org.vertx.scala.core.streams.Pump]].
    */
-  def write(data: Buffer): this.type
+  def write(data: Buffer): S = wrap(asJava.write(data.asJava))
 
   /**
    * Set the maximum size of the write queue to `maxSize`. You will still be able to write to the stream even
    * if there is more than `maxSize` bytes in the write queue. This is used as an indicator by classes such as
    * `Pump` to provide flow control.
    */
-  def setWriteQueueMaxSize(maxSize: Int): this.type
+  def setWriteQueueMaxSize(maxSize: Int): S = wrap(asJava.setWriteQueueMaxSize(maxSize))
 
   /**
    * This will return `true` if there are more bytes in the write queue than the value set using
    * [[org.vertx.scala.core.streams.WriteStream.setWriteQueueMaxSize()]]
    */
-  def writeQueueFull(): Boolean
+  def writeQueueFull(): Boolean = asJava.writeQueueFull()
 
   /**
    * Set a drain handler on the stream. If the write queue is full, then the handler will be called when the write
    * queue has been reduced to maxSize / 2. See [[org.vertx.scala.core.streams.Pump]] for an example of this being used.
    */
-  def drainHandler(handler: => Unit): this.type
+  def drainHandler(handler: => Unit): S = wrap(asJava.drainHandler(lazyToVoidHandler(handler)))
+
 }

@@ -17,7 +17,6 @@
 package org.vertx.scala.core.http
 
 import org.vertx.java.core.http.{ ServerWebSocket => JServerWebSocket }
-import org.vertx.scala.core.streams.WrappedReadWriteStream
 
 /**
  * Represents a server side WebSocket that is passed into a the websocketHandler of an {@link HttpServer}<p>
@@ -28,23 +27,28 @@ import org.vertx.scala.core.streams.WrappedReadWriteStream
  * @author Galder Zamarreño
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class ServerWebSocket(protected val internal: JServerWebSocket) extends WrappedWebSocketBase {
-  override type InternalType = JServerWebSocket
+// constructor is private because users should use apply in companion
+// extends AnyVal to avoid object allocation and improve performance
+final class ServerWebSocket private[scala] (val asJava: JServerWebSocket) extends AnyVal
+  with WebSocketBase[ServerWebSocket] {
+
+  override type J = JServerWebSocket
+  override protected[this] def self: ServerWebSocket = this
 
   /**
    * The path the websocket is attempting to connect at
    */
-  def path(): String = internal.path()
+  def path(): String = asJava.path()
 
   /**
    * The query string passed on the websocket uri
    */
-  def query(): String = internal.query()
+  def query(): String = asJava.query()
 
   /**
    * A map of all headers in the request to upgrade to websocket
    */
-  def headers(): org.vertx.java.core.MultiMap = internal.headers()
+  def headers(): org.vertx.java.core.MultiMap = asJava.headers()
 
   /**
    * Reject the WebSocket<p>
@@ -54,11 +58,11 @@ class ServerWebSocket(protected val internal: JServerWebSocket) extends WrappedW
    * You might use this method, if for example you only want to accept websockets
    * with a particular path.
    */
-  def reject(): ServerWebSocket = wrap(internal.reject())
+  def reject(): ServerWebSocket = wrap(asJava.reject())
 }
 
-/** Factory for [[http.ServerWebSocket]] instances. */
+/** Factory for [[org.vertx.scala.core.http.ServerWebSocket]] instances. */
 object ServerWebSocket {
   def apply(socket: JServerWebSocket) = new ServerWebSocket(socket)
-  def unapply(socket: ServerWebSocket): JServerWebSocket = socket.toJava
+  def unapply(socket: ServerWebSocket): JServerWebSocket = socket.asJava
 }

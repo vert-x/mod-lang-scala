@@ -2,9 +2,7 @@ package org.vertx.scala.testtools
 
 import java.lang.reflect.InvocationTargetException
 import org.junit.runner.RunWith
-import org.vertx.scala.core.VertxExecutionContext
 import org.vertx.scala.platform.Verticle
-import org.vertx.testtools.JavaClassRunner
 import org.vertx.testtools.VertxAssert
 import scala.concurrent.Future
 
@@ -32,7 +30,7 @@ abstract class TestVerticle extends Verticle {
    */
   def asyncBefore(): Future[Unit] = Future.successful()
 
-  protected final def initialize(): Unit = VertxAssert.initialize(vertx.internal)
+  protected final def initialize(): Unit = VertxAssert.initialize(vertx.asJava)
 
   protected final def startTests() {
     val methodName = container.config().getString("methodName")

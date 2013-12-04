@@ -13,32 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.vertx.scala.core.dns
+package org.vertx.scala.core
 
-import org.vertx.java.core.dns.{ MxRecord => JMxRecord }
+import org.vertx.scala.AsJava
+import org.vertx.scala.core.FunctionConverters._
 
 /**
- * Represent a Mail-Exchange-Record (MX) which was resolved for a domain.
+ * Signals that an instance can be closed.
  *
- * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  * @author Galder Zamarreño
  */
-// constructor is private because users should use apply in companion
-// extends AnyVal to avoid object allocation and improve performance
-final class MxRecord private[scala] (val asJava: JMxRecord) extends AnyVal {
+trait Closeable extends Any with AsJava {
+
+  override type J <: CloseType
+
+  type CloseType = {
+    def close(): Unit
+    def close(handler: Handler[AsyncResult[Void]]): Unit
+  }
 
   /**
-   * The priority of the MX record.
+   * Close this [[org.vertx.scala.core.Closeable]] instance asynchronously.
    */
-  def priority(): Int = asJava.priority()
+  def close(): Unit = asJava.close()
 
   /**
-   * The name of the MX record
+   * Close this [[org.vertx.scala.core.Closeable]] instance asynchronously
+   * and notifies the handler once done.
    */
-  def name(): String = asJava.name()
-}
+  def close(handler: AsyncResult[Void] => Unit): Unit = asJava.close(fnToHandler(handler))
 
-object MxRecord {
-  def apply(internal: JMxRecord) = new MxRecord(internal)
 }

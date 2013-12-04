@@ -17,7 +17,7 @@
 package org.vertx.scala.core.sockjs
 
 import org.vertx.java.core.sockjs.{ SockJSSocket => JSockJSSocket }
-import org.vertx.scala.core.streams.WrappedReadWriteStream
+import org.vertx.scala.core.streams.{WriteStream, ReadStream}
 
 /**
  * You interact with SockJS clients through instances of SockJS socket.
@@ -30,8 +30,14 @@ import org.vertx.scala.core.streams.WrappedReadWriteStream
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class SockJSSocket(protected[this] val internal: JSockJSSocket) extends WrappedReadWriteStream {
-  override type InternalType = JSockJSSocket
+// constructor is private because users should use apply in companion
+// extends AnyVal to avoid object allocation and improve performance
+final class SockJSSocket private[scala] (val asJava: JSockJSSocket) extends AnyVal
+  with ReadStream[SockJSSocket]
+  with WriteStream[SockJSSocket] {
+
+  override type J = JSockJSSocket
+  override protected[this] def self: SockJSSocket = this
 
   /**
    * When a {@code SockJSSocket} is created it automatically registers an event handler with the event bus, the ID of that
@@ -40,16 +46,16 @@ class SockJSSocket(protected[this] val internal: JSockJSSocket) extends WrappedR
    * that buffer will be received by this instance in its own event loop and written to the underlying socket. This
    * allows you to write data to other sockets which are owned by different event loops.
    */
-  def writeHandlerID(): String = internal.writeHandlerID()
+  def writeHandlerID(): String = asJava.writeHandlerID()
 
   /**
    * Close it
    */
-  def close(): Unit = internal.close()
+  def close(): Unit = asJava.close()
 
 }
 
-/** Factory for [[sockjs.SockJSSocket]] instances. */
+/** Factory for [[org.vertx.scala.core.sockjs.SockJSSocket]] instances. */
 object SockJSSocket {
   def apply(internal: JSockJSSocket) = new SockJSSocket(internal)
 }

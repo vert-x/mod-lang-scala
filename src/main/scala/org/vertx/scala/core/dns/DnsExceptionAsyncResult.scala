@@ -13,24 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.vertx.scala.core.dns
 
-import org.vertx.scala.tests.util.TestUtils._
-import org.vertx.testtools.VertxAssert._
-import org.vertx.testtools.VertxAssert
+import org.vertx.scala.core._
+import org.vertx.java.core.dns.{ DnsException => JDnsException }
 
-VertxAssert.initialize(vertx.asJava)
-
-vertx.createHttpServer.requestHandler { req: HttpServerRequest =>
-  req.response.end("Hello verticle test script!")
-}.listen(8080, { ar: AsyncResult[HttpServer] => {
-  startTests(this, container)
-}})
-
-def testHttpServer(): Unit = {
-  vertx.createHttpClient.setPort(8080).getNow("/", { resp => 
-    resp.bodyHandler({ buf =>
-      assertEquals("Hello verticle test script!", buf.toString)
-      testComplete()
-    })
-  })
+/**
+ * [[org.vertx.scala.core.AsyncResult]] wrapping failured conditions as a
+ * result of [[org.vertx.scala.core.dns.DnsException]]
+ *
+ * @author Galder Zamarreño
+ */
+class DnsExceptionAsyncResult[R](val t: JDnsException, val ar: AsyncResult[R]) extends AsyncResult[R] {
+  def cause(): Throwable = DnsException(DnsResponseCode.fromJava(t.code()))
+  def failed(): Boolean = true
+  def result(): R = ar.result()
+  def succeeded(): Boolean = false
 }

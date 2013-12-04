@@ -19,6 +19,8 @@ package org.vertx.scala.core.streams
 import org.vertx.java.core.streams.{ ReadStream => JReadStream }
 import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
 import org.vertx.scala.core.buffer._
+import org.vertx.scala.{Self, AsJava}
+import org.vertx.scala.core.FunctionConverters._
 
 /**
  * Represents a stream of data that can be read from.<p>
@@ -26,19 +28,29 @@ import org.vertx.scala.core.buffer._
  * to pump data from it to a [[org.vertx.scala.core.streams.WriteStream]].<p>
  * This interface exposes a fluent api and the type T represents the type of the object that implements
  * the interface to allow method chaining
+ * @tparam S self type to help provide fluent APIs
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  * @author Galder Zamarreño
  */
-trait ReadStream extends ReadSupport[Buffer] {
-  override type InternalType <: JReadStream[_] with JExceptionSupport[_]
+trait ReadStream[+S <: ReadStream[S]] extends Any
+  with ReadSupport[S, Buffer]
+  with Self[S]
+  with AsJava {
+
+  override type J <: JReadStream[_] with JExceptionSupport[_]
 
   /**
    * Set an end handler. Once the stream has ended, and there is no more data
    * to be read, this handler will be called.
    */
-  def endHandler(handler: => Unit): this.type
+  def endHandler(handler: => Unit): S = wrap(asJava.endHandler(lazyToVoidHandler(handler)))
+
+  /**
+   * Set a data handler. As data is read, the handler will be called with the data.
+   */
+  override def dataHandler(handler: Buffer => Unit): S = wrap(asJava.dataHandler(bufferHandlerToJava(handler)))
 
 }

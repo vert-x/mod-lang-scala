@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.vertx.scala.core.dns
 
 import java.net.{ Inet4Address, Inet6Address, InetAddress }
@@ -5,7 +20,7 @@ import java.net.{ Inet4Address, Inet6Address, InetAddress }
 import scala.collection.JavaConversions.asScalaBuffer
 
 import org.vertx.java.core.dns.{ DnsClient => JDnsClient, DnsException => JDnsException, MxRecord => JMxRecord, SrvRecord => JSrvRecord }
-import org.vertx.scala.VertxWrapper
+import org.vertx.scala.Self
 import org.vertx.scala.core.AsyncResult
 import org.vertx.scala.core.FunctionConverters.{ asyncResultConverter, convertFunctionToParameterisedAsyncHandler, handlerToFn }
 
@@ -15,8 +30,12 @@ import org.vertx.scala.core.FunctionConverters.{ asyncResultConverter, convertFu
  * @author <a href="mailto:nmaurer@redhat.com">Norman Maurer</a>
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
-  override type InternalType = JDnsClient
+// constructor is private because users should use apply in companion
+// extends AnyVal to avoid object allocation and improve performance
+final class DnsClient private[dns] (val internal: JDnsClient) extends AnyVal
+  with Self[DnsClient] {
+
+  override protected[this] def self: DnsClient = this
 
   /**
    * Try to lookup the A (ipv4) or AAAA (ipv6) record for the given name. The first found will be used.
@@ -172,16 +191,12 @@ class DnsClient(protected[this] val internal: JDnsClient) extends VertxWrapper {
   private def mapDnsException[X](handler: AsyncResult[X] => Unit): AsyncResult[X] => Unit = {
     handler.compose { ar: AsyncResult[X] =>
       ar.cause() match {
-        case x: JDnsException => new AsyncResult[X]() {
-          def cause(): Throwable = DnsException(DnsResponseCode.fromJava(x.code()))
-          def failed(): Boolean = true
-          def result(): X = ar.result()
-          def succeeded(): Boolean = false
-        }
+        case x: JDnsException => new DnsExceptionAsyncResult(x, ar)
         case _ => ar
       }
     }
   }
+
 }
 
 object DnsClient {
