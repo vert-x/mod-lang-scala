@@ -18,13 +18,10 @@ package org.vertx.scala.core.sockjs
 
 import org.vertx.java.core.json.JsonArray
 import org.vertx.java.core.json.JsonObject
-import org.vertx.java.core.sockjs.{ SockJSSocket => JSockJSSocket }
 import org.vertx.java.core.sockjs.{ SockJSServer => JSockJSServer }
-import org.vertx.scala.Wrap
+import org.vertx.scala.Self
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.java.core.sockjs.EventBusBridgeHook
-import org.vertx.java.core.Handler
-import org.vertx.scala.VertxWrapper
 
 /**
  * This is an implementation of the server side part of <a href="https://github.com/sockjs">SockJS</a>.<p>
@@ -60,26 +57,64 @@ import org.vertx.scala.VertxWrapper
  * @author <a href="http://tfox.org">Tim Fox</a>
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
-class SockJSServer(protected val internal: JSockJSServer) extends VertxWrapper {
-  override type InternalType = JSockJSServer
+// constructor is private because users should use apply in companion
+// extends AnyVal to avoid object allocation and improve performance
+final class SockJSServer private[scala] (val asJava: JSockJSServer) extends AnyVal
+  with Self[SockJSServer] {
 
+  override protected[this] def self: SockJSServer = this
+
+  /**
+   * Install an application
+   * @param config The application configuration
+   * @param sockHandler A handler that will be called when new SockJS sockets are created
+   */
   def installApp(config: JsonObject, sockHandler: SockJSSocket => Unit): SockJSServer =
-    wrap(internal.installApp(config, fnToHandler(sockHandler.compose(SockJSSocket.apply))))
+    wrap(asJava.installApp(config, fnToHandler(sockHandler.compose(SockJSSocket.apply))))
 
+  /**
+   * Install an app which bridges the SockJS server to the event bus
+   * @param sjsConfig The config for the app
+   * @param inboundPermitted A list of JSON objects which define permitted matches for inbound (client->server) traffic
+   * @param outboundPermitted A list of JSON objects which define permitted matches for outbound (server->client)
+   * traffic
+   */
   def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray) =
-    wrap(internal.bridge(sjsConfig, inboundPermitted, outboundPermitted))
+    wrap(asJava.bridge(sjsConfig, inboundPermitted, outboundPermitted))
 
+  /**
+   * Install an app which bridges the SockJS server to the event bus
+   * @param sjsConfig The config for the app
+   * @param inboundPermitted A list of JSON objects which define permitted matches for inbound (client->server) traffic
+   * @param outboundPermitted A list of JSON objects which define permitted matches for outbound (server->client)
+   * traffic
+   * @param authTimeout Default time an authorisation will be cached for in the bridge (defaults to 5 minutes)
+   */
   def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray, authTimeout: Long) =
-    wrap(internal.bridge(sjsConfig, inboundPermitted, outboundPermitted, authTimeout))
+    wrap(asJava.bridge(sjsConfig, inboundPermitted, outboundPermitted, authTimeout))
 
+  /**
+   * Install an app which bridges the SockJS server to the event bus
+   * @param sjsConfig The config for the app
+   * @param inboundPermitted A list of JSON objects which define permitted matches for inbound (client->server) traffic
+   * @param outboundPermitted A list of JSON objects which define permitted matches for outbound (server->client)
+   * traffic
+   * @param authTimeout Default time an authorisation will be cached for in the bridge (defaults to 5 minutes)
+   * @param authAddress Address of auth manager. Defaults to 'vertx.basicauthmanager.authorise'
+   */
   def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray, authTimeout: Long, authAddress: String) =
-    wrap(internal.bridge(sjsConfig, inboundPermitted, outboundPermitted, authTimeout, authAddress))
+    wrap(asJava.bridge(sjsConfig, inboundPermitted, outboundPermitted, authTimeout, authAddress))
 
-  def setHook(hook: EventBusBridgeHook): SockJSServer = wrap(internal.setHook(hook))
+  /**
+   * Set a EventBusBridgeHook on the SockJS server
+   * @param hook The hook
+   */
+  def setHook(hook: EventBusBridgeHook): SockJSServer = wrap(asJava.setHook(hook))
 }
 
-/** Factory for [[sockjs.SockJSServer]] instances. */
+/** Factory for [[org.vertx.scala.core.sockjs.SockJSServer]] instances. */
 object SockJSServer {
   def apply(internal: JSockJSServer) = new SockJSServer(internal)
 }

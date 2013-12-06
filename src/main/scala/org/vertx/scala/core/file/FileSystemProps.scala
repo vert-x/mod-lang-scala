@@ -1,7 +1,22 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.vertx.scala.core.file
 
 import org.vertx.java.core.file.{ FileSystemProps => JFileSystemProps }
-import org.vertx.scala.VertxWrapper
+import org.vertx.scala.AsJava
 
 /**
  * Represents properties of the file system.<p>
@@ -9,28 +24,31 @@ import org.vertx.scala.VertxWrapper
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
-class FileSystemProps(protected[this] val internal: JFileSystemProps) extends VertxWrapper {
-  override type InternalType = JFileSystemProps
+final class FileSystemProps private[scala] (val asJava: JFileSystemProps) extends AnyVal
+  with AsJava {
+
+  override type J = JFileSystemProps
 
   /**
    * The total space on the file system, in bytes
    */
-  def totalSpace(): Long = internal.totalSpace()
+  def totalSpace(): Long = asJava.totalSpace()
 
   /**
    * The total un-allocated space on the file system, in bytes
    */
-  def unallocatedSpace(): Long = internal.unallocatedSpace()
+  def unallocatedSpace(): Long = asJava.unallocatedSpace()
 
   /**
    * The total usable space on the file system, in bytes
    */
-  def usableSpace(): Long = internal.usableSpace()
+  def usableSpace(): Long = asJava.usableSpace()
 
 }
 
-/** Factory for [[file.FileSystemProps]] instances. */
+/** Factory for [[org.vertx.scala.core.file.FileSystemProps]] instances. */
 object FileSystemProps {
   def apply(internal: JFileSystemProps) = new FileSystemProps(internal)
 }

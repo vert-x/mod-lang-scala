@@ -1,7 +1,22 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.vertx.scala.core.file
 
 import org.vertx.java.core.file.{ FileProps => JFileProps }
-import org.vertx.scala.VertxWrapper
+import org.vertx.scala.AsJava
 import java.util.Date
 
 /**
@@ -10,52 +25,57 @@ import java.util.Date
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
-class FileProps(protected[this] val internal: JFileProps) extends VertxWrapper {
-  override type InternalType = JFileProps
+// constructor is private because users should use apply in companion
+// extends AnyVal to avoid object allocation and improve performance
+final class FileProps private[scala] (val asJava: JFileProps) extends AnyVal
+  with AsJava {
+
+  override type J = JFileProps
 
   /**
    * The date the file was created
    */
-  def creationTime(): Date = internal.creationTime()
+  def creationTime(): Date = asJava.creationTime()
 
   /**
    * The date the file was last accessed
    */
-  def lastAccessTime(): Date = internal.lastAccessTime()
+  def lastAccessTime(): Date = asJava.lastAccessTime()
 
   /**
    * The date the file was last modified
    */
-  def lastModifiedTime(): Date = internal.lastModifiedTime()
+  def lastModifiedTime(): Date = asJava.lastModifiedTime()
 
   /**
    * Is the file a directory?
    */
-  def isDirectory(): Boolean = internal.isDirectory()
+  def isDirectory(): Boolean = asJava.isDirectory()
 
   /**
    * Is the file some other type? (I.e. not a directory, regular file or symbolic link)
    */
-  def isOther(): Boolean = internal.isOther()
+  def isOther(): Boolean = asJava.isOther()
 
   /**
    * Is the file a regular file?
    */
-  def isRegularFile(): Boolean = internal.isRegularFile()
+  def isRegularFile(): Boolean = asJava.isRegularFile()
 
   /**
    * Is the file a symbolic link?
    */
-  def isSymbolicLink(): Boolean = internal.isSymbolicLink()
+  def isSymbolicLink(): Boolean = asJava.isSymbolicLink()
 
   /**
    * The size of the file, in bytes
    */
-  def size(): Long = internal.size()
+  def size(): Long = asJava.size()
 }
 
-/** Factory for [[file.FileProps]] instances. */
+/** Factory for [[org.vertx.scala.core.file.FileProps]] instances. */
 object FileProps {
   def apply(internal: JFileProps) = new FileProps(internal)
 }

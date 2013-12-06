@@ -34,14 +34,8 @@ import scala.concurrent.Promise
 object ScalaVerticle {
   def newVerticle(delegate: Verticle, vertx: Vertx, container: Container): ScalaVerticle = {
     val verticle = new ScalaVerticle(delegate)
-    verticle.setVertx(vertx.internal)
-    verticle.setContainer(container.internal)
-    verticle
-  }
-  def newVerticle(delegate: Verticle, jvertx: JVertx, jcontainer: JContainer): ScalaVerticle = {
-    val verticle = new ScalaVerticle(delegate)
-    verticle.setVertx(jvertx)
-    verticle.setContainer(jcontainer)
+    verticle.setVertx(vertx.asJava)
+    verticle.setContainer(container.asJava)
     verticle
   }
 }
@@ -54,7 +48,7 @@ final private[platform] class ScalaVerticle(delegate: Verticle) extends JVerticl
   }
 
   override def setVertx(jvertx: JVertx) = {
-    delegate.setVertx(Vertx(jvertx))
+    delegate.setVertx(new Vertx(jvertx))
     super.setVertx(jvertx)
   }
 

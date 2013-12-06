@@ -18,12 +18,12 @@ package org.vertx.scala.core.http
 
 import org.vertx.java.core.http.{ HttpServer => JHttpServer }
 import org.vertx.java.core.http.{ HttpServerRequest => JHttpServerRequest, ServerWebSocket => JServerWebSocket }
-import org.vertx.scala.core.{ WrappedServerSSLSupport, WrappedTCPSupport }
-import org.vertx.scala.core.WrappedServerTCPSupport
+import org.vertx.scala.core.ServerSSLSupport
+import org.vertx.scala.core.ServerTCPSupport
 import org.vertx.scala.core.AsyncResult
 import org.vertx.scala.core.Handler
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.core.WrappedCloseable
+import org.vertx.scala.core.Closeable
 
 /**
  * An HTTP and WebSockets server<p>
@@ -38,8 +38,15 @@ import org.vertx.scala.core.WrappedCloseable
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-class HttpServer(protected[this] val internal: JHttpServer) extends WrappedCloseable with WrappedServerTCPSupport with WrappedServerSSLSupport {
-  override type InternalType = JHttpServer
+// constructor is private because users should use apply in companion
+// extends AnyVal to avoid object allocation and improve performance
+final class HttpServer private[scala] (val asJava: JHttpServer) extends AnyVal
+  with ServerTCPSupport[HttpServer]
+  with ServerSSLSupport[HttpServer]
+  with Closeable {
+
+  override type J = JHttpServer
+  override protected[this] def self: HttpServer = this
 
   /**
    * Tell the server to start listening on port {@code port} and hostname or ip address given by {@code host}.
@@ -49,7 +56,7 @@ class HttpServer(protected[this] val internal: JHttpServer) extends WrappedClose
    * @param listenHandler Callback when bind is done.
    */
   def listen(port: Int, host: String, listenHandler: AsyncResult[HttpServer] => Unit): HttpServer =
-    wrap(internal.listen(port, host, arHttpServerFnConverter(listenHandler)))
+    wrap(asJava.listen(port, host, arHttpServerFnConverter(listenHandler)))
 
   /**
    * Tell the server to start listening on port {@code port} and hostname or ip address given by {@code host}. Be aware this is an
@@ -58,7 +65,7 @@ class HttpServer(protected[this] val internal: JHttpServer) extends WrappedClose
    * @param port The port to listen on.
    * @param host The hostname or ip address.
    */
-  def listen(port: Int, host: String): HttpServer = wrap(internal.listen(port, host))
+  def listen(port: Int, host: String): HttpServer = wrap(asJava.listen(port, host))
 
   /**
    * Tell the server to start listening on all available interfaces and port {@code port}.
@@ -67,7 +74,7 @@ class HttpServer(protected[this] val internal: JHttpServer) extends WrappedClose
    * @param listenHandler Callback when bind is done.
    */
   def listen(port: Int, listenHandler: AsyncResult[HttpServer] => Unit): HttpServer =
-    wrap(internal.listen(port, arHttpServerFnConverter(listenHandler)))
+    wrap(asJava.listen(port, arHttpServerFnConverter(listenHandler)))
 
   /**
    * Tell the server to start listening on all available interfaces and port {@code port}. Be aware this is an
@@ -75,7 +82,7 @@ class HttpServer(protected[this] val internal: JHttpServer) extends WrappedClose
    *
    * @param port The port to listen on.
    */
-  def listen(port: Int): HttpServer = wrap(internal.listen(port))
+  def listen(port: Int): HttpServer = wrap(asJava.listen(port))
 
   /**
    * Get the request handler.
@@ -83,7 +90,7 @@ class HttpServer(protected[this] val internal: JHttpServer) extends WrappedClose
    * @return The request handler.
    */
   def requestHandler(): HttpServerRequest => Unit =
-    handlerToFn(internal.requestHandler()).compose(HttpServerRequest.unapply)
+    handlerToFn(asJava.requestHandler()).compose(HttpServerRequest.unapply)
 
   /**
    * Set the request handler for the server to {@code requestHandler}. As HTTP requests are received by the server,
@@ -92,14 +99,14 @@ class HttpServer(protected[this] val internal: JHttpServer) extends WrappedClose
    * @return a reference to this, so methods can be chained.
    */
   def requestHandler(requestHandler: HttpServerRequest => Unit): HttpServer =
-    wrap(internal.requestHandler(httpServerRequestFnConverter(requestHandler)))
+    wrap(asJava.requestHandler(httpServerRequestFnConverter(requestHandler)))
 
   /**
    * Get the websocket handler
    * @return The websocket handler
    */
   def websocketHandler(): ServerWebSocket => Unit =
-    handlerToFn(internal.websocketHandler()).compose(ServerWebSocket.unapply)
+    handlerToFn(asJava.websocketHandler()).compose(ServerWebSocket.unapply)
 
   /**
    * Set the websocket handler for the server to {@code wsHandler}. If a websocket connect handshake is successful a
@@ -108,17 +115,17 @@ class HttpServer(protected[this] val internal: JHttpServer) extends WrappedClose
    * @return a reference to this, so methods can be chained.
    */
   def websocketHandler(wsHandler: ServerWebSocket => Unit): HttpServer =
-    wrap(internal.websocketHandler(serverWebSocketFnConverter(wsHandler)))
+    wrap(asJava.websocketHandler(serverWebSocketFnConverter(wsHandler)))
 
   /**
    * Set if the {@link HttpServer} should compress the http response if the connected client supports it.
    */
-  def setCompressionSupported(compressionSupported: Boolean): HttpServer = wrap(internal.setCompressionSupported(compressionSupported))
+  def setCompressionSupported(compressionSupported: Boolean): HttpServer = wrap(asJava.setCompressionSupported(compressionSupported))
 
   /**
    * Returns {@code true} if the {@link HttpServer} should compress the http response if the connected client supports it.
    */
-  def isCompressionSupported(): Boolean = internal.isCompressionSupported()
+  def isCompressionSupported(): Boolean = asJava.isCompressionSupported()
 
   private def arHttpServerFnConverter(handler: AsyncResult[HttpServer] => Unit): Handler[AsyncResult[JHttpServer]] =
     asyncResultConverter(HttpServer.apply)(handler)
@@ -130,7 +137,7 @@ class HttpServer(protected[this] val internal: JHttpServer) extends WrappedClose
     fnToHandler(handler.compose(ServerWebSocket.apply))
 }
 
-/** Factory for [[http.HttpServer]] instances by wrapping a Java instance. */
+/** Factory for [[org.vertx.scala.core.http.HttpServer]] instances by wrapping a Java instance. */
 object HttpServer {
   def apply(internal: JHttpServer) = new HttpServer(internal)
 }

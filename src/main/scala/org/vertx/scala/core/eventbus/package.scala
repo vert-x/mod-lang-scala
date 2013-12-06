@@ -90,7 +90,7 @@ package object eventbus {
     type InternalType = Buffer
     def send(eb: JEventBus, address: String) = eb.send(address, data)
     def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) =
-      eb.send(address, data.toJava, handler)
+      eb.send(address, data.asJava, handler)
     def sendWithTimeout[T](eb: JEventBus, address: String, handler: Handler[AsyncResult[JMessage[T]]], timeout: Long) =
       eb.sendWithTimeout(address, data, timeout, handler)
     def publish(eb: JEventBus, address: String) = eb.publish(address, data)

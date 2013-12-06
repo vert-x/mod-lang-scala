@@ -15,10 +15,8 @@
  */
 package org.vertx.scala.core.streams
 
-import org.vertx.java.core.buffer.Buffer
 import org.vertx.java.core.streams.{ Pump => JPump }
-import org.vertx.scala.Wrap
-import org.vertx.scala.VertxWrapper
+import org.vertx.scala.Self
 
 /**
  * Pumps data from a {@link ReadStream} to a {@link WriteStream} and performs flow control where necessary to
@@ -40,56 +38,60 @@ import org.vertx.scala.VertxWrapper
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
+// constructor is private because users should use apply in companion
+// extends AnyVal to avoid object allocation and improve performance
+final class Pump private[scala] (val asJava: JPump) extends AnyVal
+  with Self[Pump] {
+
+  override protected[this] def self: Pump = this
+
+  /**
+   * Set the write queue max size to {@code maxSize}
+   */
+  def setWriteQueueMaxSize(maxSize: Int): Pump = wrap(asJava.setWriteQueueMaxSize(maxSize))
+
+  /**
+   * Start the Pump. The Pump can be started and stopped multiple times.
+   */
+  def start(): Pump = wrap(asJava.start())
+
+  /**
+   * Stop the Pump. The Pump can be started and stopped multiple times.
+   */
+  def stop(): Pump = wrap(asJava.stop())
+
+  /**
+   * Return the total number of bytes pumped by this pump.
+   */
+  def bytesPumped(): Int = asJava.bytesPumped()
+
+}
+
 object Pump {
 
   /**
    * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream}
    */
-  def apply[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream) = createPump(rs, ws)
+  def apply[A <: ReadStream[A], B <: WriteStream[B]](rs: ReadStream[A], ws: WriteStream[B]) = createPump(rs, ws)
 
   /**
    * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream} and
    * {@code writeQueueMaxSize}
    */
-  def apply[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream, writeQueueMaxSize: Int) =
+  def apply[A <: ReadStream[A], B <: WriteStream[B]](rs: ReadStream[A], ws: WriteStream[B], writeQueueMaxSize: Int) =
     createPump(rs, ws, writeQueueMaxSize)
 
   /**
    * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream}
    */
-  def createPump[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream) =
-    new Pump(JPump.createPump(rs.toJava(), ws.toJava()))
+  def createPump[A <: ReadStream[A], B <: WriteStream[B]](rs: ReadStream[A], ws: WriteStream[B]) =
+    new Pump(JPump.createPump(rs.asJava, ws.asJava))
 
   /**
    * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream} and
    * {@code writeQueueMaxSize}
    */
-  def createPump[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream, writeQueueMaxSize: Int) =
-    new Pump(JPump.createPump(rs.toJava(), ws.toJava(), writeQueueMaxSize))
-
-}
-
-class Pump(protected val internal: JPump) extends VertxWrapper {
-  override type InternalType = JPump
-
-  /**
-   * Set the write queue max size to {@code maxSize}
-   */
-  def setWriteQueueMaxSize(maxSize: Int): Pump = wrap(internal.setWriteQueueMaxSize(maxSize))
-
-  /**
-   * Start the Pump. The Pump can be started and stopped multiple times.
-   */
-  def start(): Pump = wrap(internal.start())
-
-  /**
-   * Stop the Pump. The Pump can be started and stopped multiple times.
-   */
-  def stop(): Pump = wrap(internal.stop())
-
-  /**
-   * Return the total number of bytes pumped by this pump.
-   */
-  def bytesPumped(): Int = internal.bytesPumped()
+  def createPump[A <: ReadStream[A], B <: WriteStream[B]](rs: ReadStream[A], ws: WriteStream[B], writeQueueMaxSize: Int) =
+    new Pump(JPump.createPump(rs.asJava, ws.asJava, writeQueueMaxSize))
 
 }

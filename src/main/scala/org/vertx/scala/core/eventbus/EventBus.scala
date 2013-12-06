@@ -15,14 +15,10 @@
  */
 package org.vertx.scala.core.eventbus
 
-import scala.collection.concurrent.Map
 import org.vertx.java.core.eventbus.{ EventBus => JEventBus, Message => JMessage }
-import org.vertx.scala.VertxWrapper
+import org.vertx.scala.Self
 import org.vertx.scala.core.{ AsyncResult, Handler }
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.{Handler => JHandler}
-import org.vertx.java.core.eventbus.ReplyException
-import org.vertx.java.core.impl.DefaultFutureResult
 
 /**
  * A distributed lightweight event bus which can encompass multiple vert.x instances.
@@ -55,26 +51,14 @@ import org.vertx.java.core.impl.DefaultFutureResult
  * @author swilliams
  * @author Edgar Chan
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
-class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
-  override type InternalType = JEventBus
+// constructor is private because users should use apply in companion
+// extends AnyVal to avoid object allocation and improve performance
+final class EventBus private[scala] (val asJava: JEventBus) extends AnyVal
+  with Self[EventBus] {
 
-  /**
-   * A RegisteredHandler can be unregistered at a later point in time.
-   * @param address The address the handler is listening on.
-   * @param hander The (java) handler that is registered at the address.
-   */
-  case class RegisteredHandler[X <% MessageData](address: String, handler: JHandler[JMessage[X]]) {
-    /**
-     * Unregisters the registered handler from the event bus.
-     */
-    def unregister() = internal.unregisterHandler(address, handler)
-    /**
-     * Unregisters the registered handler from the event bus.
-     * @param resultHandler Fires when the unregistration event propagated through the whole cluster.
-     */
-    def unregister(resultHandler: AsyncResult[Void] => Unit) = internal.unregisterHandler(address, handler, resultHandler)
-  }
+  override protected[this] def self: EventBus = this
 
   /**
    * Publish a message.
@@ -117,7 +101,7 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
    *
    * @param doneHandler
    */
-  def close(doneHandler: AsyncResult[Void] => Unit): Unit = internal.close(doneHandler)
+  def close(doneHandler: AsyncResult[Void] => Unit): Unit = asJava.close(doneHandler)
 
   /**
    * Registers a handler against the specified address. To unregister this handler, use the
@@ -126,8 +110,8 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
    * @param handler The handler.
    */
   def registerHandler[T <% MessageData](address: String, handler: Message[T] => Unit): RegisteredHandler[T] = {
-    val registeredHandler = RegisteredHandler(address, fnToHandler(handler.compose(Message.apply)))
-    internal.registerHandler(registeredHandler.address, registeredHandler.handler)
+    val registeredHandler = RegisteredHandler(address, fnToHandler(handler.compose(Message.apply)), this)
+    asJava.registerHandler(registeredHandler.address, registeredHandler.handler)
     registeredHandler
   }
 
@@ -140,8 +124,8 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
    * propagated to all nodes of the event bus, the handler will be called.
    */
   def registerHandler[T <% MessageData](address: String, handler: Message[T] => Unit, resultHandler: AsyncResult[Void] => Unit): RegisteredHandler[T] = {
-    val registeredHandler = RegisteredHandler(address, fnToHandler(handler.compose(Message.apply)))
-    internal.registerHandler(registeredHandler.address, registeredHandler.handler, resultHandler)
+    val registeredHandler = RegisteredHandler(address, fnToHandler(handler.compose(Message.apply)), this)
+    asJava.registerHandler(registeredHandler.address, registeredHandler.handler, resultHandler)
     registeredHandler
   }
 
@@ -153,8 +137,8 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
    * @param handler The handler to register.
    */
   def registerLocalHandler[T <% MessageData](address: String, handler: Message[T] => Unit): RegisteredHandler[T] = {
-    val registeredHandler = RegisteredHandler(address, fnToHandler(handler.compose(Message.apply)))
-    internal.registerLocalHandler(registeredHandler.address, registeredHandler.handler)
+    val registeredHandler = RegisteredHandler(address, fnToHandler(handler.compose(Message.apply)), this)
+    asJava.registerLocalHandler(registeredHandler.address, registeredHandler.handler)
     registeredHandler
   }
 
@@ -165,18 +149,12 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
    * The default value for default send timeout is -1, which means "never timeout".
    * @param timeoutMs
    */
-  def setDefaultReplyTimeout(timeoutMs: Long): EventBus = wrap(internal.setDefaultReplyTimeout(timeoutMs))
+  def setDefaultReplyTimeout(timeoutMs: Long): EventBus = wrap(asJava.setDefaultReplyTimeout(timeoutMs))
 
   /**
    * Return the value for default send timeout.
    */
-  def getDefaultReplyTimeout(): Long = internal.getDefaultReplyTimeout()
-
-  sealed private trait SendOrPublish
-  private case class Publish(address: String, value: MessageData) extends SendOrPublish
-  private case class Send[X](address: String, value: MessageData,
-    replyHandler: Option[Either[Handler[JMessage[X]], Handler[AsyncResult[JMessage[X]]]]])
-    extends SendOrPublish
+  def getDefaultReplyTimeout(): Long = asJava.getDefaultReplyTimeout()
 
   private def mapHandler[T <% MessageData](handler: Message[T] => Unit): Handler[JMessage[T]] = {
     fnToHandler(handler.compose(Message.apply))
@@ -188,13 +166,14 @@ class EventBus(protected[this] val internal: JEventBus) extends VertxWrapper {
 
   private def sendOrPublish(cmd: SendOrPublish, timeout: Long): EventBus = {
     cmd match {
-      case Publish(address, value) => value.publish(internal, address)
-      case Send(address, value, None) => value.send(internal, address)
-      case Send(address, value, Some(Left(handler))) => value.send(internal, address, handler)
-      case Send(address, value, Some(Right(handler))) => value.sendWithTimeout(internal, address, handler, timeout)
+      case Publish(address, value) => value.publish(asJava, address)
+      case Send(address, value, None) => value.send(asJava, address)
+      case Send(address, value, Some(Left(handler))) => value.send(asJava, address, handler)
+      case Send(address, value, Some(Right(handler))) => value.sendWithTimeout(asJava, address, handler, timeout)
     }
     this
   }
+
 }
 
 /**

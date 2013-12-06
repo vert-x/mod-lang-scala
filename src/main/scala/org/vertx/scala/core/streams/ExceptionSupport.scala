@@ -17,6 +17,8 @@
 package org.vertx.scala.core.streams
 
 import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
+import org.vertx.scala.{Self, AsJava}
+import org.vertx.scala.core.FunctionConverters._
 
 /**
  * Exception handler.
@@ -25,18 +27,16 @@ import org.vertx.java.core.streams.{ ExceptionSupport => JExceptionSupport }
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  * @author Galder Zamarreño
  */
-trait ExceptionSupport {
-  type InternalType <: JExceptionSupport[_]
+trait ExceptionSupport[+S <: ExceptionSupport[S]] extends Any
+  with Self[S]
+  with AsJava {
+
+  override type J <: JExceptionSupport[_]
 
   /**
    * Set an exception handler.
    */
-  def exceptionHandler(handler: Throwable => Unit): this.type
-
-  /**
-   * Provide the corresponding Java version of this class.
-   */
-  def toJava(): InternalType
+  def exceptionHandler(handler: Throwable => Unit): S = wrap(asJava.exceptionHandler(handler))
 
 }
 
