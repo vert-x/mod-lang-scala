@@ -18,7 +18,8 @@ package org.vertx.scala.tests.lang
 import org.vertx.scala.core.http.HttpServerRequest
 import org.vertx.scala.platform.Verticle
 
-class VerticleClass extends Verticle {
+// Class name different to file name for testing purposes
+class VerticleClassWithDifferentName extends Verticle {
 
   override def start() {
     vertx.createHttpServer().requestHandler { req: HttpServerRequest =>
