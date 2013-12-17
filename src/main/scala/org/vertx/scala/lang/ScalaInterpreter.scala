@@ -8,12 +8,17 @@ import scala.reflect.io.Path.jfile2path
 import scala.reflect.io.PlainFile
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{ IMain, NamedParam }
-import scala.tools.nsc.interpreter.Results.{ Error, Incomplete, Result, Success }
+import scala.tools.nsc.interpreter.Results.Result
+import scala.tools.nsc.interpreter.Results.{ Error => InterpreterError }
+import scala.tools.nsc.interpreter.Results.{ Incomplete => InterpreterIncomplete}
+import scala.tools.nsc.interpreter.Results.{ Success => InterpreterSuccess }
 import org.vertx.scala.core.Vertx
 import scala.tools.nsc.NewLinePrintWriter
 import scala.tools.nsc.ConsoleWriter
 import java.net.URL
 import org.vertx.scala.platform.Container
+import scala.util.{Success, Failure, Try}
+import scala.util
 
 /**
  * Scala interpreter
@@ -34,7 +39,7 @@ class ScalaInterpreter(
 
   def close(): Unit = interpreter.close()
 
-  def runScript(script: URL): Result = {
+  def runScript(script: URL): Try[Unit] = {
     val content = Source.fromURL(script).mkString
     val ops = List(
       () => addImports(
@@ -53,7 +58,12 @@ class ScalaInterpreter(
       () => bind("container", "org.vertx.scala.platform.Container", container),
       () => interpret(content)
     )
-    interpret(ops, Incomplete)
+    val result = interpret(ops, InterpreterIncomplete)
+    result match {
+      case InterpreterError => Failure(new ScalaCompilerError(s"Interpreter error running $script"))
+      case InterpreterIncomplete => Failure(new ScalaCompilerError(s"Incomplete script $script"))
+      case InterpreterSuccess => Success()
+    }
   }
 
   private def addImports(ids: String*): Result =
@@ -75,10 +85,13 @@ class ScalaInterpreter(
     if (ScalaInterpreter.isVerbose) verbose else quiet
   }
 
-  def compileClass(classFile: File, className: String): Option[Class[_]] = {
+  def compileClass(classFile: File): Try[ClassLoader] = {
     val source = new BatchSourceFile(PlainFile.fromPath(classFile))
     val result = interpreter.compileSources(source)
-    if (result) Some(interpreter.classLoader.loadClass(className)) else None
+    if (result)
+      Success(interpreter.classLoader)
+    else
+      Failure(new IllegalArgumentException(s"Unable to compile $classFile"))
   }
 
   @tailrec
@@ -88,12 +101,13 @@ class ScalaInterpreter(
       case x :: xs =>
         val result = x()
         result match {
-          case Error | Incomplete => result
-          case Success => interpret(xs, result)
+          case InterpreterError | InterpreterIncomplete => result
+          case InterpreterSuccess => interpret(xs, result)
         }
     }
   }
 
+  private class ScalaCompilerError(message: String) extends Exception(message)
 }
 
 object ScalaInterpreter {

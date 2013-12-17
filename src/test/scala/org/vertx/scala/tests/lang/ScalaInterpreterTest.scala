@@ -2,14 +2,14 @@ package org.vertx.scala.tests.lang
 
 import java.io.{File, Writer, StringWriter, PrintWriter}
 import org.junit.Test
-import scala.tools.nsc.interpreter.Results.{Success, Result}
 import org.vertx.scala.testtools.TestVerticle
 import org.junit.Assert.fail
 import org.vertx.testtools.VertxAssert._
-import org.vertx.scala.lang.ScalaInterpreter
+import org.vertx.scala.lang.{ClassLoaders, ScalaInterpreter}
 import org.vertx.scala.platform.impl.ScalaVerticle
 import org.vertx.scala.platform.Verticle
 import scala.tools.nsc.Settings
+import scala.util.Try
 
 class ScalaInterpreterTest extends TestVerticle {
 
@@ -27,10 +27,10 @@ class ScalaInterpreterTest extends TestVerticle {
     val filePath = "src/test/scala/org/vertx/scala/tests/lang/VerticleClass.scala"
     val out = new StringWriter()
     val interpreter = createInterpreter(out)
-    val verticleClass = interpreter.compileClass(new File(filePath),
-        "org.vertx.scala.tests.lang.VerticleClass")
-    val verticle = ScalaVerticle.newVerticle(
-        verticleClass.get.newInstance().asInstanceOf[Verticle], vertx.internal, container.internal)
+    val classLoader = interpreter.compileClass(new File(filePath))
+    val className = "org.vertx.scala.tests.lang.VerticleClass"
+    val delegate = ClassLoaders.newInstance[Verticle](className, classLoader.get)
+    val verticle = ScalaVerticle.newVerticle(delegate.get, vertx.internal, container.internal)
     verticle.start()
     assertHttpClientGetNow("Hello verticle class!")
   }
@@ -42,9 +42,10 @@ class ScalaInterpreterTest extends TestVerticle {
     new ScalaInterpreter(settings, vertx, container, new PrintWriter(out))
   }
 
-  private def assertInterpret(out: Writer, result: Result) {
-    if (result != Success)
-      fail(out.toString)
+  private def assertInterpret(out: Writer, result: Try[_]) {
+    result.recover {
+      case _ => fail(out.toString)
+    }
   }
 
   private def assertHttpClientGetNow(expected: String) {

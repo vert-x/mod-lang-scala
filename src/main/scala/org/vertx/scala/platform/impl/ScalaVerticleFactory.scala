@@ -19,17 +19,18 @@ package org.vertx.scala.platform.impl
 import java.io.{PrintWriter, Writer, File, FilenameFilter}
 
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.Results.Success
 import scala.util.matching.Regex
 
 import org.vertx.java.core.{ Vertx => JVertx }
 import org.vertx.java.core.logging.Logger
 import org.vertx.java.platform.{ Container => JContainer, Verticle => JVerticle, VerticleFactory }
-import org.vertx.scala.lang.ScalaInterpreter
+import org.vertx.scala.lang.{ClassLoaders, ScalaInterpreter}
 import org.vertx.scala.platform.{Container, Verticle}
 import java.net.URL
 import org.vertx.java.core.logging.impl.LoggerFactory
 import java.security.{PrivilegedAction, AccessController}
+import scala.util.{Success, Failure, Try}
+import scala.annotation.tailrec
 
 /**
  * Scala verticle factory.
@@ -44,53 +45,44 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   import ScalaVerticleFactory._
 
-  private var jvertx: JVertx = null
+  private var vertx: Vertx = null
 
-  private var jcontainer: JContainer = null
+  private var container: Container = null
 
   private var loader: ClassLoader = null
 
   private var interpreter: ScalaInterpreter = null
 
   override def init(jvertx: JVertx, jcontainer: JContainer, aloader: ClassLoader): Unit = {
-    this.jvertx = jvertx
-    this.jcontainer = jcontainer
     this.loader = aloader
 
-    val sVertx = Vertx(jvertx)
-    val sContainer = Container(jcontainer)
+    vertx = Vertx(jvertx)
+    container = Container(jcontainer)
     val settings = interpreterSettings()
     interpreter = new ScalaInterpreter(
-        settings, sVertx, sContainer, new LogPrintWriter(logger))
+        settings.get, vertx, container, new LogPrintWriter(logger))
   }
 
   @throws(classOf[Exception])
   override def createVerticle(main: String): JVerticle = {
-    val loadedVerticle = 
-      if (!main.endsWith(Suffix)) Some(loader.loadClass(main))
+    val newVerticle =
+      if (!main.endsWith(Suffix)) ClassLoaders.newInstance[Verticle](main, loader)
       else load(main)
-    
-    loadedVerticle match {
-      case Some(verticleClass) =>
-        val vcInstance = verticleClass.newInstance()
-        val delegate = vcInstance.asInstanceOf[Verticle]
-        ScalaVerticle.newVerticle(delegate, jvertx, jcontainer)
-      case None =>
-        DummyVerticle // run directly as script
-    }
+
+    ScalaVerticle.newVerticle(newVerticle.get, vertx, container)
   }
 
-  private def resolveVerticlePath(main: String): URL = {
+  private def resolveVerticlePath(main: String): Try[URL] = {
     // Check if path exists
     val file = new File(main)
     if (file.exists())
-      file.toURI.toURL
+      Success(file.toURI.toURL)
     else {
-      val url = loader.getResource(main)
-      if (url == null)
-        throw new IllegalArgumentException(
-            s"Cannot find main script: '$main' on classpath")
-      url
+      Option(loader.getResource(main)) match {
+        case None => Failure(new IllegalArgumentException(
+            s"Cannot find main script: '$main' on classpath"))
+        case Some(res) => Success(res)
+      }
     }
   }
 
@@ -102,49 +94,56 @@ class ScalaVerticleFactory extends VerticleFactory {
     interpreter.close()
   }
 
-  @throws(classOf[Exception])
-  private def load(main: String): Option[Class[_]] = {
-    logger.info(s"Compiling $main as Scala script")
-    // Try running it as a script
-    val url = resolveVerticlePath(main)
-    val result = interpreter.runScript(url)
-    if (result != Success) {
-      // Might be a Scala class
+  private def load(main: String): Try[Verticle] = {
+    runAsScript(main).recoverWith { case _ =>
+      // Recover by trying to compile it as a Scala class
       logger.info(s"Script contains compilation errors, or $main is a Scala class (pass -Dvertx.scala.interpreter.verbose=true to find out more)")
       logger.info(s"Compiling as a Scala class")
-      val resolved = loader.getResource(main).toExternalForm
-      val className = main.replaceFirst(".scala$", "").replaceAll("/", ".")
-      val classFile = new File(resolved.replaceFirst("file:", ""))
-      val verticleClass = interpreter.compileClass(classFile, className).getOrElse {
-        throw new IllegalArgumentException(
-            s"Unable to run $main as neither Scala script nor Scala class")
+
+      val className = extractClassName(main)
+      val classFile = getClassFile(main)
+
+      for {
+        classLoader <- interpreter.compileClass(classFile)
+        verticle <- newVerticleInstance(className, classLoader)
+      } yield {
+        logger.info(s"Starting $className")
+        verticle
       }
-      logger.info(s"Starting $className")
-      Some(verticleClass)
-    } else {
-      logger.info(s"Starting $main")
-      None
     }
   }
 
-  private def interpreterSettings(): Settings = {
+  private def runAsScript(main: String): Try[Verticle] = {
+    logger.info(s"Compiling $main as Scala script")
+    // Try running it as a script
+    for {
+      url <- resolveVerticlePath(main)
+      result <- interpreter.runScript(url)
+    } yield {
+      logger.info(s"Starting $main")
+      DummyVerticle
+    }
+  }
+
+  private def interpreterSettings(): Try[Settings] = {
     val settings = new Settings()
 
     for {
       jar <- findAll(loader, "lib", JarFileRegex)
     } yield {
+      logger.debug(s"Add $jar to compiler boot classpath")
       settings.bootclasspath.append(jar.getAbsolutePath)
     }
 
     val moduleLocation = getRootModuleLocation
     moduleLocation match {
       case None =>
-        throw new IllegalStateException("Unable to resolve mod-lang-scala root location")
+        Failure(new IllegalStateException("Unable to resolve mod-lang-scala root location"))
       case Some(loc) =>
         settings.bootclasspath.append(loc)
         settings.usejavacp.value = true
         settings.verbose.value = ScalaInterpreter.isVerbose
-        settings
+        Success(settings)
     }
   }
 
@@ -160,7 +159,44 @@ class ScalaVerticleFactory extends VerticleFactory {
     })
   }
 
-  private object DummyVerticle extends JVerticle
+  private def extractClassName(main: String): String =
+    main.replaceFirst(".scala$", "").replaceAll("/", ".")
+
+  private def getClassFile(main: String): File = {
+    Option(loader.getResource(main)) match {
+      case None => new File(main)
+      case Some(resource) =>
+        new File(resource.toExternalForm.replaceFirst("file:", ""))
+    }
+  }
+
+  private def newVerticleInstance(className: String, classLoader: ClassLoader): Try[Verticle] = {
+    // If class not found, try to deduce a shorter name in case a system path was passed
+    // Could have used recoverWith but you lose tail recursion, so using pattern matching
+    @tailrec
+    def searchVerticleInstance(className: String, classLoader: ClassLoader): Try[Verticle] = {
+      val instanceTry = ClassLoaders.newInstance(className, classLoader)
+      instanceTry match {
+        case Success(verticle) => instanceTry
+        case Failure(e: ClassNotFoundException) =>
+          val dot = className.indexOf('.')
+          if (dot < 0) instanceTry
+          else {
+            val shorterClassName = className.substring(dot + 1)
+            logger.debug(s"Class not found, try with $shorterClassName")
+            searchVerticleInstance(shorterClassName, classLoader)
+          }
+        case Failure(t) => instanceTry
+      }
+    }
+
+    searchVerticleInstance(className, classLoader).recoverWith { case _ =>
+      Failure(new ClassNotFoundException(
+        s"Class $className not found, nor any shortened versions"))
+    }
+  }
+
+  private case object DummyVerticle extends Verticle
 
 }
 
