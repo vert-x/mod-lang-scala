@@ -46,22 +46,22 @@ final class FileProps private[scala] (val asJava: JFileProps) extends AnyVal {
   /**
    * Is the file a directory?
    */
-  def isDirectory(): Boolean = asJava.isDirectory()
+  def isDirectory: Boolean = asJava.isDirectory
 
   /**
    * Is the file some other type? (I.e. not a directory, regular file or symbolic link)
    */
-  def isOther(): Boolean = asJava.isOther()
+  def isOther: Boolean = asJava.isOther
 
   /**
    * Is the file a regular file?
    */
-  def isRegularFile(): Boolean = asJava.isRegularFile()
+  def isRegularFile: Boolean = asJava.isRegularFile
 
   /**
    * Is the file a symbolic link?
    */
-  def isSymbolicLink(): Boolean = asJava.isSymbolicLink()
+  def isSymbolicLink: Boolean = asJava.isSymbolicLink
 
   /**
    * The size of the file, in bytes

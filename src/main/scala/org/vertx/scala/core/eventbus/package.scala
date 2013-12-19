@@ -24,7 +24,7 @@ package object eventbus {
   }
 
   sealed trait JMessageData extends MessageData {
-    def toScalaMessageData(): MessageData
+    def asScala: MessageData
   }
 
   import scala.language.implicitConversions
@@ -110,7 +110,7 @@ package object eventbus {
     def publish(eb: JEventBus, address: String) = eb.publish(address, data)
     def reply[A](msg: JMessage[A]) = msg.reply(data)
     def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
-    def toScalaMessageData(): BufferData = BufferData(Buffer(data))
+    def asScala(): BufferData = BufferData(Buffer(data))
     def replyWithTimeout[A, B](msg: JMessage[A], timeout: Long, handler: Handler[AsyncResult[JMessage[B]]]) =
       msg.replyWithTimeout(data, timeout, handler)
   }

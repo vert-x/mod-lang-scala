@@ -15,13 +15,13 @@ class BufferTest {
       case _: Int => buffer.getInt(0)
       case _: Float => buffer.getFloat(0)
       case x: String => buffer.getString(0, x.length)
-      case x: Buffer => buffer.getBuffer(0, x.length)
+      case x: Buffer => buffer.getBuffer(0, x.length())
       case _: Long => buffer.getLong(0)
       case _: Byte => buffer.getByte(0)
       case _: Double => buffer.getDouble(0)
       case _: Short => buffer.getShort(0)
-      case y: Array[Byte] => buffer.getBytes()
-      case (a: String, b: String) => (buffer.getString(0, buffer.length, b), b)
+      case y: Array[Byte] => buffer.getBytes
+      case (a: String, b: String) => (buffer.getString(0, buffer.length(), b), b)
     }
 
     val realValue = value match {

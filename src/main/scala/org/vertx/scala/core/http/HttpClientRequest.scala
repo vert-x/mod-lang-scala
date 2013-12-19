@@ -24,19 +24,19 @@ import org.vertx.scala.Self
 
 /**
  * Represents a client-side HTTP request.<p>
- * Instances are created by an {@link HttpClient} instance, via one of the methods corresponding to the
- * specific HTTP methods, or the generic {@link HttpClient#request} method.<p>
+ * Instances are created by an [[org.vertx.scala.core.http.HttpClient]] instance, via one of the methods corresponding to the
+ * specific HTTP methods, or the generic [[org.vertx.scala.core.http.HttpClient.request]] method.<p>
  * Once a request has been obtained, headers can be set on it, and data can be written to its body if required. Once
- * you are ready to send the request, the {@link #end()} method should be called.<p>
- * Nothing is actually sent until the request has been internally assigned an HTTP connection. The {@link HttpClient}
+ * you are ready to send the request, the `end()` method should be called.<p>
+ * Nothing is actually sent until the request has been internally assigned an HTTP connection. The [[org.vertx.scala.core.http.HttpClient]]
  * instance will return an instance of this class immediately, even if there are no HTTP connections available in the pool. Any requests
  * sent before a connection is assigned will be queued internally and actually sent when an HTTP connection becomes
  * available from the pool.<p>
- * The headers of the request are actually sent either when the {@link #end()} method is called, or, when the first
+ * The headers of the request are actually sent either when the `end()` method is called, or, when the first
  * part of the body is written, whichever occurs first.<p>
  * This class supports both chunked and non-chunked HTTP.<p>
- * It implements {@link WriteStream} so it can be used with
- * {@link org.vertx.java.core.streams.Pump} to pump data with flow control.<p>
+ * It implements [[org.vertx.java.core.streams.WriteStream]] so it can be used with
+ * [[org.vertx.java.core.streams.Pump]] to pump data with flow control.<p>
  * An example of using this class is as follows:
  * <p>
  * <pre>
@@ -76,7 +76,7 @@ final class HttpClientRequest private[scala] (val asJava: JHttpClientRequest) ex
    *
    * @return True if the request is chunked.
    */
-  def isChunked(): Boolean = asJava.isChunked()
+  def isChunked: Boolean = asJava.isChunked
 
   /**
    * Returns the HTTP headers.
@@ -103,59 +103,59 @@ final class HttpClientRequest private[scala] (val asJava: JHttpClientRequest) ex
   def putHeader(name: String, values: java.lang.Iterable[String]): HttpClientRequest = wrap(asJava.putHeader(name, values))
 
   /**
-   * Write a {@link String} to the request body, encoded in UTF-8.
+   * Write a [[java.lang.String]] to the request body, encoded in UTF-8.
    *
    * @return A reference to this, so multiple method calls can be chained.
    */
   def write(chunk: String): HttpClientRequest = wrap(asJava.write(chunk))
 
   /**
-   * Write a {@link String} to the request body, encoded using the encoding {@code enc}.
+   * Write a [[java.lang.String]] to the request body, encoded using the encoding `enc`.
    *
-   * @return A reference to this, so multiple method calls can be chained.
+   *@return A reference to this, so multiple method calls can be chained.
    */
   def write(chunk: String, enc: String): HttpClientRequest = wrap(asJava.write(chunk, enc))
 
   /**
-   * If you send an HTTP request with the header {@code Expect} set to the value {@code 100-continue}
-   * and the server responds with an interim HTTP response with a status code of {@code 100} and a continue handler
-   * has been set using this method, then the {@code handler} will be called.<p>
+   * If you send an HTTP request with the header `Expect` set to the value `100-continue`
+   * and the server responds with an interim HTTP response with a status code of `100` and a continue handler
+   * has been set using this method, then the `handler` will be called.<p>
    * You can then continue to write data to the request body and later end it. This is normally used in conjunction with
-   * the {@link #sendHead()} method to force the request header to be written before the request has ended.
+   * the [[org.vertx.scala.core.http.HttpClientRequest.sendHead()]] method to force the request header to be written before the request has ended.
    * @return A reference to this, so multiple method calls can be chained.
    */
   def continueHandler(handler: Handler[Void]): HttpClientRequest = wrap(asJava.continueHandler(handler))
 
   /**
-   * Forces the head of the request to be written before {@link #end()} is called on the request or
+   * Forces the head of the request to be written before [[org.vertx.scala.core.http.HttpClientRequest.end()]] is called on the request or
    * any data is written to it. This is normally used to implement HTTP 100-continue handling, see
-   * {@link #continueHandler(org.vertx.java.core.Handler)} for more information.
+   * [[org.vertx.scala.core.http.HttpClientRequest.continueHandler(org.vertx.java.core.Handler)]] for more information.
    *
    * @return A reference to this, so multiple method calls can be chained.
    */
   def sendHead(): HttpClientRequest = wrap(asJava.sendHead())
 
   /**
-   * Same as {@link #end(Buffer)} but writes a String with the default encoding.
+   * Same as [[org.vertx.scala.core.http.HttpClientRequest.end(Buffer)]] but writes a String with the default encoding.
    */
   def end(chunk: String): Unit = asJava.end(chunk)
 
   /**
-   * Same as {@link #end(Buffer)} but writes a String with the specified encoding.
+   * Same as [[org.vertx.scala.core.http.HttpClientRequest.end(Buffer)]] but writes a String with the specified encoding.
    */
   def end(chunk: String, enc: String): Unit = asJava.end(chunk, enc)
 
   /**
-   * Same as {@link #end()} but writes some data to the request body before ending. If the request is not chunked and
+   * Same as [[org.vertx.scala.core.http.HttpClientRequest.end()]] but writes some data to the request body before ending. If the request is not chunked and
    * no other data has been written then the Content-Length header will be automatically set.
    */
   def end(chunk: Buffer): Unit = asJava.end(chunk.asJava)
 
   /**
-   * Ends the request. If no data has been written to the request body, and {@link #sendHead()} has not been called then
+   * Ends the request. If no data has been written to the request body, and [[org.vertx.scala.core.http.HttpClientRequest.sendHead()]] has not been called then
    * the actual request won't get written until this method gets called.<p>
    * Once the request has ended, it cannot be used any more, and if keep alive is true the underlying connection will
-   * be returned to the {@link HttpClient} pool so it can be assigned to another request.
+   * be returned to the [[org.vertx.scala.core.http.HttpClient]] pool so it can be assigned to another request.
    */
   def end(): Unit = asJava.end()
 

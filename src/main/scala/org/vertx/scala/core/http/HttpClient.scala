@@ -25,7 +25,7 @@ import org.vertx.scala.Self
 /**
  * An HTTP client that maintains a pool of connections to a specific host, at a specific port. The client supports
  * pipelining of requests.<p>
- * As well as HTTP requests, the client can act as a factory for {@code WebSocket websockets}.<p>
+ * As well as HTTP requests, the client can act as a factory for `WebSocket websockets`.<p>
  * If an instance is instantiated from an event loop then the handlers
  * of the instance will always be called on that same event loop.
  * If an instance is instantiated from some other arbitrary Java thread (i.e. when running embedded) then
@@ -54,7 +54,7 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
 
   /**
    * Set the maximum pool size<p>
-   * The client will maintain up to {@code maxConnections} HTTP connections in an internal pool<p>
+   * The client will maintain up to `maxConnections` HTTP connections in an internal pool<p>
    * @return A reference to this, so multiple invocations can be chained together.
    */
   def setMaxPoolSize(maxConnections: Int): HttpClient =
@@ -63,15 +63,15 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
   /**
    * Returns the maximum number of connections in the pool
    */
-  def getMaxPoolSize(): Int = asJava.getMaxPoolSize()
+  def getMaxPoolSize: Int = asJava.getMaxPoolSize
 
   /**
-   * If {@code keepAlive} is {@code true} then, after the request has ended the connection will be returned to the pool
+   * If `keepAlive` is `true` then, after the request has ended the connection will be returned to the pool
    * where it can be used by another request. In this manner, many HTTP requests can be pipe-lined over an HTTP connection.
-   * Keep alive connections will not be closed until the {@link #close() close()} method is invoked.<p>
-   * If {@code keepAlive} is {@code false} then a new connection will be created for each request and it won't ever go in the pool,
+   * Keep alive connections will not be closed until the [[org.vertx.scala.core.http.HttpClient.close()]] method is invoked.<p>
+   * If `keepAlive` is `false` then a new connection will be created for each request and it won't ever go in the pool,
    * the connection will closed after the response has been received. Even with no keep alive,
-   * the client will not allow more than {@link #getMaxPoolSize()} connections to be created at any one time. <p>
+   * the client will not allow more than [[org.vertx.scala.core.http.HttpClient.getMaxPoolSize()]] connections to be created at any one time. <p>
    * @return A reference to this, so multiple invocations can be chained together.
    */
   def setKeepAlive(keepAlive: Boolean): HttpClient = wrap(asJava.setKeepAlive(keepAlive))
@@ -80,11 +80,11 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
    *
    * @return Is the client keep alive?
    */
-  def isKeepAlive(): Boolean = asJava.isKeepAlive()
+  def isKeepAlive: Boolean = asJava.isKeepAlive
 
   /**
-   * Set the port that the client will attempt to connect to the server on to {@code port}. The default value is
-   * {@code 80}
+   * Set the port that the client will attempt to connect to the server on to `port`. The default value is
+   * `80`
    * @return A reference to this, so multiple invocations can be chained together.
    */
   def setPort(port: Int): HttpClient = wrap(asJava.setPort(port))
@@ -93,11 +93,11 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
    *
    * @return The port
    */
-  def getPort(): Int = asJava.getPort()
+  def getPort: Int = asJava.getPort
 
   /**
-   * Set the host that the client will attempt to connect to the server on to {@code host}. The default value is
-   * {@code localhost}
+   * Set the host that the client will attempt to connect to the server on to `host`. The default value is
+   * `localhost`
    * @return A reference to this, so multiple invocations can be chained together.
    */
   def setHost(host: String): HttpClient = wrap(asJava.setHost(host))
@@ -106,45 +106,45 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
    *
    * @return The host
    */
-  def getHost(): String = asJava.getHost()
+  def getHost: String = asJava.getHost
 
   /**
    * Attempt to connect an HTML5 websocket to the specified URI<p>
-   * The connect is done asynchronously and {@code wsConnect} is called back with the websocket
+   * The connect is done asynchronously and `wsConnect` is called back with the websocket
    */
   def connectWebsocket(uri: String, wsConnect: WebSocket => Unit): HttpClient =
     wrap(asJava.connectWebsocket(uri, webSocketFnConverter(wsConnect)))
 
   /**
    * Attempt to connect an HTML5 websocket to the specified URI<p>
-   * This version of the method allows you to specify the websockets version using the {@code wsVersion parameter}
-   * The connect is done asynchronously and {@code wsConnect} is called back with the websocket
+   * This version of the method allows you to specify the websockets version using the `wsVersion parameter`
+   * The connect is done asynchronously and `wsConnect` is called back with the websocket
    */
   def connectWebsocket(uri: String, wsVersion: WebSocketVersion, wsConnect: WebSocket => Unit): HttpClient =
     wrap(asJava.connectWebsocket(uri, wsVersion, webSocketFnConverter(wsConnect)))
 
   /**
    * Attempt to connect an HTML5 websocket to the specified URI<p>
-   * This version of the method allows you to specify the websockets version using the {@code wsVersion parameter}
+   * This version of the method allows you to specify the websockets version using the `wsVersion parameter`
    * You can also specify a set of headers to append to the upgrade request
-   * The connect is done asynchronously and {@code wsConnect} is called back with the websocket
+   * The connect is done asynchronously and `wsConnect` is called back with the websocket
    */
   def connectWebsocket(uri: String, wsVersion: WebSocketVersion, headers: MultiMap, wsConnect: WebSocket => Unit): HttpClient =
     wrap(asJava.connectWebsocket(uri, wsVersion, headers, webSocketFnConverter(wsConnect)))
 
   /**
-   * This is a quick version of the {@link #get(String, org.vertx.java.core.Handler)}
+   * This is a quick version of the [[org.vertx.scala.core.http.HttpClient.get(String, org.vertx.java.core.Handler)]]
    * method where you do not want to do anything with the request before sending.<p>
    * Normally with any of the HTTP methods you create the request then when you are ready to send it you call
-   * {@link HttpClientRequest#end()} on it. With this method the request is immediately sent.<p>
-   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   * [[org.vertx.scala.core.http.HttpClientRequest.end()]] on it. With this method the request is immediately sent.<p>
+   * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
    */
   def getNow(uri: String, responseHandler: HttpClientResponse => Unit): HttpClient =
     wrap(asJava.getNow(uri, httpClientResponseFnConverter(responseHandler)))
 
   /**
-   * This method works in the same manner as {@link #getNow(String, org.vertx.java.core.Handler)},
-   * except that it allows you specify a set of {@code headers} that will be sent with the request.
+   * This method works in the same manner as [[org.vertx.scala.core.http.HttpClient.getNow(String, org.vertx.java.core.Handler)]],
+   * except that it allows you specify a set of `headers` that will be sent with the request.
    */
   def getNow(uri: String, headers: MultiMap, responseHandler: HttpClientResponse => Unit): HttpClient =
     wrap(asJava.getNow(uri, headers, httpClientResponseFnConverter(responseHandler)))
@@ -159,72 +159,72 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
   // ...
 
   /**
-   * This method returns an {@link HttpClientRequest} instance which represents an HTTP OPTIONS request with the specified {@code uri}.<p>
-   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP OPTIONS request with the specified `uri`.<p>
+   * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
    */
   def options(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
     HttpClientRequest(asJava.options(uri, httpClientResponseFnConverter(responseHandler)))
 
   /**
-   * This method returns an {@link HttpClientRequest} instance which represents an HTTP GET request with the specified {@code uri}.<p>
-   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP GET request with the specified `uri`.<p>
+   * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
    */
   def get(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
     HttpClientRequest(asJava.get(uri, httpClientResponseFnConverter(responseHandler)))
 
   /**
-   * This method returns an {@link HttpClientRequest} instance which represents an HTTP HEAD request with the specified {@code uri}.<p>
-   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP HEAD request with the specified `uri`.<p>
+   * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
    */
   def head(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
     HttpClientRequest(asJava.head(uri, httpClientResponseFnConverter(responseHandler)))
 
   /**
-   * This method returns an {@link HttpClientRequest} instance which represents an HTTP POST request with the specified {@code uri}.<p>
-   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP POST request with the specified `uri`.<p>
+   * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
    */
   def post(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
     HttpClientRequest(asJava.post(uri, httpClientResponseFnConverter(responseHandler)))
 
   /**
-   * This method returns an {@link HttpClientRequest} instance which represents an HTTP PUT request with the specified {@code uri}.<p>
-   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP PUT request with the specified `uri`.<p>
+   * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
    */
   def put(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
     HttpClientRequest(asJava.put(uri, httpClientResponseFnConverter(responseHandler)))
 
   /**
-   * This method returns an {@link HttpClientRequest} instance which represents an HTTP DELETE request with the specified {@code uri}.<p>
-   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP DELETE request with the specified `uri`.<p>
+   * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
    */
   def delete(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
     HttpClientRequest(asJava.delete(uri, httpClientResponseFnConverter(responseHandler)))
 
   /**
-   * This method returns an {@link HttpClientRequest} instance which represents an HTTP TRACE request with the specified {@code uri}.<p>
-   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP TRACE request with the specified `uri`.<p>
+   * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
    */
   def trace(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
     HttpClientRequest(asJava.trace(uri, httpClientResponseFnConverter(responseHandler)))
 
   /**
-   * This method returns an {@link HttpClientRequest} instance which represents an HTTP CONNECT request with the specified {@code uri}.<p>
-   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP CONNECT request with the specified `uri`.<p>
+   * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
    */
   def connect(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
     HttpClientRequest(asJava.connect(uri, httpClientResponseFnConverter(responseHandler)))
 
   /**
-   * This method returns an {@link HttpClientRequest} instance which represents an HTTP PATCH request with the specified {@code uri}.<p>
-   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP PATCH request with the specified `uri`.<p>
+   * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
    */
   def patch(uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
     HttpClientRequest(asJava.patch(uri, httpClientResponseFnConverter(responseHandler)))
 
   /**
-   * This method returns an {@link HttpClientRequest} instance which represents an HTTP request with the specified {@code uri}.
-   * The specific HTTP method (e.g. GET, POST, PUT etc) is specified using the parameter {@code method}<p>
-   * When an HTTP response is received from the server the {@code responseHandler} is called passing in the response.
+   * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP request with the specified `uri`.
+   * The specific HTTP method (e.g. GET, POST, PUT etc) is specified using the parameter `method`<p>
+   * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
    */
   def request(method: String, uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
     HttpClientRequest(asJava.request(method, uri, httpClientResponseFnConverter(responseHandler)))
@@ -235,9 +235,9 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
   def close(): Unit = asJava.close()
 
   /**
-   * If {@code verifyHost} is {@code true}, then the client will try to validate the remote server's certificate
+   * If `verifyHost` is `true`, then the client will try to validate the remote server's certificate
    * hostname against the requested host. Should default to 'true'.
-   * This method should only be used in SSL mode, i.e. after {@link #setSSL(boolean)} has been set to {@code true}.
+   * This method should only be used in SSL mode, i.e. after [[org.vertx.scala.core.http.HttpClient.setSSL(boolean)]] has been set to `true`.
    * @return A reference to this, so multiple invocations can be chained together.
    */
   def setVerifyHost(verifyHost: Boolean): HttpClient = wrap(asJava.setVerifyHost(verifyHost))
@@ -246,7 +246,7 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
    *
    * @return true if this client will validate the remote server's certificate hostname against the requested host
    */
-  def isVerifyHost(): Boolean = asJava.isVerifyHost()
+  def isVerifyHost: Boolean = asJava.isVerifyHost
 
   /**
    * Set the connect timeout in milliseconds.
@@ -258,20 +258,18 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
    *
    * @return The connect timeout in milliseconds
    */
-  def getConnectTimeout(): Int = asJava.getConnectTimeout()
+  def getConnectTimeout: Int = asJava.getConnectTimeout
 
   /**
-   * Set if the {@link HttpClient} should try to use compression.
+   * Set if the [[org.vertx.scala.core.http.HttpClient]] should try to use compression.
    */
-  def setTryUseCompression(tryUseCompression: Boolean): HttpClient = wrap(asJava.setTryUseCompression(tryUseCompression))
+  def setTryUseCompression(tryUseCompression: Boolean): HttpClient =
+    wrap(asJava.setTryUseCompression(tryUseCompression))
 
   /**
-   * Returns {@code true} if the {@link HttpClient} should try to use compression.
+   * Returns `true` if the [[org.vertx.scala.core.http.HttpClient]] should try to use compression.
    */
-  def getTryUseCompression(): Boolean = asJava.getTryUseCompression()
-
-  private def httpClientRequestFnConverter(handler: HttpClientRequest => Unit) =
-    fnToHandler(handler.compose(HttpClientRequest.apply))
+  def getTryUseCompression: Boolean = asJava.getTryUseCompression
 
   private def httpClientResponseFnConverter(handler: HttpClientResponse => Unit) =
     fnToHandler(handler.compose(HttpClientResponse.apply))

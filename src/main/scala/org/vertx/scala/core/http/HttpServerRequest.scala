@@ -27,12 +27,12 @@ import org.vertx.scala.core.streams.ReadStream
 /**
  * Represents a server-side HTTP request.<p>
  * Instances are created for each request that is handled by the server
- * and is passed to the user via the {@link org.vertx.java.core.Handler} instance
- * registered with the {@link HttpServer} using the method {@link HttpServer#requestHandler(org.vertx.java.core.Handler)}.<p>
- * Each instance of this class is associated with a corresponding {@link HttpServerResponse} instance via
- * the {@code response} field.<p>
- * It implements {@link org.vertx.java.core.streams.ReadStream} so it can be used with
- * {@link org.vertx.java.core.streams.Pump} to pump data with flow control.<p>
+ * and is passed to the user via the [[org.vertx.java.core.Handler]] instance
+ * registered with the [[org.vertx.scala.core.http.HttpServer]] using the method [[org.vertx.scala.core.http.HttpServer.requestHandler(org.vertx.java.core.Handler)]].<p>
+ * Each instance of this class is associated with a corresponding [[org.vertx.scala.core.http.HttpServerResponse]] instance via
+ * the `response` field.<p>
+ * It implements [[org.vertx.scala.core.streams.ReadStream]] so it can be used with
+ * [[org.vertx.scala.core.streams.Pump]] to pump data with flow control.<p>
  * Instances of this class are not thread-safe<p>
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -74,7 +74,7 @@ final class HttpServerRequest private[scala] (val asJava: JHttpServerRequest) ex
   def query(): String = asJava.query
 
   /**
-   * The response. Each instance of this class has an {@link HttpServerResponse} instance attached to it. This is used
+   * The response. Each instance of this class has an [[org.vertx.scala.core.http.HttpServerResponse]] instance attached to it. This is used
    * to send the response back to the client.
    */
   def response(): HttpServerResponse = HttpServerResponse(asJava.response)
@@ -131,7 +131,7 @@ final class HttpServerRequest private[scala] (val asJava: JHttpServerRequest) ex
   /**
    * Call this with true if you are expecting a multi-part form to be submitted in the request
    * This must be called before the body of the request has been received.
-   * @param expect
+   * @param expect `true` if expecting multi-part form, `false` otherwise
    */
   def expectMultiPart(expect: Boolean): HttpServerRequest = wrap(asJava.expectMultiPart(expect))
 
@@ -144,7 +144,7 @@ final class HttpServerRequest private[scala] (val asJava: JHttpServerRequest) ex
   /**
    * Returns a map of all form attributes which was found in the request. Be aware that this message should only get
    * called after the endHandler was notified as the map will be filled on-the-fly.
-   * {@link #expectMultiPart(boolean)} must be called first before trying to get the formAttributes
+   * [[org.vertx.scala.core.http.HttpServerRequest.expectMultiPart(boolean)]] must be called first before trying to get the formAttributes
    */
   def formAttributes(): MultiMap = asJava.formAttributes()
 }

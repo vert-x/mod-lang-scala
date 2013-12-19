@@ -22,9 +22,9 @@ import org.vertx.scala.Self
 
 /**
  * You interact with SockJS clients through instances of SockJS socket.
- * <p>The API is very similar to {@link org.vertx.java.core.http.WebSocket}. It implements both
- * {@link ReadStream} and {@link WriteStream} so it can be used with
- * {@link org.vertx.scala.core.streams.Pump} to pump data with flow control.
+ * <p>The API is very similar to [[org.vertx.scala.core.http.WebSocket]]. It implements both
+ * [[org.vertx.scala.core.streams.ReadStream]] and [[org.vertx.scala.core.streams.WriteStream]] so it can be used with
+ * [[org.vertx.scala.core.streams.Pump]] to pump data with flow control.
  * <p>Instances of this class are not thread-safe.
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -38,8 +38,8 @@ final class SockJSSocket private[scala] (val asJava: JSockJSSocket) extends Self
   override type J = JSockJSSocket
 
   /**
-   * When a {@code SockJSSocket} is created it automatically registers an event handler with the event bus, the ID of that
-   * handler is given by {@code writeHandlerID}.<p>
+   * When a `SockJSSocket` is created it automatically registers an event handler with the event bus, the ID of that
+   * handler is given by `writeHandlerID`.<p>
    * Given this ID, a different event loop can send a buffer to that event handler using the event bus and
    * that buffer will be received by this instance in its own event loop and written to the underlying socket. This
    * allows you to write data to other sockets which are owned by different event loops.

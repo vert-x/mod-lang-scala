@@ -19,18 +19,24 @@ import org.vertx.java.core.streams.{ Pump => JPump }
 import org.vertx.scala.Self
 
 /**
- * Pumps data from a {@link ReadStream} to a {@link WriteStream} and performs flow control where necessary to
+ * Pumps data from a [[org.vertx.scala.core.streams.ReadStream]] to a
+ * [[org.vertx.scala.core.streams.WriteStream]] and performs flow control where necessary to
  * prevent the write stream buffer from getting overfull.<p>
- * Instances of this class read bytes from a {@link ReadStream} and write them to a {@link WriteStream}. If data
- * can be read faster than it can be written this could result in the write queue of the {@link WriteStream} growing
+ * Instances of this class read bytes from a [[org.vertx.scala.core.streams.ReadStream]]
+ * and write them to a [[org.vertx.scala.core.streams.WriteStream]]. If data
+ * can be read faster than it can be written this could result in the write
+ * queue of the [[org.vertx.scala.core.streams.WriteStream]] growing
  * without bound, eventually causing it to exhaust all available RAM.<p>
- * To prevent this, after each write, instances of this class check whether the write queue of the {@link
- * WriteStream} is full, and if so, the {@link ReadStream} is paused, and a {@code drainHandler} is set on the
- * {@link WriteStream}. When the {@link WriteStream} has processed half of its backlog, the {@code drainHandler} will be
- * called, which results in the pump resuming the {@link ReadStream}.<p>
- * This class can be used to pump from any {@link ReadStream} to any {@link WriteStream},
- * e.g. from an {@link org.vertx.java.core.http.HttpServerRequest} to an {@link org.vertx.java.core.file.AsyncFile},
- * or from {@link org.vertx.java.core.net.NetSocket} to a {@link org.vertx.java.core.http.WebSocket}.<p>
+ * To prevent this, after each write, instances of this class check whether the write queue of the
+ * [[org.vertx.scala.core.streams.WriteStream]] is full, and if so, the
+ * [[org.vertx.scala.core.streams.ReadStream]] is paused, and a `drainHandler` is set on the
+ * [[org.vertx.scala.core.streams.WriteStream]]. When the [[org.vertx.scala.core.streams.WriteStream]]
+ * has processed half of its backlog, the `drainHandler` will be
+ * called, which results in the pump resuming the [[org.vertx.scala.core.streams.ReadStream]].<p>
+ * This class can be used to pump from any [[org.vertx.scala.core.streams.ReadStream]]
+ * to any [[org.vertx.scala.core.streams.WriteStream]], e.g. from an
+ * [[org.vertx.scala.core.http.HttpServerRequest]] to an [[org.vertx.scala.core.file.AsyncFile]],
+ * or from [[org.vertx.scala.core.net.NetSocket]] to a [[org.vertx.scala.core.http.WebSocket]].<p>
  *
  * Instances of this class are not thread-safe.<p>
  *
@@ -41,7 +47,7 @@ import org.vertx.scala.Self
 final class Pump private[scala] (val asJava: JPump) extends Self {
 
   /**
-   * Set the write queue max size to {@code maxSize}
+   * Set the write queue max size to `maxSize`
    */
   def setWriteQueueMaxSize(maxSize: Int): Pump = wrap(asJava.setWriteQueueMaxSize(maxSize))
 
@@ -65,26 +71,26 @@ final class Pump private[scala] (val asJava: JPump) extends Self {
 object Pump {
 
   /**
-   * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream}
+   * Create a new `Pump` with the given `ReadStream` and `WriteStream`
    */
   def apply[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream) = createPump(rs, ws)
 
   /**
-   * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream} and
-   * {@code writeQueueMaxSize}
+   * Create a new `Pump` with the given `ReadStream` and `WriteStream` and
+   * `writeQueueMaxSize`
    */
   def apply[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream, writeQueueMaxSize: Int) =
     createPump(rs, ws, writeQueueMaxSize)
 
   /**
-   * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream}
+   * Create a new `Pump` with the given `ReadStream` and `WriteStream`
    */
   def createPump[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream) =
     new Pump(JPump.createPump(rs.asJava, ws.asJava))
 
   /**
-   * Create a new {@code Pump} with the given {@code ReadStream} and {@code WriteStream} and
-   * {@code writeQueueMaxSize}
+   * Create a new `Pump` with the given `ReadStream` and `WriteStream` and
+   * `writeQueueMaxSize`
    */
   def createPump[A <: ReadStream, B <: WriteStream](rs: ReadStream, ws: WriteStream, writeQueueMaxSize: Int) =
     new Pump(JPump.createPump(rs.asJava, ws.asJava, writeQueueMaxSize))

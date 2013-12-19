@@ -27,16 +27,16 @@ import java.util.Set
  * worrying about any thread safety issues might occur if mutable objects were shared between event loops.<p>
  * The following types can be stored in a shareddata data structure:<p>
  * <pre>
- *   {@link String}
- *   {@link Integer}
- *   {@link Long}
- *   {@link Double}
- *   {@link Float}
- *   {@link Short}
- *   {@link Byte}
- *   {@link Character}
- *   {@code byte[]} - this will be automatically copied, and the copy will be stored in the structure.
- *   {@link org.vertx.java.core.buffer.Buffer} - this will be automatically copied, and the copy will be stored in the
+ *   [[java.lang.String]]
+ *   [[java.lang.Integer]]
+ *   [[java.lang.Long]]
+ *   [[java.lang.Double]]
+ *   [[java.lang.Float]]
+ *   [[java.lang.Short]]
+ *   [[java.lang.Byte]]
+ *   [[java.lang.Character]]
+ *   `byte[]` - this will be automatically copied, and the copy will be stored in the structure.
+ *   [[org.vertx.scala.core.buffer.Buffer]] - this will be automatically copied, and the copy will be stored in the
  *   structure.
  * </pre>
  * <p>
@@ -50,24 +50,24 @@ import java.util.Set
 final class SharedData private[scala] (val asJava: JSharedData) extends AnyVal {
 
   /**
-   * Return a {@code Map} with the specific {@code name}. All invocations of this method with the same value of {@code name}
-   * are guaranteed to return the same {@code Map} instance. <p>
+   * Return a `Map` with the specific `name`. All invocations of this method with the same value of `name`
+   * are guaranteed to return the same `Map` instance. <p>
    */
   def getMap[K, V](name: String): ConcurrentSharedMap[K, V] = asJava.getMap(name)
 
   /**
-   * Return a {@code Set} with the specific {@code name}. All invocations of this method with the same value of {@code name}
-   * are guaranteed to return the same {@code Set} instance. <p>
+   * Return a `Set` with the specific `name`. All invocations of this method with the same value of `name`
+   * are guaranteed to return the same `Set` instance. <p>
    */
   def getSet[E](name: String): Set[E] = asJava.getSet(name)
 
   /**
-   * Remove the {@code Map} with the specific {@code name}.
+   * Remove the `Map` with the specific `name`.
    */
   def removeMap(name: String): Boolean = asJava.removeMap(name)
 
   /**
-   * Remove the {@code Set} with the specific {@code name}.
+   * Remove the `Set` with the specific `name`.
    */
   def removeSet(name: String): Boolean = asJava.removeSet(name)
 

@@ -1,6 +1,20 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.vertx.scala.mods
 
-import scala.concurrent.Future
 import org.vertx.scala.core.VertxExecutionContext
 import org.vertx.scala.core.eventbus.{ JsonObjectData, Message }
 import org.vertx.scala.core.json.{ Json, JsonObject }
@@ -23,17 +37,17 @@ trait ScalaBusMod extends (Message[JsonObject] => Unit) with VertxExecutionConte
   private val noAction: BusModReply = Error("No action received.", "MISSING_ACTION")
 
   override final def apply(msg: Message[JsonObject]) = {
-    val reply: BusModReply = Option(msg.body.getString("action")) match {
+    val reply: BusModReply = Option(msg.body().getString("action")) match {
       case Some(action) =>
-        (try {
-          receive(msg).applyOrElse(action, { _: String => noActionMatch })
+        try {
+          receive(msg).applyOrElse(action, {_: String => noActionMatch})
         } catch {
           case ex: Throwable =>
-            logger.warn("Uncaught Exception for request " + msg.body.encode(), ex)
-            Error("Module threw error: " + ex.getMessage(),
+            logger.warn("Uncaught Exception for request " + msg.body().encode(), ex)
+            Error("Module threw error: " + ex.getMessage,
               "MODULE_EXCEPTION",
-              Json.obj("exception" -> ex.getStackTrace().mkString("\n")))
-        })
+              Json.obj("exception" -> ex.getStackTrace.mkString("\n")))
+        }
       case None => noAction
     }
 
@@ -53,10 +67,10 @@ trait ScalaBusMod extends (Message[JsonObject] => Unit) with VertxExecutionConte
       case BusModException(message, null, id) => sendFinalReply(msg, Error(message, id))
       case BusModException(message, cause, id) =>
         sendFinalReply(msg,
-          Error(message, id, Json.obj("exception" -> cause.getStackTrace().mkString("\n"))))
+          Error(message, id, Json.obj("exception" -> cause.getStackTrace.mkString("\n"))))
       case ex =>
         sendFinalReply(msg,
-          Error(ex.getMessage(), "MODULE_EXCEPTION", Json.obj("exception" -> ex.getStackTrace().mkString("\n"))))
+          Error(ex.getMessage, "MODULE_EXCEPTION", Json.obj("exception" -> ex.getStackTrace.mkString("\n"))))
     }
     case syncReply: SyncReply => sendFinalReply(msg, syncReply)
   }

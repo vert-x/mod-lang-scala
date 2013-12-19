@@ -25,11 +25,11 @@ import org.vertx.scala.Self
 /**
  * Represents a socket-like interface to a TCP/SSL connection on either the
  * client or the server side.<p>
- * Instances of this class are created on the client side by an {@link NetClient}
- * when a connection to a server is made, or on the server side by a {@link NetServer}
+ * Instances of this class are created on the client side by an [[org.vertx.scala.core.net.NetClient]]
+ * when a connection to a server is made, or on the server side by a [[org.vertx.scala.core.net.NetServer]]
  * when a server accepts a connection.<p>
- * It implements both {@link ReadStream} and {@link WriteStream} so it can be used with
- * {@link org.vertx.java.core.streams.Pump} to pump data with flow control.<p>
+ * It implements both [[org.vertx.scala.core.streams.ReadStream]] and [[org.vertx.scala.core.streams.WriteStream]] so it can be used with
+ * [[org.vertx.java.core.streams.Pump]] to pump data with flow control.<p>
  * Instances of this class are not thread-safe.<p>
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -44,8 +44,8 @@ final class NetSocket private[scala] (val asJava: JNetSocket) extends Self
   override type J = JNetSocket
 
   /**
-   * When a {@code NetSocket} is created it automatically registers an event handler with the event bus, the ID of that
-   * handler is given by {@code writeHandlerID}.<p>
+   * When a `NetSocket` is created it automatically registers an event handler with the event bus, the ID of that
+   * handler is given by `writeHandlerID`.<p>
    * Given this ID, a different event loop can send a buffer to that event handler using the event bus and
    * that buffer will be received by this instance in its own event loop and written to the underlying connection. This
    * allows you to write data to other connections which are owned by different event loops.
@@ -53,19 +53,19 @@ final class NetSocket private[scala] (val asJava: JNetSocket) extends Self
   def writeHandlerID(): String = asJava.writeHandlerID
 
   /**
-   * Write a {@link String} to the connection, encoded in UTF-8.
+   * Write a [[java.lang.String]] to the connection, encoded in UTF-8.
    * @return A reference to this, so multiple method calls can be chained.
    */
   def write(data: String): NetSocket = wrap(asJava.write(data))
 
   /**
-   * Write a {@link String} to the connection, encoded using the encoding {@code enc}.
+   * Write a [[java.lang.String]] to the connection, encoded using the encoding `enc`.
    * @return A reference to this, so multiple method calls can be chained.
    */
   def write(data: String, enc: String): NetSocket = wrap(asJava.write(data, enc))
 
   /**
-   * Tell the kernel to stream a file as specified by {@code filename} directly from disk to the outgoing connection,
+   * Tell the kernel to stream a file as specified by `filename` directly from disk to the outgoing connection,
    * bypassing userspace altogether (where supported by the underlying operating system. This is a very efficient way to stream files.
    */
   def sendFile(filename: String): NetSocket = wrap(asJava.sendFile(filename))

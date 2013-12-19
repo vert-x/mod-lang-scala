@@ -46,8 +46,8 @@ import org.vertx.java.core.sockjs.EventBusBridgeHook
  *
  * For more detailed information on SockJS, see their website.<p>
  *
- * On the server side, you interact using instances of {@link SockJSSocket} - this allows you to send data to the
- * client or receive data via the {@link SockJSSocket#dataHandler}.<p>
+ * On the server side, you interact using instances of [[org.vertx.scala.core.sockjs.SockJSSocket]] - this allows you to send data to the
+ * client or receive data via the [[org.vertx.scala.core.sockjs.SockJSSocket.dataHandler()]].<p>
  *
  * You can register multiple applications with the same SockJSServer, each using different path prefixes, each
  * application will have its own handler, and configuration.<p>

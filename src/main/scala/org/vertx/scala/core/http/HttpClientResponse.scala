@@ -25,12 +25,12 @@ import org.vertx.scala.Self
 
 /**
  * Represents a client-side HTTP response.<p>
- * An instance is provided to the user via a {@link org.vertx.java.core.Handler}
+ * An instance is provided to the user via a [[org.vertx.java.core.Handler]]
  * instance that was specified when one of the HTTP method operations, or the
- * generic {@link HttpClient#request(String, String, org.vertx.java.core.Handler)}
- * method was called on an instance of {@link HttpClient}.<p>
- * It implements {@link org.vertx.java.core.streams.ReadStream} so it can be used with
- * {@link org.vertx.java.core.streams.Pump} to pump data with flow control.<p>
+ * generic [[org.vertx.scala.core.http.HttpClient.request(String, String, org.vertx.java.core.Handler)]]
+ * method was called on an instance of [[org.vertx.scala.core.http.HttpClient]].<p>
+ * It implements [[org.vertx.scala.core.streams.ReadStream]] so it can be used with
+ * [[org.vertx.scala.core.streams.Pump]] to pump data with flow control.<p>
  * Instances of this class are not thread-safe.<p>
  *
  * @author <a href="http://tfox.org">Tim Fox</a>

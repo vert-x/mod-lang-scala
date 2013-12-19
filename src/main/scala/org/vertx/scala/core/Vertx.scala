@@ -98,7 +98,7 @@ final class Vertx private[scala] (val asJava: JVertx) {
   val eventBus: EventBus = new EventBus(asJava.eventBus())
 
   /**
-   * Return the {@link DnsClient}
+   * Return the [[org.vertx.scala.core.dns.DnsClient]]
    */
   def createDnsClient(dnsServers: InetSocketAddress*): DnsClient = DnsClient(asJava.createDnsClient(dnsServers: _*))
 
@@ -108,7 +108,7 @@ final class Vertx private[scala] (val asJava: JVertx) {
   val sharedData: SharedData = new SharedData(asJava.sharedData())
 
   /**
-   * Set a one-shot timer to fire after {@code delay} milliseconds, at which point {@code handler} will be called with
+   * Set a one-shot timer to fire after `delay` milliseconds, at which point `handler` will be called with
    * the id of the timer.
    * @return The unique ID of the timer.
    */
@@ -119,7 +119,7 @@ final class Vertx private[scala] (val asJava: JVertx) {
   }
 
   /**
-   * Set a periodic timer to fire every {@code delay} milliseconds, at which point {@code handler} will be called with
+   * Set a periodic timer to fire every `delay` milliseconds, at which point `handler` will be called with
    * the id of the timer.
    * @return the unique ID of the timer.
    */
@@ -130,8 +130,8 @@ final class Vertx private[scala] (val asJava: JVertx) {
   }
 
   /**
-   * Cancel the timer with the specified {@code id}. Returns {@code} true if the timer was successfully cancelled, or
-   * {@code false} if the timer does not exist.
+   * Cancel the timer with the specified `id`. Returns `true` if the timer was successfully cancelled, or
+   * `false` if the timer does not exist.
    */
   def cancelTimer(id: Long): Boolean = asJava.cancelTimer(id)
 
@@ -150,13 +150,13 @@ final class Vertx private[scala] (val asJava: JVertx) {
    * Is the current thread an event loop thread?
    * @return true if current thread is an event loop thread.
    */
-  def isEventLoop(): Boolean = asJava.isEventLoop()
+  def isEventLoop: Boolean = asJava.isEventLoop
 
   /**
    * Is the current thread an worker thread?
    * @return true if current thread is an worker thread.
    */
-  def isWorker(): Boolean = asJava.isWorker()
+  def isWorker: Boolean = asJava.isWorker
 
   /**
    * Stop the eventbus and any resource managed by the eventbus.

@@ -26,9 +26,9 @@ import org.vertx.java.core.logging.{ Logger => JLogger }
 // extends AnyVal to avoid object allocation and improve performance
 final class Logger private[scala] (val asJava: JLogger) extends AnyVal {
 
-  def isInfoEnabled(): Boolean = asJava.isInfoEnabled()
-  def isDebugEnabled(): Boolean = asJava.isDebugEnabled()
-  def isTraceEnabled(): Boolean = asJava.isTraceEnabled()
+  def isInfoEnabled: Boolean = asJava.isInfoEnabled
+  def isDebugEnabled: Boolean = asJava.isDebugEnabled
+  def isTraceEnabled: Boolean = asJava.isTraceEnabled
 
   def trace(message: => AnyRef) = withTrace(asJava.trace(message))
   def trace(message: => AnyRef, t: => Throwable) = withTrace(asJava.trace(message, t))

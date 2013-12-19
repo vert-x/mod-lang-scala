@@ -33,7 +33,7 @@ trait ClientSSLSupport extends Self
   /**
    * @return true if this client will trust all server certificates.
    */
-  def isTrustAll(): Boolean = asJava.isTrustAll
+  def isTrustAll: Boolean = asJava.isTrustAll
 
   /**
    * If you want an SSL client to trust *all* server certificates rather than match them
