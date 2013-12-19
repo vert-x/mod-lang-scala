@@ -47,7 +47,7 @@ final class HttpServer private[scala] (val asJava: JHttpServer) extends Self
   override type J = JHttpServer
 
   /**
-   * Tell the server to start listening on port {@code port} and hostname or ip address given by {@code host}.
+   * Tell the server to start listening on port `port} and hostname or ip address given by `host}.
    *
    * @param port The port to listen on.
    * @param host The hostname or ip address.
@@ -57,7 +57,7 @@ final class HttpServer private[scala] (val asJava: JHttpServer) extends Self
     wrap(asJava.listen(port, host, arHttpServerFnConverter(listenHandler)))
 
   /**
-   * Tell the server to start listening on port {@code port} and hostname or ip address given by {@code host}. Be aware this is an
+   * Tell the server to start listening on port `port` and hostname or ip address given by `host`. Be aware this is an
    *
    * async operation and the server may not bound on return of the method.
    * @param port The port to listen on.
@@ -66,7 +66,7 @@ final class HttpServer private[scala] (val asJava: JHttpServer) extends Self
   def listen(port: Int, host: String): HttpServer = wrap(asJava.listen(port, host))
 
   /**
-   * Tell the server to start listening on all available interfaces and port {@code port}.
+   * Tell the server to start listening on all available interfaces and port `port`.
    *
    * @param port The port to listen on.
    * @param listenHandler Callback when bind is done.
@@ -75,7 +75,7 @@ final class HttpServer private[scala] (val asJava: JHttpServer) extends Self
     wrap(asJava.listen(port, arHttpServerFnConverter(listenHandler)))
 
   /**
-   * Tell the server to start listening on all available interfaces and port {@code port}. Be aware this is an
+   * Tell the server to start listening on all available interfaces and port `port`. Be aware this is an
    * async operation and the server may not bound on return of the method.
    *
    * @param port The port to listen on.
@@ -91,8 +91,8 @@ final class HttpServer private[scala] (val asJava: JHttpServer) extends Self
     handlerToFn(asJava.requestHandler()).compose(HttpServerRequest.unapply)
 
   /**
-   * Set the request handler for the server to {@code requestHandler}. As HTTP requests are received by the server,
-   * instances of {@link HttpServerRequest} will be created and passed to this handler.
+   * Set the request handler for the server to `requestHandler`. As HTTP requests are received by the server,
+   * instances of [[org.vertx.scala.core.http.HttpServerRequest]] will be created and passed to this handler.
    *
    * @return a reference to this, so methods can be chained.
    */
@@ -107,8 +107,8 @@ final class HttpServer private[scala] (val asJava: JHttpServer) extends Self
     handlerToFn(asJava.websocketHandler()).compose(ServerWebSocket.unapply)
 
   /**
-   * Set the websocket handler for the server to {@code wsHandler}. If a websocket connect handshake is successful a
-   * new {@link ServerWebSocket} instance will be created and passed to the handler.
+   * Set the websocket handler for the server to `wsHandler`. If a websocket connect handshake is successful a
+   * new [[org.vertx.scala.core.http.ServerWebSocket]] instance will be created and passed to the handler.
    *
    * @return a reference to this, so methods can be chained.
    */
@@ -116,14 +116,14 @@ final class HttpServer private[scala] (val asJava: JHttpServer) extends Self
     wrap(asJava.websocketHandler(serverWebSocketFnConverter(wsHandler)))
 
   /**
-   * Set if the {@link HttpServer} should compress the http response if the connected client supports it.
+   * Set if the [[org.vertx.scala.core.http.HttpServer]] should compress the http response if the connected client supports it.
    */
   def setCompressionSupported(compressionSupported: Boolean): HttpServer = wrap(asJava.setCompressionSupported(compressionSupported))
 
   /**
-   * Returns {@code true} if the {@link HttpServer} should compress the http response if the connected client supports it.
+   * Returns `true` if the [[org.vertx.scala.core.http.HttpServer]] should compress the http response if the connected client supports it.
    */
-  def isCompressionSupported(): Boolean = asJava.isCompressionSupported()
+  def isCompressionSupported: Boolean = asJava.isCompressionSupported
 
   private def arHttpServerFnConverter(handler: AsyncResult[HttpServer] => Unit): Handler[AsyncResult[JHttpServer]] =
     asyncResultConverter(HttpServer.apply)(handler)

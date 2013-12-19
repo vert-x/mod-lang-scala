@@ -20,7 +20,6 @@ import org.vertx.scala.Self
 
 /**
  * Supports [[org.vertx.java.core.ServerSSLSupport]] functionality.
- * @tparam S self type to help provide fluent APIs
  *
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  * @author Galder Zamarreño
@@ -33,10 +32,10 @@ trait ServerSSLSupport extends Self
   /**
    * Is client auth required?
    */
-  def isClientAuthRequired(): Boolean = asJava.isClientAuthRequired()
+  def isClientAuthRequired: Boolean = asJava.isClientAuthRequired
 
   /**
-   * Set {@code required} to true if you want the server to request client authentication from any connecting clients. This
+   * Set `required` to true if you want the server to request client authentication from any connecting clients. This
    * is an extra level of security in SSL, and requires clients to provide client certificates. Those certificates must be added
    * to the server trust store.
    * @return A reference to this, so multiple invocations can be chained together.

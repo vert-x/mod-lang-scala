@@ -17,7 +17,6 @@ package org.vertx.scala.core.eventbus
 
 import org.vertx.java.core.eventbus.{ Message => JMessage }
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.scala.AsJava
 import org.vertx.scala.core.AsyncResult
 import org.vertx.scala.core.Handler
 
@@ -66,7 +65,7 @@ final class Message[T <% MessageData] private[scala] (val asJava: JMessage[T]) {
   def reply(value: MessageData): Unit = value.reply(asJava)
 
   /**
-   * The same as {@code reply(MessageData)} but you can specify handler for the reply - i.e.
+   * The same as [[org.vertx.scala.core.eventbus.Message.reply(MessageData)]] but you can specify handler for the reply - i.e.
    * to receive the reply to the reply.
    *
    * @param value The value to send.
@@ -86,7 +85,7 @@ final class Message[T <% MessageData] private[scala] (val asJava: JMessage[T]) {
    * Reply to this message. Specifying a timeout and a reply handler.
    *
    * @param timeout The timeout in ms to wait for an answer.
-   * @param handler Handling the reply (success) or the timeout (failed).
+   * @param replyHandler Handling the reply (success) or the timeout (failed).
    */
   def replyWithTimeout[T <% MessageData](timeout: Long, replyHandler: AsyncResult[Message[T]] => Unit): Unit =
     asJava.replyWithTimeout(timeout, asyncResultConverter({ x: JMessage[T] => Message.apply(x) })(replyHandler))
@@ -96,7 +95,7 @@ final class Message[T <% MessageData] private[scala] (val asJava: JMessage[T]) {
    *
    * @param value The value to send.
    * @param timeout The timeout in ms to wait for an answer.
-   * @param handler Handling the reply (success) or the timeout (failed).
+   * @param replyHandler Handling the reply (success) or the timeout (failed).
    */
   def replyWithTimeout[T <% MessageData](value: MessageData, timeout: Long, replyHandler: AsyncResult[Message[T]] => Unit): Unit =
     value.replyWithTimeout(asJava, timeout, convertArHandler(replyHandler))

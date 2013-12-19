@@ -47,35 +47,38 @@ final class NetServer private[scala] (val asJava: JNetServer) extends Self
 
   /**
    * Supply a connect handler for this server. The server can only have at most one connect handler at any one time.
-   * As the server accepts TCP or SSL connections it creates an instance of {@link org.vertx.java.core.net.NetSocket} and passes it to the
+   * As the server accepts TCP or SSL connections it creates an instance of [[org.vertx.scala.core.net.NetSocket]] and passes it to the
    * connect handler.
    * @return a reference to this so multiple method calls can be chained together
    */
-  def connectHandler(connectHandler: NetSocket => Unit): NetServer = wrap(asJava.connectHandler(connectHandler.compose(NetSocket.apply)))
+  def connectHandler(connectHandler: NetSocket => Unit): NetServer = 
+    wrap(asJava.connectHandler(connectHandler.compose(NetSocket.apply)))
 
   /**
-   * Tell the server to start listening on all available interfaces and port {@code port}. Be aware this is an
+   * Tell the server to start listening on all available interfaces and port `port`. Be aware this is an
    * async operation and the server may not bound on return of the method.
    */
   def listen(port: Int): NetServer = wrap(asJava.listen(port))
 
   /**
-   * Instruct the server to listen for incoming connections on the specified {@code port} and all available interfaces.
+   * Instruct the server to listen for incoming connections on the specified `port` and all available interfaces.
    */
-  def listen(port: Int, listenHandler: AsyncResult[NetServer] => Unit): NetServer = wrap(asJava.listen(port, arNetServer(listenHandler)))
+  def listen(port: Int, listenHandler: AsyncResult[NetServer] => Unit): NetServer = 
+    wrap(asJava.listen(port, arNetServer(listenHandler)))
 
   /**
-   * Tell the server to start listening on port {@code port} and hostname or ip address given by {@code host}. Be aware this is an
+   * Tell the server to start listening on port `port` and hostname or ip address given by `host`. Be aware this is an
    * async operation and the server may not bound on return of the method.
    *
    */
   def listen(port: Int, host: String): NetServer = wrap(asJava.listen(port, host))
 
   /**
-   * Instruct the server to listen for incoming connections on the specified {@code port} and {@code host}. {@code host} can
+   * Instruct the server to listen for incoming connections on the specified `port` and `host`. `host` can
    * be a host name or an IP address.
    */
-  def listen(port: Int, host: String, listenHandler: AsyncResult[NetServer] => Unit): NetServer = wrap(asJava.listen(port, host, arNetServer(listenHandler)))
+  def listen(port: Int, host: String, listenHandler: AsyncResult[NetServer] => Unit): NetServer = 
+    wrap(asJava.listen(port, host, arNetServer(listenHandler)))
 
   /**
    * The actual port the server is listening on. This is useful if you bound the server specifying 0 as port number

@@ -16,18 +16,15 @@
 
 package org.vertx.scala.core.parsetools
 
+import org.vertx.java.core.parsetools.{ RecordParser => JRecordParser }
+import org.vertx.scala.core.buffer._
 import scala.language.implicitConversions
 
-import org.vertx.java.core.Handler
-import org.vertx.java.core.buffer.{ Buffer => JBuffer }
-import org.vertx.java.core.parsetools.{ RecordParser => JRecordParser }
-import org.vertx.scala.core.FunctionConverters.fnToHandler
-import org.vertx.scala.core.buffer._
 
 /**
  * A helper class which allows you to easily parse protocols which are delimited by a sequence of bytes, or fixed
  * size records.<p>
- * Instances of this class take as input {@link Buffer} instances containing raw bytes, and output records.<p>
+ * Instances of this class take as input [[org.vertx.scala.core.buffer.Buffer]] instances containing raw bytes, and output records.<p>
  * For example, if I had a simple ASCII text protocol delimited by '\n' and the input was the following:<p>
  * <pre>
  * buffer1:HELLO\nHOW ARE Y
@@ -55,29 +52,29 @@ object RecordParser {
    * Helper method to convert a latin-1 String to an array of bytes for use as a delimiter
    * Please do not use this for non latin-1 characters
    *
-   * @param str
+   * @param str string to convert
    * @return The byte[] form of the string
    */
   def latin1StringToBytes(str: String): Array[Byte] = JRecordParser.latin1StringToBytes(str)
 
   /**
-   * Create a new {@code RecordParser} instance, initially in delimited mode, and where the delimiter can be represented
-   * by the String {@code} delim endcoded in latin-1 . Don't use this if your String contains other than latin-1 characters.<p>
-   * {@code output} Will receive whole records which have been parsed.
+   * Create a new `RecordParser` instance, initially in delimited mode, and where the delimiter can be represented
+   * by the String delim endcoded in latin-1 . Don't use this if your String contains other than latin-1 characters.<p>
+   * `output` Will receive whole records which have been parsed.
    */
   def newDelimited(delim: String, handler: Buffer => Unit) = JRecordParser.newDelimited(delim, bufferHandlerToJava(handler))
 
   /**
-   * Create a new {@code RecordParser} instance, initially in delimited mode, and where the delimiter can be represented
-   * by the {@code byte[]} delim.<p>
-   * {@code output} Will receive whole records which have been parsed.
+   * Create a new `RecordParser` instance, initially in delimited mode, and where the delimiter can be represented
+   * by the `byte[]` delim.<p>
+   * `output` Will receive whole records which have been parsed.
    */
   def newDelimited(delim: Array[Byte], handler: Buffer => Unit) = JRecordParser.newDelimited(delim, bufferHandlerToJava(handler))
 
   /**
-   * Create a new {@code RecordParser} instance, initially in fixed size mode, and where the record size is specified
-   * by the {@code size} parameter.<p>
-   * {@code output} Will receive whole records which have been parsed.
+   * Create a new `RecordParser` instance, initially in fixed size mode, and where the record size is specified
+   * by the `size` parameter.<p>
+   * `output` Will receive whole records which have been parsed.
    */
   def newFixed(size: Int, handler: Buffer => Unit) = JRecordParser.newFixed(size, bufferHandlerToJava(handler))
 }

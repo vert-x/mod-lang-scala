@@ -53,11 +53,11 @@ final private[platform] class ScalaVerticle(delegate: Verticle) extends JVerticl
   }
 
   override def start(): Unit = {
-    delegate.start
+    delegate.start()
   }
 
   override def start(future: Future[Void]): Unit = {
-    val p = Promise[Unit]
+    val p = Promise[Unit]()
     delegate.start()
     delegate.start(p)
     p.future onComplete {
@@ -68,6 +68,6 @@ final private[platform] class ScalaVerticle(delegate: Verticle) extends JVerticl
     }
   }
 
-  override def stop(): Unit = delegate.stop
+  override def stop(): Unit = delegate.stop()
 
 }

@@ -18,7 +18,6 @@ import scala.tools.nsc.ConsoleWriter
 import java.net.URL
 import org.vertx.scala.platform.Container
 import scala.util.{Success, Failure, Try}
-import scala.util
 
 /**
  * Scala interpreter

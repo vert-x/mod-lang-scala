@@ -20,7 +20,6 @@ import org.vertx.scala.Self
 
 /**
  * Supports [[org.vertx.java.core.ServerTCPSupport]] functionality.
- * @tparam S self type to help provide fluent APIs
  *
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  * @author Galder Zamarreño
@@ -40,5 +39,5 @@ trait ServerTCPSupport extends Self
    *
    * @return The accept backlog
    */
-  def getAcceptBacklog(): Int = asJava.getAcceptBacklog()
+  def getAcceptBacklog: Int = asJava.getAcceptBacklog
 }

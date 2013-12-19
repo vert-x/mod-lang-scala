@@ -20,7 +20,7 @@ import org.vertx.java.core.http.{ ServerWebSocket => JServerWebSocket }
 import org.vertx.scala.Self
 
 /**
- * Represents a server side WebSocket that is passed into a the websocketHandler of an {@link HttpServer}<p>
+ * Represents a server side WebSocket that is passed into a the websocketHandler of an [[org.vertx.scala.core.http.HttpServer]]<p>
  * Instances of this class are not thread-safe<p>
  *
  * @author <a href="http://tfox.org">Tim Fox</a>

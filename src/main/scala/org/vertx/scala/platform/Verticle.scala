@@ -50,7 +50,7 @@ trait Verticle extends VertxExecutionContext with VertxAccess {
   /**
    * 
    */
-  lazy val logger: Logger = container.logger
+  lazy val logger: Logger = container.logger()
 
   /**
    * Injects the vertx.

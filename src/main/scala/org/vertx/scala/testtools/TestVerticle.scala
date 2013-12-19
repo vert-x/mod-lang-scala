@@ -35,11 +35,11 @@ abstract class TestVerticle extends Verticle {
   protected final def startTests() {
     val methodName = container.config().getString("methodName")
     try {
-      val m = getClass().getDeclaredMethod(methodName)
+      val m = getClass.getDeclaredMethod(methodName)
       m.invoke(this)
     } catch {
       case e: InvocationTargetException =>
-        val targetEx = e.getTargetException()
+        val targetEx = e.getTargetException
         VertxAssert.handleThrowable(targetEx)
       case t: Throwable =>
         // Problem with invoking

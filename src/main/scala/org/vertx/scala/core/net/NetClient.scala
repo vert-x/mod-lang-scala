@@ -47,9 +47,9 @@ final class NetClient private[scala] (val asJava: JNetClient) extends Self
   override type J = JNetClient
 
   /**
-   * Attempt to open a connection to a server at the specific {@code port} and host {@code localhost}
+   * Attempt to open a connection to a server at the specific `port` and host `localhost`
    * The connect is done asynchronously and on success, a
-   * {@link NetSocket} instance is supplied via the {@code connectHandler} instance.
+   * [[org.vertx.scala.core.net.NetSocket]] instance is supplied via the `connectHandler` instance.
    *
    * @return A reference to this so multiple method calls can be chained together.
    */
@@ -57,9 +57,9 @@ final class NetClient private[scala] (val asJava: JNetClient) extends Self
     wrap(asJava.connect(port, arNetSocket(connectCallback)))
 
   /**
-   * Attempt to open a connection to a server at the specific {@code port} and {@code host}.
-   * {@code host} can be a valid host name or IP address. The connect is done asynchronously and on success, a
-   * {@link NetSocket} instance is supplied via the {@code connectHandler} instance.
+   * Attempt to open a connection to a server at the specific `port` and `host`.
+   * `host` can be a valid host name or IP address. The connect is done asynchronously and on success, a
+   * [[org.vertx.scala.core.net.NetSocket]] instance is supplied via the `connectHandler` instance.
    *
    * @return a reference to this so multiple method calls can be chained together
    */
@@ -78,7 +78,7 @@ final class NetClient private[scala] (val asJava: JNetClient) extends Self
    *
    * @return The number of reconnect attempts.
    */
-  def getReconnectAttempts(): Int = asJava.getReconnectAttempts()
+  def getReconnectAttempts: Int = asJava.getReconnectAttempts
 
   /**
    * Set the reconnect interval, in milliseconds.
@@ -91,7 +91,7 @@ final class NetClient private[scala] (val asJava: JNetClient) extends Self
    *
    * @return The reconnect interval in milliseconds.
    */
-  def getReconnectInterval(): Long = asJava.getReconnectInterval()
+  def getReconnectInterval: Long = asJava.getReconnectInterval
 
   /**
    * Set the connect timeout in milliseconds.
@@ -106,7 +106,7 @@ final class NetClient private[scala] (val asJava: JNetClient) extends Self
    *
    * @return The connect timeout in milliseconds.
    */
-  def getConnectTimeout(): Int = asJava.getConnectTimeout()
+  def getConnectTimeout: Int = asJava.getConnectTimeout
 
   /**
    * Close the client. Any sockets which have not been closed manually will be closed here.

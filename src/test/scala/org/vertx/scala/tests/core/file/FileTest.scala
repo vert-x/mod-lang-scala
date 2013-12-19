@@ -119,10 +119,10 @@ class FileTest extends TestVerticle {
       pf <- fileProps("x.dat")
       df <- fileDelete("x.dat", false)
     } yield { () =>
-      assertFalse(pf.isDirectory())
-      assertTrue(pf.isRegularFile())
-      assertFalse(pf.isSymbolicLink())
-      assertFalse(pf.isOther())
+      assertFalse(pf.isDirectory)
+      assertTrue(pf.isRegularFile)
+      assertFalse(pf.isSymbolicLink)
+      assertFalse(pf.isOther)
       // greaterThan matchers but do not work, Comparable implicit conversion fails :(
       // maybe use ScalaTest asserts instead?
       assertTrue(pf.lastAccessTime().getTime >= startTime)
@@ -151,7 +151,7 @@ class FileTest extends TestVerticle {
     wf <- fileMkdir("d")
     pf <- fileProps("d")
     df <- fileDelete("d", true)
-  } yield assertTrue(pf.isDirectory()))
+  } yield assertTrue(pf.isDirectory))
 
   @Test def readDirectory: Unit = checkNoError(for {
     wf <- fileMkdir("d")

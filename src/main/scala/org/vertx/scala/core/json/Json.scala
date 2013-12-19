@@ -118,7 +118,7 @@ object Json {
   /**
    * Creates a JsonArray from a sequence of values.
    *
-   * @param elements The elements to put into the JsonArray.
+   * @param fields The elements to put into the JsonArray.
    * @return A JsonArray containing the provided elements.
    */
   def arr(fields: Any*): JsonArray = {
