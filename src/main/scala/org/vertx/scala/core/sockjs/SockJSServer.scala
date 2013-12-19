@@ -76,7 +76,7 @@ final class SockJSServer private[scala] (val asJava: JSockJSServer) extends Self
    * @param outboundPermitted A list of JSON objects which define permitted matches for outbound (server->client)
    * traffic
    */
-  def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray) =
+  def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray): SockJSServer =
     wrap(asJava.bridge(sjsConfig, inboundPermitted, outboundPermitted))
 
   /**
@@ -87,7 +87,7 @@ final class SockJSServer private[scala] (val asJava: JSockJSServer) extends Self
    * traffic
    * @param authTimeout Default time an authorisation will be cached for in the bridge (defaults to 5 minutes)
    */
-  def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray, authTimeout: Long) =
+  def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray, authTimeout: Long): SockJSServer =
     wrap(asJava.bridge(sjsConfig, inboundPermitted, outboundPermitted, authTimeout))
 
   /**
@@ -99,8 +99,19 @@ final class SockJSServer private[scala] (val asJava: JSockJSServer) extends Self
    * @param authTimeout Default time an authorisation will be cached for in the bridge (defaults to 5 minutes)
    * @param authAddress Address of auth manager. Defaults to 'vertx.basicauthmanager.authorise'
    */
-  def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray, authTimeout: Long, authAddress: String) =
+  def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray, authTimeout: Long, authAddress: String): SockJSServer =
     wrap(asJava.bridge(sjsConfig, inboundPermitted, outboundPermitted, authTimeout, authAddress))
+
+  /**
+   * Install an app which bridges the SockJS server to the event bus
+   * @param sjsConfig The config for the app
+   * @param inboundPermitted A list of JSON objects which define permitted matches for inbound (client->server) traffic
+   * @param outboundPermitted A list of JSON objects which define permitted matches for outbound (server->client)
+   * traffic
+   * @param bridgeConfig JSON object holding config for the EventBusBridge
+   */
+  def bridge(sjsConfig: JsonObject, inboundPermitted: JsonArray, outboundPermitted: JsonArray, bridgeConfig: JsonObject): SockJSServer =
+    wrap(asJava.bridge(sjsConfig, inboundPermitted, outboundPermitted, bridgeConfig))
 
   /**
    * Set a EventBusBridgeHook on the SockJS server
