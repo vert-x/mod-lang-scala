@@ -4,6 +4,7 @@ import org.vertx.scala.core.AsyncResult
 import org.vertx.testtools.VertxAssert._
 import org.vertx.scala.platform.Container
 import org.vertx.scala.core.buffer.Buffer
+import scala.annotation.tailrec
 
 /**
  * Port of some of the original TestUtils Helper methods.
@@ -45,6 +46,23 @@ object TestUtils {
       i += 1
     } while(i < length)
     line
+  }
+
+  def generateRandomUnicodeString(length: Int): String = {
+    val builder = new StringBuilder(length)
+    for (i <- 0 until length) {
+      @tailrec def generateChar(): Char = {
+        val c = (0xFFFF * Math.random()).toChar
+        // Skip illegal chars
+        if ((c >= 0xFFFE && c <= 0xFFFF) || (c >= 0xD800 && c <= 0xDFFF))
+          generateChar()
+        else
+          c
+      }
+
+      builder.append(generateChar())
+    }
+    builder.toString()
   }
 
 }

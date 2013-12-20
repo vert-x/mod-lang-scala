@@ -1,11 +1,12 @@
 package org.vertx.scala.tests.core.http
 
 import org.junit.Test
-import org.vertx.scala.core.AsyncResult
 import org.vertx.scala.core.http.{ HttpClient, HttpClientResponse, HttpServer, HttpServerRequest }
 import org.vertx.scala.tests.util.TestUtils.completeWithArFailed
 import org.vertx.scala.testtools.TestVerticle
-import org.vertx.testtools.VertxAssert.{ assertEquals, fail, testComplete }
+import org.vertx.testtools.VertxAssert._
+import org.vertx.scala.tests.util.TestUtils
+import java.io.{BufferedWriter, FileOutputStream, OutputStreamWriter, File}
 
 class HttpTestForSimpleApi extends TestVerticle {
   val testPort = 8844
@@ -19,91 +20,210 @@ class HttpTestForSimpleApi extends TestVerticle {
                </body>
              </html>.toString()
 
-  @Test def createHttpServer() {
-    vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
+  @Test def httpServer(): Unit = {
+    checkServer(vertx.createHttpServer(), regularRequestHandler) { c =>
       c.getNow("/", correctHeadAndBodyHandler(c, testComplete))
-    }))
+    }
   }
 
   @Test def httpsServer(): Unit = {
-    val server = vertx.createHttpServer.setSSL(true)
-
-    server.setKeyStorePath("./src/test/keystores/server-keystore.jks").setKeyStorePassword("wibble")
-    server.setTrustStorePath("./src/test/keystores/server-truststore.jks").setTrustStorePassword("wibble")
-
-    server.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
-      c.setSSL(true)
+    checkServer(vertx.createHttpServer()
+          .setSSL(ssl = true)
+          .setKeyStorePath("./src/test/keystores/server-keystore.jks")
+          .setKeyStorePassword("wibble")
+          .setTrustStorePath("./src/test/keystores/server-truststore.jks")
+          .setTrustStorePassword("wibble"), regularRequestHandler) { c =>
+      c.setSSL(ssl = true)
       c.setKeyStorePath("./src/test/keystores/client-keystore.jks").setKeyStorePassword("wibble")
       c.setTrustStorePath("./src/test/keystores/client-truststore.jks").setTrustStorePassword("wibble")
       c.exceptionHandler(ex => fail("Should not get exception but got " + ex)) getNow ("/", correctHeadAndBodyHandler(c, testComplete))
-    }))
+    }
   }
 
   @Test def invalidPort(): Unit = {
-    vertx.createHttpServer.requestHandler({ r => }).listen(1128371831, completeWithArFailed[HttpServer])
+    vertx.createHttpServer().requestHandler({ r => }).listen(1128371831, completeWithArFailed[HttpServer])
   }
 
   @Test def invalidHost(): Unit = {
-    vertx.createHttpServer.requestHandler({ r => }) listen (testPort, "iqwjdoqiwjdoiqwdiojwd", completeWithArFailed)
+    vertx.createHttpServer().requestHandler({ r => }) listen (testPort, "iqwjdoqiwjdoiqwdiojwd", completeWithArFailed)
   }
 
-  @Test def postMethod(): Unit = {
-    vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
+  @Test def httpPostMethod(): Unit = {
+    checkServer(vertx.createHttpServer(), regularRequestHandler) { c =>
       c.post("/", correctHeadAndBodyHandler(c, testComplete)).end()
-    }))
+    }
   }
 
-  @Test def getMethod(): Unit = {
-    vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
+  @Test def httpGetMethod(): Unit = {
+    checkServer(vertx.createHttpServer(), regularRequestHandler) { c =>
       c.get("/", correctHeadAndBodyHandler(c, testComplete)).end()
-    }))
+    }
   }
 
-  @Test def headMethod(): Unit = {
-    vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
+  @Test def httpHeadMethod(): Unit = {
+    checkServer(vertx.createHttpServer(), regularRequestHandler) { c =>
       c.head("/", correctHeadAndEmptyBodyHandler(c, testComplete)).end()
-    }))
+    }
   }
 
-  @Test def connectMethod(): Unit = {
-    vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
+  @Test def httpConnectMethod(): Unit = {
+    checkServer(vertx.createHttpServer(), regularRequestHandler) { c =>
       c.connect("/", correctHeadAndEmptyBodyHandler(c, testComplete)).end()
-    }))
+    }
   }
 
-  @Test def getRequestMethod(): Unit = headAndBodyRequest("GET")
-  @Test def postRequestMethod(): Unit = headAndBodyRequest("POST")
-  @Test def putRequestMethod(): Unit = headAndBodyRequest("PUT")
-  @Test def deleteRequestMethod(): Unit = headAndBodyRequest("DELETE")
-  @Test def headRequestMethod(): Unit = headOnlyRequest("HEAD")
-  @Test def traceRequestMethod(): Unit = headAndBodyRequest("TRACE")
-  @Test def connectRequestMethod(): Unit = headOnlyRequest("CONNECT")
-  @Test def optionsRequestMethod(): Unit = headAndBodyRequest("OPTIONS")
-  @Test def patchRequestMethod(): Unit = headAndBodyRequest("PATCH")
+  @Test def httpGetRequestMethod(): Unit = headAndBodyRequest("GET")
+  @Test def httpPostRequestMethod(): Unit = headAndBodyRequest("POST")
+  @Test def httpPutRequestMethod(): Unit = headAndBodyRequest("PUT")
+  @Test def httpDeleteRequestMethod(): Unit = headAndBodyRequest("DELETE")
+  @Test def httpHeadRequestMethod(): Unit = headOnlyRequest("HEAD")
+  @Test def httpTraceRequestMethod(): Unit = headAndBodyRequest("TRACE")
+  @Test def httpConnectRequestMethod(): Unit = headOnlyRequest("CONNECT")
+  @Test def httpOptionsRequestMethod(): Unit = headAndBodyRequest("OPTIONS")
+  @Test def httpPatchRequestMethod(): Unit = headAndBodyRequest("PATCH")
+
+  @Test def sendFile(): Unit = {
+    val content = TestUtils.generateRandomUnicodeString(10000)
+    val file = setupFile("test-send-file.html", content)
+    checkServer(vertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath)) { c =>
+      c.getNow("some-uri", { res =>
+        assertEquals(200, res.statusCode())
+        assertEquals(file.length(), res.headers().get("content-length").toLong)
+        assertEquals("text/html", res.headers().get("content-type"))
+        res.bodyHandler { buff =>
+          assertEquals(content, buff.toString())
+          file.delete()
+          testComplete()
+        }
+      })
+    }
+  }
+
+  @Test def sendFileWithHandler(): Unit = {
+    val content = TestUtils.generateRandomUnicodeString(10000)
+    val file = setupFile("test-send-file.html", content)
+    checkServer(vertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath, { res =>
+      assertTrue(res.succeeded())
+      testComplete()
+    } )) { c =>
+      c.getNow("some-uri", { res =>
+        assertEquals(200, res.statusCode())
+        assertEquals(file.length(), res.headers().get("content-length").toLong)
+        assertEquals("text/html", res.headers().get("content-type"))
+        res.bodyHandler { buff =>
+          assertEquals(content, buff.toString())
+          file.delete()
+        }
+      })
+    }
+  }
+
+  @Test def sendFileNotFound(): Unit = {
+    checkServer(vertx.createHttpServer(), _.response().sendFile("doesnotexist.html")) { c =>
+      c.getNow("some-uri", { res =>
+        assertEquals(404, res.statusCode())
+        assertEquals("text/html", res.headers().get("content-type"))
+        res.bodyHandler { buff =>
+          assertEquals("<html><body>Resource not found</body><html>", buff.toString())
+          testComplete()
+        }
+      })
+    }
+  }
+
+  @Test def sendFileNotFoundWith404Page(): Unit = {
+    val content = "<html><body>This is my 404 page</body></html>"
+    val file = setupFile("my-404-page.html", content)
+    checkServer(vertx.createHttpServer(),
+        _.response().sendFile("doesnotexist.html", file.getAbsolutePath)
+    ) { c =>
+      c.getNow("some-uri", { res =>
+        assertEquals(404, res.statusCode())
+        assertEquals("text/html", res.headers().get("content-type"))
+        res.bodyHandler { buff =>
+          assertEquals(content, buff.toString())
+          testComplete()
+        }
+      })
+    }
+  }
+
+  @Test def sendFileNotFoundWith404PageAndHandler(): Unit = {
+    val content = "<html><body>This is my 404 page</body></html>"
+    val file = setupFile("my-404-page.html", content)
+    checkServer(vertx.createHttpServer(),
+      _.response().sendFile("doesnotexist.html", file.getAbsolutePath, { res =>
+        assertTrue(res.succeeded())
+        testComplete()
+      })
+    ) { c =>
+      c.getNow("some-uri", { res =>
+        assertEquals(404, res.statusCode())
+        assertEquals("text/html", res.headers().get("content-type"))
+        res.bodyHandler { buff =>
+          assertEquals(content, buff.toString())
+        }
+      })
+    }
+  }
+
+  @Test def sendFileOverrideHeaders(): Unit = {
+    val content = TestUtils.generateRandomUnicodeString(10000)
+    val file = setupFile("test-send-file.html", content)
+    checkServer(vertx.createHttpServer(),
+        _.response().putHeader("Content-Type", "wibble").sendFile(file.getAbsolutePath)
+    ) { c =>
+      c.getNow("some-uri", { res =>
+        assertEquals(200, res.statusCode())
+        assertEquals(file.length(), res.headers().get("content-length").toLong)
+        assertEquals("wibble", res.headers().get("content-type"))
+        res.bodyHandler { buff =>
+          assertEquals(content, buff.toString())
+          file.delete()
+          testComplete()
+        }
+      })
+    }
+  }
+
+  private def setupFile(fileName: String, content: String): File = {
+    val file = new File(System.getProperty("java.io.tmpdir"), fileName)
+    if (file.exists())
+      file.delete()
+
+    val out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"))
+    try {
+      out.write(content)
+    } finally {
+      out.close()
+    }
+
+    file
+  }
 
   private def simpleRequest(fn: (HttpClient, () => Unit) => HttpClientResponse => Unit)(name: String): Unit = {
-    vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
+    checkServer(vertx.createHttpServer(), regularRequestHandler) { c =>
       c.request(name, "/", fn(c, testComplete)).end()
-    }))
+    }
   }
 
   private def headAndBodyRequest(name: String): Unit = simpleRequest(correctHeadAndBodyHandler)(name)
   private def headOnlyRequest(name: String): Unit = simpleRequest(correctHeadAndEmptyBodyHandler)(name)
 
   private def regularRequestHandler: HttpServerRequest => Unit = { req =>
-    req.response.end(html)
+    req.response().end(html)
   }
 
   private def checkCorrectHeader(c: HttpClient, fn: () => Unit) = { resp: HttpClientResponse =>
-    assertEquals(assertMessage(c), 200, resp.statusCode)
-    assertEquals(assertMessage(c), "OK", resp.statusMessage)
+    assertEquals(assertMessage(c), 200, resp.statusCode())
+    assertEquals(assertMessage(c), "OK", resp.statusMessage())
     fn()
   }
 
   private def correctHeadAndBodyHandler(c: HttpClient, fn: () => Unit) = { resp: HttpClientResponse =>
     checkCorrectHeader(c, { () =>
       resp.bodyHandler({ buf =>
-        assertEquals(assertMessage(c), html, buf.toString)
+        assertEquals(assertMessage(c), html, buf.toString())
         fn()
       })
     }).apply(resp): Unit
@@ -112,21 +232,25 @@ class HttpTestForSimpleApi extends TestVerticle {
   private def correctHeadAndEmptyBodyHandler(c: HttpClient, fn: () => Unit) = { resp: HttpClientResponse =>
     checkCorrectHeader(c, { () =>
       resp.bodyHandler { buf =>
-        assertEquals(assertMessage(c), 0, buf.length)
+        assertEquals(assertMessage(c), 0, buf.length())
         fn()
       }
     }).apply(resp): Unit
   }
 
-  private def checkServer(clientFn: HttpClient => Unit) = { ar: AsyncResult[HttpServer] =>
-    if (ar.succeeded()) {
-      val clients = List(
-        vertx.createHttpClient().setPort(testPort).setTryUseCompression(tryUseCompression = false),
-        vertx.createHttpClient().setPort(testPort).setTryUseCompression(tryUseCompression = true))
-
-      clients.foreach(clientFn)
-    } else {
-      fail("listening did not succeed: " + ar.cause().getMessage)
+  private def checkServer(server: => HttpServer, req: HttpServerRequest => Unit)(fn: HttpClient => Unit) = {
+    List(true, false).foreach { compression =>
+      val localServer = server // on purpose, call by-name function to create server
+      localServer.setCompressionSupported(compressionSupported = compression)
+      localServer.requestHandler(req)
+      localServer.listen(testPort, { res =>
+        if (res.succeeded()) {
+          val client = vertx.createHttpClient().setPort(testPort).setTryUseCompression(compression)
+          fn(client)
+        } else {
+          fail("listening did not succeed: " + res.cause().getMessage)
+        }
+      })
     }
   }
 
