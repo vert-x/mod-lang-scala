@@ -20,7 +20,7 @@ import org.vertx.java.core.http.{ HttpServerResponse => JHttpServerResponse }
 import org.vertx.scala.core.buffer._
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.WriteStream
-import org.vertx.scala.core.MultiMap
+import org.vertx.scala.core.{AsyncResult, MultiMap}
 import collection.JavaConverters._
 import org.vertx.scala.Self
 
@@ -167,11 +167,28 @@ final class HttpServerResponse private[scala] (val asJava: JHttpServerResponse) 
   def sendFile(filename: String): HttpServerResponse = wrap(asJava.sendFile(filename))
 
   /**
-   * If `chunked} is `true}, this response will use HTTP chunked encoding, and each call to write to the body
+   * If `chunked` is `true`, this response will use HTTP chunked encoding, and each call to write to the body
+   * Same as [[org.vertx.scala.core.http.HttpServerResponse.sendFile(String)]]
+   * but also takes a handler that will be called when the send has completed or
+   * a failure has occurred
+   */
+  def sendFile(filename: String, handler: AsyncResult[Void] => Unit): HttpServerResponse =
+    wrap(asJava.sendFile(filename, handler))
+
+  /**
+   * Same as [[org.vertx.scala.core.http.HttpServerResponse.sendFile(String, String)]]
+   * but also takes a handler that will be called when the send has completed or
+   * a failure has occurred
+   */
+  def sendFile(filename: String, notFoundFile: String, handler: AsyncResult[Void] => Unit): HttpServerResponse =
+    wrap(asJava.sendFile(filename, notFoundFile, handler))
+
+  /**
+   * If `chunked` is `true`, this response will use HTTP chunked encoding, and each call to write to the body
    * will correspond to a new HTTP chunk sent on the wire.<p>
-   * If chunked encoding is used the HTTP header `Transfer-Encoding} with a value of `Chunked} will be
+   * If chunked encoding is used the HTTP header `Transfer-Encoding` with a value of `Chunked` will be
    * automatically inserted in the response.<p>
-   * If `chunked} is `false}, this response will not use HTTP chunked encoding, and therefore if any data is written the
+   * If `chunked` is `false`, this response will not use HTTP chunked encoding, and therefore if any data is written the
    * body of the response, the total size of that data must be set in the `Content-Length` header <b>before</b> any
    * data is written to the response body.<p>
    * An HTTP chunked response is typically used when you do not know the total size of the request body up front.
