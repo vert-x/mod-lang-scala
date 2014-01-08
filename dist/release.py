@@ -63,8 +63,8 @@ def switch_to_tag_release(branch):
 
 def update_version(base_dir, version):
     os.chdir(base_dir)
-    gradle_props = './gradle.properties'
     # 1. Update mod-lang-scala version in root gradle properties file
+    gradle_props = './gradle.properties'
     f_in = open(gradle_props)
     f_out = open(gradle_props + '.tmp', 'w')
     re_version = re.compile('\s*version=')
@@ -81,8 +81,26 @@ def update_version(base_dir, version):
         f_out.close()
     # Rename back gradle properties file
     os.rename(gradle_props + ".tmp", gradle_props)
+    # 2. Update mod-lang-scala version in test langs.properties file
+    langs_props = './src/test/resources/langs.properties'
+    f_in = open(langs_props)
+    f_out = open(langs_props + '.tmp', 'w')
+    re_version = re.compile('\s*scala=')
+    try:
+        for l in f_in:
+            if re_version.match(l):
+                prettyprint("Update %s to version %s"
+                            % (langs_props, version), Levels.DEBUG)
+                f_out.write('scala=io.vertx~lang-scala~%s:org.vertx.scala.platform.impl.ScalaVerticleFactory\n' % version)
+            else:
+                f_out.write(l)
+    finally:
+        f_in.close()
+        f_out.close()
+    # Rename back gradle properties file
+    os.rename(langs_props + ".tmp", langs_props)
     # Now make sure this goes back into the repository.
-    git.commit([gradle_props],
+    git.commit([gradle_props, langs_props],
         "'Release Script: update mod-lang-scala version %s'" % version)
 
 def do_task(target, args, async_processes):
