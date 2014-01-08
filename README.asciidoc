@@ -40,12 +40,14 @@ some of the items to bear in mind when using this API.
 In some cases, the Scala compiler can fail to detect the type of a particular
 handler, for example:
 
-```
++
+...............................................................................
 val datagramSocket = vertx.createDatagramSocket()
 datagramSocket.send("hello", "127.0.0.1", 1234, { h: AsyncResult[DatagramSocket] =>
    ...
 }
-```
+...............................................................................
++
 
 In this example, `send` method call explicitly needs to define the type
 annotation for the async result handler. This is because there's an overloaded
