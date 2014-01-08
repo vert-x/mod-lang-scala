@@ -12,7 +12,7 @@ which can be run like this:
 2. Open [VERTX_HOME]/conf/langs.properties file and these lines:
 +
 ...............................................................................
-scala=io.vertx~lang-scala~0.2.0:org.vertx.scala.platform.impl.ScalaVerticleFactory
+scala=io.vertx~lang-scala~0.3.0:org.vertx.scala.platform.impl.ScalaVerticleFactory
 .scala=scala
 ...............................................................................
 +
