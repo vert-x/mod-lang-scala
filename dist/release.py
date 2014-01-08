@@ -64,9 +64,6 @@ def switch_to_tag_release(branch):
 def update_version(base_dir, version):
     os.chdir(base_dir)
     gradle_props = './gradle.properties'
-
-    pieces = re.compile('[\.\-]').split(version)
-
     # 1. Update mod-lang-scala version in root gradle properties file
     f_in = open(gradle_props)
     f_out = open(gradle_props + '.tmp', 'w')
@@ -82,17 +79,11 @@ def update_version(base_dir, version):
     finally:
         f_in.close()
         f_out.close()
-
     # Rename back gradle properties file
     os.rename(gradle_props + ".tmp", gradle_props)
-
     # Now make sure this goes back into the repository.
     git.commit([gradle_props],
         "'Release Script: update mod-lang-scala version %s'" % version)
-
-    # And return the next version - currently unused
-    return pieces[0] + '.' + str(int(pieces[1]) + 1) + '.' + '0-SNAPSHOT'
-
 
 def do_task(target, args, async_processes):
     if settings.multi_threaded:
@@ -130,13 +121,13 @@ def release():
     base_dir = os.getcwd()
     branch = "master"
 
-#    next_version = settings.next_version
-#    if next_version is None:
-#        proceed = input_with_default(
-#        'No next mod-lang-scala version given! Are you sure you want to proceed?', 'N')
-#        if not proceed.upper().startswith('Y'):
-#            prettyprint("... User Abort!", Levels.WARNING)
-#            sys.exit(1)
+    next_version = settings.next_version
+    if next_version is None:
+        proceed = input_with_default(
+            'No next mod-lang-scala version given! Are you sure you want to proceed?', 'N')
+        if not proceed.upper().startswith('Y'):
+            prettyprint("... User Abort!", Levels.WARNING)
+            sys.exit(1)
 
     prettyprint(
         "Releasing mod-lang-scala version %s from branch '%s'"
@@ -201,6 +192,16 @@ def release():
     git.tag_for_release()
 
     if not settings.dry_run:
+        # Update master with next version
+        next_version = settings.next_version
+        if next_version is not None:
+            # Update to next version
+            git.switch_to_branch() # switch to master
+            prettyprint("Step 4: Updating version number for next release", Levels.INFO)
+            update_version(base_dir, next_version)
+            git.push_master_to_origin()
+            prettyprint("Step 4: Complete", Levels.INFO)
+
         git.push_tags_to_origin()
         git.cleanup()
         git.push_master_to_origin()
@@ -208,16 +209,6 @@ def release():
         prettyprint(
             "In dry-run mode.  Not pushing tag to remote origin and not removing temp release branch %s." % git.working_branch
             , Levels.DEBUG)
-
-#        # Update master with next version
-#        next_version = settings.next_version
-#        if next_version is not None:
-#            # Update to next version
-#            prettyprint("Step 4: Updating version number for next release", Levels.INFO)
-#            update_version(base_dir, next_version)
-#            git.push_master_to_origin()
-#            prettyprint("Step 4: Complete", Levels.INFO)
-
 
 if __name__ == "__main__":
     release()
