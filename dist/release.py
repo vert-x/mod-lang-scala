@@ -20,6 +20,8 @@ except:
 modules = []
 uploader = None
 git = None
+gradle_version_exprs = '\s*version=', 'version=%s\n'
+vertx_version_exprs = '\s*scala=', 'scala=io.vertx~lang-scala~%s:org.vertx.scala.platform.impl.ScalaVerticleFactory\n'
 
 
 def help_and_exit():
@@ -61,47 +63,37 @@ def switch_to_tag_release(branch):
         sys.exit(100)
 
 
-def update_version(base_dir, version):
+def update_version(base_dir, version, next):
     os.chdir(base_dir)
-    # 1. Update mod-lang-scala version in root gradle properties file
-    gradle_props = './gradle.properties'
-    f_in = open(gradle_props)
-    f_out = open(gradle_props + '.tmp', 'w')
-    re_version = re.compile('\s*version=')
-    try:
-        for l in f_in:
-            if re_version.match(l):
-                prettyprint("Update %s to version %s"
-                            % (gradle_props, version), Levels.DEBUG)
-                f_out.write('version=%s\n' % version)
-            else:
-                f_out.write(l)
-    finally:
-        f_in.close()
-        f_out.close()
-    # Rename back gradle properties file
-    os.rename(gradle_props + ".tmp", gradle_props)
-    # 2. Update mod-lang-scala version in test langs.properties file
-    langs_props = './src/test/resources/langs.properties'
-    f_in = open(langs_props)
-    f_out = open(langs_props + '.tmp', 'w')
-    re_version = re.compile('\s*scala=')
-    try:
-        for l in f_in:
-            if re_version.match(l):
-                prettyprint("Update %s to version %s"
-                            % (langs_props, version), Levels.DEBUG)
-                f_out.write('scala=io.vertx~lang-scala~%s:org.vertx.scala.platform.impl.ScalaVerticleFactory\n' % version)
-            else:
-                f_out.write(l)
-    finally:
-        f_in.close()
-        f_out.close()
-    # Rename back gradle properties file
-    os.rename(langs_props + ".tmp", langs_props)
+    files = [
+        update_version_file(version, './gradle.properties', gradle_version_exprs),
+        update_version_file(version, './src/test/resources/langs.properties',vertx_version_exprs)
+    ]
+    if not next:
+        files.append(update_version_file(
+            version, './README.asciidoc', vertx_version_exprs))
     # Now make sure this goes back into the repository.
-    git.commit([gradle_props, langs_props],
+    git.commit(files,
         "'Release Script: update mod-lang-scala version %s'" % version)
+
+def update_version_file(version, file, exprs):
+    f_in = open(file)
+    f_out = open(file + '.tmp', 'w')
+    re_version = re.compile(exprs[0])
+    try:
+        for l in f_in:
+            if re_version.match(l):
+                prettyprint("Update %s to version %s"
+                            % (file, version), Levels.DEBUG)
+                f_out.write(exprs[1] % version)
+            else:
+                f_out.write(l)
+    finally:
+        f_in.close()
+        f_out.close()
+    # Rename back gradle properties file
+    os.rename(file + ".tmp", file)
+    return file
 
 def do_task(target, args, async_processes):
     if settings.multi_threaded:
@@ -189,7 +181,7 @@ def release():
 
     # Step 2: Update version in tagged files
     prettyprint("Step 2: Updating version number", Levels.INFO)
-    update_version(base_dir, version)
+    update_version(base_dir, version, False)
     prettyprint("Step 2: Complete", Levels.INFO)
 
     # Step 3: Build and test mod-lang-scala
@@ -216,7 +208,7 @@ def release():
             # Update to next version
             git.switch_to_branch() # switch to master
             prettyprint("Step 4: Updating version number for next release", Levels.INFO)
-            update_version(base_dir, next_version)
+            update_version(base_dir, next_version, True)
             git.push_master_to_origin()
             prettyprint("Step 4: Complete", Levels.INFO)
 
