@@ -11,6 +11,8 @@ import scala.util.Failure
 import org.junit.Test
 import org.vertx.scala.core.eventbus.Message
 import org.vertx.testtools.VertxAssert._
+import org.vertx.scala.core.AsyncResult
+import java.util.concurrent.atomic.AtomicInteger
 
 class ScalaBusModTest extends TestVerticle {
   override def asyncBefore(): Future[Unit] = {
@@ -23,6 +25,26 @@ class ScalaBusModTest extends TestVerticle {
   }
 
   val address = "test-bus-mod"
+
+  @Test
+  def missingAction(): Unit = {
+    vertx.eventBus.send(address, Json.obj("echo" -> "bla"), { msg: Message[JsonObject] =>
+      assertEquals("error", msg.body.getString("status"))
+      assertEquals("MISSING_ACTION", msg.body.getString("error"))
+      assertNotNull("Should receive a message", msg.body.getString("message"))
+      testComplete()
+    })
+  }
+
+  @Test
+  def unknownAction(): Unit = {
+    vertx.eventBus.send(address, Json.obj("action" -> "asdfgh", "echo" -> "bla"), { msg: Message[JsonObject] =>
+      assertEquals("error", msg.body.getString("status"))
+      assertEquals("INVALID_ACTION", msg.body.getString("error"))
+      assertNotNull("Should receive a message", msg.body.getString("message"))
+      testComplete()
+    })
+  }
 
   @Test
   def syncHello(): Unit = {
@@ -105,4 +127,62 @@ class ScalaBusModTest extends TestVerticle {
       testComplete()
     })
   }
+
+  @Test
+  def ignoreReply(): Unit = {
+    val timeAtStart = System.currentTimeMillis()
+    val randomAddress = java.util.UUID.randomUUID().toString()
+    val i = new AtomicInteger(2)
+    vertx.eventBus.registerHandler(randomAddress, { msg: Message[JsonObject] =>
+      val timeAtEnd = System.currentTimeMillis()
+      assertEquals("bla", msg.body.getString("echo"))
+      assertTrue("Should get a message here within 500 millis", timeAtStart >= (timeAtEnd - 500))
+      if (i.decrementAndGet() == 0) {
+        testComplete()
+      }
+    })
+
+    vertx.eventBus.sendWithTimeout(address, Json.obj("action" -> "no-direct-reply",
+      "address" -> randomAddress, "echo" -> "bla"),
+      500L, { ar: AsyncResult[Message[JsonObject]] =>
+        assertTrue("Should fail because of timeout", ar.failed())
+        if (i.decrementAndGet() == 0) {
+          testComplete()
+        }
+      })
+  }
+
+  @Test
+  def replyBackAndForth(): Unit = {
+    vertx.eventBus.send(address, Json.obj("action" -> "reply-notimeout", "echo" -> "bla"), { msg: Message[JsonObject] =>
+      assertEquals("ok", msg.body.getString("status"))
+      assertEquals("bla", msg.body.getString("echo"))
+      msg.reply(Json.obj("action" -> "reply-notimeout-reply", "echo" -> "blubb"), {
+        msg: Message[JsonObject] =>
+          assertEquals("ok", msg.body.getString("status"))
+          assertEquals("blubb", msg.body.getString("echo"))
+          testComplete()
+      })
+    })
+  }
+
+  @Test
+  def replyTimeout(): Unit = {
+    val timeAtStart = System.currentTimeMillis()
+    val randomAddress = java.util.UUID.randomUUID().toString()
+    vertx.eventBus.registerHandler(randomAddress, { msg: Message[JsonObject] =>
+      val timeAtEnd = System.currentTimeMillis()
+      assertEquals("timeout", msg.body.getString("state"))
+      assertTrue("Should get the timeout after 500 millis", timeAtStart <= (timeAtEnd - 500))
+      testComplete()
+    })
+
+    vertx.eventBus.send(address, Json.obj("action" -> "reply-timeout", "address" -> randomAddress),
+      { msg: Message[JsonObject] =>
+        assertEquals("ok", msg.body.getString("status"))
+        assertEquals("waitForTimeout", msg.body.getString("state"))
+        // no reply to get BusMod into timeout
+      })
+  }
+
 }

@@ -12,6 +12,7 @@ import scala.util.Success
 import scala.util.Failure
 import org.vertx.scala.mods.BusModException
 import scala.concurrent.Future
+import org.vertx.testtools.VertxAssert
 
 class TestBusMod extends Verticle with ScalaBusMod {
   override def start(promise: Promise[Unit]): Unit = {
@@ -21,7 +22,7 @@ class TestBusMod extends Verticle with ScalaBusMod {
     }: Try[Void] => Unit)
   }
 
-  override def receive(msg: Message[JsonObject]) = {
+  override def receive = (msg: Message[JsonObject]) => {
     case "sync-hello" => Ok(Json.obj("result" -> "sync-hello-result"))
     case "sync-error" => throw new RuntimeException("sync-error-result")
     case "sync-echo" =>
@@ -60,6 +61,23 @@ class TestBusMod extends Verticle with ScalaBusMod {
     case "async-error-2" => AsyncReply {
       Future.failed(new BusModException("caught-exception", id = "CAUGHT_EXCEPTION"))
     }
+    case "reply-notimeout" =>
+      Ok(Json.obj("echo" -> msg.body.getString("echo")), Some(Receiver(msg => {
+        case "reply-notimeout-reply" => Ok(Json.obj("echo" -> msg.body.getString("echo")))
+      })))
+    case "reply-timeout" =>
+      val clientAddress = msg.body().getString("address")
+      Ok(Json.obj("state" -> "waitForTimeout"), Some(ReceiverWithTimeout(msg => {
+        case x =>
+          vertx.eventBus.send(clientAddress, Json.obj("state" -> "error:should-not-get-reply"))
+          Error("should not receive message")
+      }, 500L, { () =>
+        vertx.eventBus.send(clientAddress, Json.obj("state" -> "timeout"))
+      })))
+    case "no-direct-reply" =>
+      val clientAddress = msg.body.getString("address")
+      vertx.eventBus.send(clientAddress, Json.obj("echo" -> msg.body.getString("echo")))
+      NoReply
   }
 
 }

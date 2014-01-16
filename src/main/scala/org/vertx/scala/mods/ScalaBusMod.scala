@@ -20,6 +20,7 @@ import org.vertx.scala.core.eventbus.{ JsonObjectData, Message }
 import org.vertx.scala.core.json.{ Json, JsonObject }
 import org.vertx.scala.mods.replies._
 import org.vertx.scala.core.VertxAccess
+import org.vertx.scala.core.AsyncResult
 
 /**
  * Extend this trait to get an easy to use interface for your EventBus module. It relies on the
@@ -33,14 +34,16 @@ import org.vertx.scala.core.VertxAccess
  */
 trait ScalaBusMod extends (Message[JsonObject] => Unit) with VertxExecutionContext with VertxAccess {
 
+  import ScalaBusMod._
+
   private val noActionMatch: BusModReply = Error("No matching action.", "INVALID_ACTION")
   private val noAction: BusModReply = Error("No action received.", "MISSING_ACTION")
 
   override final def apply(msg: Message[JsonObject]) = {
-    val reply: BusModReply = Option(msg.body().getString("action")) match {
+    val reply: BusModReceiveEnd = Option(msg.body().getString("action")) match {
       case Some(action) =>
         try {
-          receive(msg).applyOrElse(action, {_: String => noActionMatch})
+          receive(msg).applyOrElse(action, { _: String => noActionMatch })
         } catch {
           case ex: Throwable =>
             logger.warn("Uncaught Exception for request " + msg.body().encode(), ex)
@@ -62,7 +65,7 @@ trait ScalaBusMod extends (Message[JsonObject] => Unit) with VertxExecutionConte
    * @param msg The message to reply to.
    * @param reply The BusModReply to send.
    */
-  private def sendReply(msg: Message[_], reply: BusModReply): Unit = reply match {
+  private def sendReply(msg: Message[_], reply: BusModReceiveEnd): Unit = reply match {
     case AsyncReply(future) => future.map(x => sendReply(msg, x)).recover {
       case BusModException(message, null, id) => sendFinalReply(msg, Error(message, id))
       case BusModException(message, cause, id) =>
@@ -73,9 +76,31 @@ trait ScalaBusMod extends (Message[JsonObject] => Unit) with VertxExecutionConte
           Error(ex.getMessage, "MODULE_EXCEPTION", Json.obj("exception" -> ex.getStackTrace.mkString("\n"))))
     }
     case syncReply: SyncReply => sendFinalReply(msg, syncReply)
+    case NoReply =>
   }
 
-  private def sendFinalReply(msg: Message[_], reply: SyncReply): Unit = msg.reply(reply.toJson)
+  private def sendFinalReply(msg: Message[_], reply: SyncReply): Unit = reply.replyHandler match {
+    case Some(replyReceiver) =>
+      val receiver = new ScalaBusMod {
+        override val container = ScalaBusMod.this.container
+        override val vertx = ScalaBusMod.this.vertx
+        override val logger = ScalaBusMod.this.logger
+        override def receive = replyReceiver.handler
+      }
+
+      replyReceiver match {
+        case ReceiverWithTimeout(handler, timeout, timeoutHandler) =>
+          msg.replyWithTimeout(reply.toJson, timeout, (ar: AsyncResult[Message[JsonObject]]) => {
+            if (ar.succeeded()) {
+              receiver.apply(ar.result())
+            } else {
+              timeoutHandler()
+            }
+          })
+        case _ => msg.reply(reply.toJson, receiver)
+      }
+    case None => msg.reply(reply.toJson)
+  }
 
   /**
    * Override this method to handle a message received via the eventbus. This function reads the
@@ -86,5 +111,9 @@ trait ScalaBusMod extends (Message[JsonObject] => Unit) with VertxExecutionConte
    * @param message The message that was received via the eventbus.
    * @return A partial function consisting of an "action" -> BusModReply.
    */
-  def receive(message: Message[JsonObject]): PartialFunction[String, BusModReply]
+  def receive: Receive
+}
+
+object ScalaBusMod {
+  type Receive = (Message[JsonObject]) => PartialFunction[String, BusModReceiveEnd]
 }
