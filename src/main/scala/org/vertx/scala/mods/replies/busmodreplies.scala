@@ -17,18 +17,30 @@ package org.vertx.scala.mods.replies
 
 import org.vertx.scala.core.json._
 import scala.concurrent.Future
+import org.vertx.scala.mods.ScalaBusMod._
 
-sealed trait BusModReply
+sealed trait BusModReceiveEnd
+sealed trait BusModReply extends BusModReceiveEnd
 
 case class AsyncReply(replyWhenDone: Future[BusModReply]) extends BusModReply
 
+sealed trait ReplyReceiver {
+  val handler: Receive
+}
+case class Receiver(handler: Receive) extends ReplyReceiver
+case class ReceiverWithTimeout(handler: Receive, timeout: Long, timeoutHandler: () => Unit) extends ReplyReceiver
+
 sealed trait SyncReply extends BusModReply {
+  val replyHandler: Option[ReplyReceiver]
   def toJson: JsonObject
 }
-case class Ok(x: JsonObject = Json.obj()) extends SyncReply {
+case class Ok(x: JsonObject = Json.obj(), replyHandler: Option[ReplyReceiver] = None) extends SyncReply {
   def toJson = x.putString("status", "ok")
 }
 
 case class Error(message: String, id: String = "MODULE_EXCEPTION", obj: JsonObject = Json.obj()) extends SyncReply {
+  val replyHandler = None
   def toJson = Json.obj("status" -> "error", "message" -> message, "error" -> id).mergeIn(obj)
 }
+
+case object NoReply extends BusModReceiveEnd
