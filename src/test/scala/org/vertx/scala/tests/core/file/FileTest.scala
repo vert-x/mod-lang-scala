@@ -1,7 +1,7 @@
 package org.vertx.scala.tests.core.file
 
 import org.vertx.scala.testtools.TestVerticle
-import org.junit.{Ignore, Test}
+import org.junit.{ Ignore, Test }
 import org.vertx.testtools.VertxAssert._
 import org.vertx.scala.core.AsyncResult
 import scala.concurrent.Future
@@ -102,7 +102,6 @@ class FileTest extends TestVerticle {
     df <- fileDelete("x.dat", false)
     df <- fileDelete("y.dat", false)
   } yield assertEquals("x.dat", ex.toString))
-
 
   @Test def readSymlinkFileEndsWith: Unit = checkNoError(for {
     cf <- fileCreate("x.dat")
@@ -209,9 +208,7 @@ class FileTest extends TestVerticle {
   private def fileAsynRead(ar: AsyncFile, o: Int, i: Int, l: Int): Future[Buffer] = promisify { p: Promise[Buffer] => ar.read(Buffer(1000), o, i, l, resultInPromise(p)) }
 
   private def checkNoError(fut: Future[Unit]) = fut onComplete {
-    case Success(assertion) =>
-      assertion // run assertion
-      testComplete()
+    case Success(_) => testComplete()
     case Failure(x) => fail("Failed: " + x.getCause().getMessage())
   }
 }
