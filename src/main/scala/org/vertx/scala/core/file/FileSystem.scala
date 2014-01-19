@@ -124,6 +124,18 @@ final class FileSystem private[scala] (val asJava: JFileSystem) extends Self {
     wrap(asJava.chmodSync(path, perms, dirPerms))
 
   /**
+   * Change the ownership on the file represented by `path` to `user` and `group`, asynchronously.
+   */
+  def chown(path: String, user: Option[String], group: Option[String], handler: AsyncResult[Void] => Unit): FileSystem =
+    wrap(asJava.chown(path, user.getOrElse(null), group.getOrElse(null), handler))
+
+  /**
+   * Synchronous version of [[org.vertx.scala.core.file.chown(String, Option[String], Option[String], AsyncResult[Void] => Unit)]].
+   */
+  def chownSync(path: String, user: Option[String], group: Option[String]): FileSystem =
+    wrap(asJava.chownSync(path, user.getOrElse(null), group.getOrElse(null)))
+
+  /**
    * Obtain properties for the file represented by `path`, asynchronously.
    * If the file is a link, the link will be followed.
    */
