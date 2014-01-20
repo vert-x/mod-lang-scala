@@ -21,18 +21,42 @@ class NetTest extends TestVerticle {
 
   @Test
   def sslNetServer(): Unit = {
-    val server = vertx.createNetServer.setSSL(true)
+    checkSslServerAndClient(false, regularConnectHandler, correctBodyHandler(testComplete))
+  }
+
+  @Test
+  def sslUpgrade(): Unit = {
+    checkSslServerAndClient(true, { ns =>
+      assertFalse(ns.isSsl())
+      ns.ssl({
+        ns.write("ssl-test")
+      })
+    }, checkConnectedNetSocketHandler { ns =>
+      assertFalse(ns.isSsl())
+      ns.ssl({
+        assertTrue(ns.isSsl())
+        ns.dataHandler { buf =>
+          assertTrue(ns.isSsl())
+          assertEquals("ssl-test", buf.getString(0, buf.length()))
+          testComplete()
+        }
+      })
+    })
+  }
+
+  private def checkSslServerAndClient(upgradeToSsl: Boolean, serverConnectHandler: NetSocket => Unit, clientConnectHandler: AsyncResult[NetSocket] => Unit): Unit = {
+    val server = vertx.createNetServer.setSSL(!upgradeToSsl)
 
     server.setKeyStorePath("./src/test/keystores/server-keystore.jks").setKeyStorePassword("wibble")
     server.setTrustStorePath("./src/test/keystores/server-truststore.jks").setTrustStorePassword("wibble")
 
-    server.connectHandler(regularConnectHandler).listen(testPort, { ar: AsyncResult[NetServer] =>
+    server.connectHandler(serverConnectHandler).listen(testPort, { ar: AsyncResult[NetServer] =>
       (if (ar.succeeded()) {
         val c = vertx.createNetClient
-        c.setSSL(true)
+        c.setSSL(!upgradeToSsl)
         c.setKeyStorePath("./src/test/keystores/client-keystore.jks").setKeyStorePassword("wibble")
         c.setTrustStorePath("./src/test/keystores/client-truststore.jks").setTrustStorePassword("wibble")
-        c.connect(testPort, correctBodyHandler(testComplete))
+        c.connect(testPort, clientConnectHandler)
       } else {
         fail("listening did not succeed: " + ar.cause().getMessage())
       }): Unit
@@ -57,15 +81,19 @@ class NetTest extends TestVerticle {
     }): Unit
   }
 
-  private def correctBodyHandler(fn: () => Unit) = { resp: AsyncResult[NetSocket] =>
+  private def checkConnectedNetSocketHandler(checks: NetSocket => Unit) = { resp: AsyncResult[NetSocket] =>
     if (resp.succeeded()) {
-      resp.result().dataHandler({ buf =>
-        assertEquals("hello-World", buf.toString)
-        fn()
-      }): Unit
+      checks(resp.result())
     } else {
       fail("listening did not succeed: " + resp.cause().getMessage())
     }
+  }
+
+  private def correctBodyHandler(fn: () => Unit) = checkConnectedNetSocketHandler { ns =>
+    ns.dataHandler({ buf =>
+      assertEquals("hello-World", buf.toString)
+      fn()
+    }): Unit
   }
 
   private def regularConnectHandler: NetSocket => Unit = { ws =>
