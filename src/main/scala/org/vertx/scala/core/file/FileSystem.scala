@@ -130,7 +130,7 @@ final class FileSystem private[scala] (val asJava: JFileSystem) extends Self {
     wrap(asJava.chown(path, user.getOrElse(null), group.getOrElse(null), handler))
 
   /**
-   * Synchronous version of [[org.vertx.scala.core.file.chown(String, Option[String], Option[String], AsyncResult[Void] => Unit)]].
+   * Synchronous version of [[org.vertx.scala.core.file.FileSystem.chown(String, Option[String], Option[String], AsyncResult[Void] => Unit)]].
    */
   def chownSync(path: String, user: Option[String], group: Option[String]): FileSystem =
     wrap(asJava.chownSync(path, user.getOrElse(null), group.getOrElse(null)))
