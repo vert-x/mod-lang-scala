@@ -1,10 +1,11 @@
 package org.vertx.scala.core.http
 
 import org.vertx.java.core.http.{ WebSocketBase => JWebSocketBase }
-import org.vertx.scala.core.streams.{WriteStream, ReadStream}
+import org.vertx.scala.core.streams.{ WriteStream, ReadStream }
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.buffer.Buffer
 import org.vertx.scala.Self
+import java.net.InetSocketAddress
 
 /**
  * Represents an HTML 5 Websocket<p>
@@ -62,5 +63,15 @@ trait WebSocketBase extends Self
    * Write `str` to the websocket as a text frame
    */
   def writeTextFrame(str: String): this.type = wrap(asJava.writeTextFrame(str))
+
+  /**
+   * Return the remote address for this socket
+   */
+  def remoteAddress(): InetSocketAddress = asJava.remoteAddress()
+
+  /**
+   * Return the local address for this socket
+   */
+  def localAddress(): InetSocketAddress = asJava.localAddress()
 
 }

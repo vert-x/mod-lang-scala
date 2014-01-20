@@ -68,6 +68,24 @@ class WebSocketsTest extends TestVerticle {
     }))
   }
 
+  @Test def websocketAddresses(): Unit = {
+    vertx.createHttpServer.websocketHandler({ ws: ServerWebSocket =>
+      assertNotNull(ws.remoteAddress())
+      assertNotNull(ws.localAddress())
+      ws.dataHandler({ buf =>
+        val addresses = buf.toString().split("\n")
+        assertEquals(ws.remoteAddress().getAddress().getHostAddress().toString(), addresses(1))
+        assertEquals(ws.localAddress().getAddress().getHostAddress().toString(), addresses(0))
+        testComplete()
+      })
+    }).listen(testPort, checkServer({ c =>
+      c.connectWebsocket("/", { ws: WebSocket =>
+        ws.write(Buffer(ws.remoteAddress().getAddress().getHostAddress().toString() + "\n"
+          + ws.localAddress().getAddress().getHostAddress().toString()))
+      })
+    }))
+  }
+
   private def regularRequestHandler: ServerWebSocket => Unit = { ws =>
     ws.write(Buffer(html))
 
