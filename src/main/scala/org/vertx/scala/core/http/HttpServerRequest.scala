@@ -100,6 +100,11 @@ final class HttpServerRequest private[scala] (val asJava: JHttpServerRequest) ex
   def remoteAddress(): java.net.InetSocketAddress = asJava.remoteAddress()
 
   /**
+   * Return the local (server side) address of the server that handles the request
+   */
+  def localAddress(): java.net.InetSocketAddress = asJava.localAddress()
+
+  /**
    * @return an array of the peer certificates.  Returns null if connection is
    *         not SSL.
    * @throws SSLPeerUnverifiedException SSL peer's identity has not been verified.

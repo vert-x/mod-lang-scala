@@ -19,6 +19,7 @@ package org.vertx.scala.core.sockjs
 import org.vertx.java.core.sockjs.{ SockJSSocket => JSockJSSocket }
 import org.vertx.scala.core.streams.{WriteStream, ReadStream}
 import org.vertx.scala.Self
+import java.net.InetSocketAddress
 
 /**
  * You interact with SockJS clients through instances of SockJS socket.
@@ -50,6 +51,16 @@ final class SockJSSocket private[scala] (val asJava: JSockJSSocket) extends Self
    * Close it
    */
   def close(): Unit = asJava.close()
+
+  /**
+   * Return the remote address for this socket
+   */
+  def remoteAddress(): InetSocketAddress = asJava.remoteAddress()
+
+  /**
+   * Return the local address for this socket
+   */
+  def localAddress(): InetSocketAddress = asJava.localAddress()
 
 }
 
