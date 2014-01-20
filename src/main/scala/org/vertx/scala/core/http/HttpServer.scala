@@ -125,6 +125,18 @@ final class HttpServer private[scala] (val asJava: JHttpServer) extends Self
    */
   def isCompressionSupported: Boolean = asJava.isCompressionSupported
 
+  /**
+   * Sets the maximum websocket frame size in bytes. Default is 65536 bytes.
+   * @param maxSize The size in bytes
+   */
+  def setMaxWebSocketFrameSize(maxSize: Int): HttpServer =
+    wrap(asJava.setMaxWebSocketFrameSize(maxSize))
+
+  /**
+   * Get the  maximum websocket frame size in bytes.
+   */
+  def getMaxWebSocketFrameSize: Int = asJava.getMaxWebSocketFrameSize()
+
   private def arHttpServerFnConverter(handler: AsyncResult[HttpServer] => Unit): Handler[AsyncResult[JHttpServer]] =
     asyncResultConverter(HttpServer.apply)(handler)
 
