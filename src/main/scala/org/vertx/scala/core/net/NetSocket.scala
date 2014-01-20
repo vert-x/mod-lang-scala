@@ -90,6 +90,15 @@ final class NetSocket private[scala] (val asJava: JNetSocket) extends Self
    */
   def closeHandler(handler: => Unit): NetSocket = wrap(asJava.closeHandler(handler))
 
+  /**
+   * Upgrade channel to use SSL/TLS. Be aware that for this to work SSL must be configured.
+   */
+  def ssl(handler: => Unit): NetSocket = wrap(asJava.ssl(handler))
+
+  /**
+   * Returns `true` if this [[org.vertx.scala.core.net.NetSocket]] is encrypted via SSL/TLS.
+   */
+  def isSsl(): Boolean = asJava.isSsl()
 }
 
 object NetSocket {
