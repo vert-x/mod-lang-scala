@@ -139,6 +139,14 @@ class FileTest extends TestVerticle {
     df <- fileDelete("ch.dat", false)
   } yield assertEquals("Hello-Chmod", rf.toString()))
 
+  @Test def chownFileNoRoot: Unit = checkError(for {
+    cf <- fileChown("x.dat", "root")
+  } yield cf)
+
+  @Test def chownFileNoInvalidUser: Unit = checkError(for {
+    cf <- fileChown("x.dat", "asdfewgheaca")
+  } yield cf)
+
   @Test def truncateFile: Unit = checkNoError(for {
     wf <- fileWrite("x.dat", "Hallo-was-los")
     tf <- fileTruncate("x.dat", 5)
@@ -200,6 +208,7 @@ class FileTest extends TestVerticle {
   private def fileReadSymLink(l: String): Future[String] = promisify { p: Promise[String] => vertx.fileSystem.readSymlink(l, resultInPromise(p)) }
   private def fileProps(l: String): Future[FileProps] = promisify { p: Promise[FileProps] => vertx.fileSystem.props(l, resultInPromise(p)) }
   private def fileChmod(f: String, per: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.chmod(f, per, resultInPromise(p)) }
+  private def fileChown(f: String, user: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.chown(f, Some(user), None, resultInPromise(p)) }
   private def fileTruncate(f: String, l: Long): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.truncate(f, l, resultInPromise(p)) }
   private def fileMkdir(f: String): Future[Void] = promisify { p: Promise[Void] => vertx.fileSystem.mkdir(f, resultInPromise(p)) }
   private def fileReadDir(f: String): Future[Array[String]] = promisify { p: Promise[Array[String]] => vertx.fileSystem.readDir(f, resultInPromise(p)) }
@@ -210,5 +219,10 @@ class FileTest extends TestVerticle {
   private def checkNoError(fut: Future[Unit]) = fut onComplete {
     case Success(_) => testComplete()
     case Failure(x) => fail("Failed: " + x.getCause().getMessage())
+  }
+
+  private def checkError(fut: Future[_]) = fut onComplete {
+    case Success(x) => fail("The future should have failed, but got " + x)
+    case Failure(x) => testComplete()
   }
 }
