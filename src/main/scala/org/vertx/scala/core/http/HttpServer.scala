@@ -135,7 +135,7 @@ final class HttpServer private[scala] (val asJava: JHttpServer) extends Self
   /**
    * Get the  maximum websocket frame size in bytes.
    */
-  def getMaxWebSocketFrameSize: Int = asJava.getMaxWebSocketFrameSize()
+  def getMaxWebSocketFrameSize: Int = asJava.getMaxWebSocketFrameSize
 
   private def arHttpServerFnConverter(handler: AsyncResult[HttpServer] => Unit): Handler[AsyncResult[JHttpServer]] =
     asyncResultConverter(HttpServer.apply)(handler)

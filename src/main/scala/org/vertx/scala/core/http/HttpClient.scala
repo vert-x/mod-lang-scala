@@ -281,7 +281,7 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
   /**
    * Get the  maximum websocket frame size in bytes.
    */
-  def getMaxWebSocketFrameSize: Int = asJava.getMaxWebSocketFrameSize()
+  def getMaxWebSocketFrameSize: Int = asJava.getMaxWebSocketFrameSize
 
   private def httpClientResponseFnConverter(handler: HttpClientResponse => Unit) =
     fnToHandler(handler.compose(HttpClientResponse.apply))
