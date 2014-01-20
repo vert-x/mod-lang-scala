@@ -98,7 +98,7 @@ final class NetSocket private[scala] (val asJava: JNetSocket) extends Self
   /**
    * Returns `true` if this [[org.vertx.scala.core.net.NetSocket]] is encrypted via SSL/TLS.
    */
-  def isSsl(): Boolean = asJava.isSsl()
+  def isSsl: Boolean = asJava.isSsl
 }
 
 object NetSocket {

@@ -27,16 +27,16 @@ class NetTest extends TestVerticle {
   @Test
   def sslUpgrade(): Unit = {
     checkSslServerAndClient(true, { ns =>
-      assertFalse(ns.isSsl())
+      assertFalse(ns.isSsl)
       ns.ssl({
         ns.write("ssl-test")
       })
     }, checkConnectedNetSocketHandler { ns =>
-      assertFalse(ns.isSsl())
+      assertFalse(ns.isSsl)
       ns.ssl({
-        assertTrue(ns.isSsl())
+        assertTrue(ns.isSsl)
         ns.dataHandler { buf =>
-          assertTrue(ns.isSsl())
+          assertTrue(ns.isSsl)
           assertEquals("ssl-test", buf.getString(0, buf.length()))
           testComplete()
         }
