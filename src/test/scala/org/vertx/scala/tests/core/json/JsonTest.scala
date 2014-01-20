@@ -18,6 +18,7 @@ package org.vertx.scala.tests.core.json
 import org.junit.Test
 import org.junit.Assert.assertEquals
 import org.vertx.scala.core.json._
+import org.junit.Ignore
 
 /**
  * @author Edgar Chan
@@ -71,6 +72,7 @@ class JsonTest {
     assertEquals(enc, array.encode())
   }
 
+  @Ignore("Unknown status: https://groups.google.com/forum/?fromgroups#!topic/vertx/lOmoB96w8hc")
   @Test
   def customObjTest() {
     import java.util.Date
