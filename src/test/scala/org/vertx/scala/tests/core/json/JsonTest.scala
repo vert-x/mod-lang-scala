@@ -72,6 +72,17 @@ class JsonTest {
     assertEquals(enc, array.encode())
   }
 
+  @Test @Ignore("https://groups.google.com/forum/?fromgroups=#!topic/vertx/TJ2B3D_1zrA and https://groups.google.com/forum/?fromgroups=#!topic/vertx/lOmoB96w8hc")
+  def customObjTest() {
+    import java.util.Date
+
+    case class Custom(date: Date, other: Boolean)
+    val info = Custom(new Date(), false)
+    val obj1 = Json.obj("custom" -> info)
+
+    assertEquals(info, obj1.getValue[Custom]("custom"))
+  }
+
   @Test
   def nestedObjectsTest() {
     val obj =

@@ -21,7 +21,6 @@ import org.vertx.java.core.json.JsonObject
 import org.vertx.java.core.sockjs.{ SockJSServer => JSockJSServer }
 import org.vertx.scala.Self
 import org.vertx.scala.core.FunctionConverters._
-import org.vertx.java.core.sockjs.EventBusBridgeHook
 
 /**
  * This is an implementation of the server side part of <a href="https://github.com/sockjs">SockJS</a>.<p>
@@ -117,7 +116,8 @@ final class SockJSServer private[scala] (val asJava: JSockJSServer) extends Self
    * Set a EventBusBridgeHook on the SockJS server
    * @param hook The hook
    */
-  def setHook(hook: EventBusBridgeHook): SockJSServer = wrap(asJava.setHook(hook))
+  def setHook(hook: EventBusBridgeHook): SockJSServer = wrap(asJava.setHook(hook.asJava))
+
 }
 
 /** Factory for [[org.vertx.scala.core.sockjs.SockJSServer]] instances. */

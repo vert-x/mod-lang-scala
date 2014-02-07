@@ -18,8 +18,10 @@ package org.vertx.scala.core.sockjs
 
 import org.vertx.java.core.sockjs.{ SockJSSocket => JSockJSSocket }
 import org.vertx.scala.core.streams.{WriteStream, ReadStream}
+import org.vertx.scala.core.http._
 import org.vertx.scala.Self
 import java.net.InetSocketAddress
+import scala.collection.mutable
 
 /**
  * You interact with SockJS clients through instances of SockJS socket.
@@ -61,6 +63,17 @@ final class SockJSSocket private[scala] (val asJava: JSockJSSocket) extends Self
    * Return the local address for this socket
    */
   def localAddress(): InetSocketAddress = asJava.localAddress()
+
+  /**
+   * Return the headers corresponding to the last request for this socket or the websocket handshake
+   * Any cookie headers will be removed for security reasons
+   */
+  def headers: mutable.MultiMap[String, String] = multiMapToScalaMultiMap(asJava.headers())
+
+  /**
+   * Return the URI corresponding to the last request for this socket or the websocket handshake
+   */
+  def uri: String = asJava.uri()
 
 }
 

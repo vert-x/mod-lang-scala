@@ -34,6 +34,11 @@ final class ServerWebSocket private[scala] (val asJava: JServerWebSocket) extend
   override type J = JServerWebSocket
 
   /**
+   * The uri the websocket handshake occurred at
+   */
+  def uri(): String = asJava.uri()
+
+  /**
    * The path the websocket is attempting to connect at
    */
   def path(): String = asJava.path()
