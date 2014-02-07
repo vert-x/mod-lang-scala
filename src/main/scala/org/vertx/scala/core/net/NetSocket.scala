@@ -21,6 +21,7 @@ import java.net.InetSocketAddress
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.{WriteStream, ReadStream}
 import org.vertx.scala.Self
+import org.vertx.scala.core._
 
 /**
  * Represents a socket-like interface to a TCP/SSL connection on either the
@@ -69,6 +70,13 @@ final class NetSocket private[scala] (val asJava: JNetSocket) extends Self
    * bypassing userspace altogether (where supported by the underlying operating system. This is a very efficient way to stream files.
    */
   def sendFile(filename: String): NetSocket = wrap(asJava.sendFile(filename))
+
+  /**
+   * Same as [[NetSocket.sendFile()]] but also takes a handler that will be
+   * called when the send has completed or a failure has occurred
+   */
+  def sendFile(filename: String, handler: AsyncResult[Void] => Unit): NetSocket =
+    wrap(asJava.sendFile(filename, fnToHandler(handler)))
 
   /**
    * Return the remote address for this socket
