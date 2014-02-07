@@ -59,5 +59,17 @@ package object buffer {
     override def appendToBuffer(buffer: JBuffer, value: (String, String)) = buffer.appendString(value._1, value._2)
   }
 
+  trait BufferSeekType[T] {
+    def appendToBuffer(buffer: JBuffer, value: T, offset: Int, len: Int): JBuffer
+  }
+  implicit object BufferSeekElem extends BufferSeekType[Buffer] {
+    override def appendToBuffer(buffer: JBuffer, value: Buffer, offset: Int, len: Int) =
+      buffer.appendBuffer(value.asJava, offset, len)
+  }
+  implicit object BytesSeekElem extends BufferSeekType[Array[Byte]] {
+    override def appendToBuffer(buffer: JBuffer, value: Array[Byte], offset: Int, len: Int) =
+      buffer.appendBytes(value, offset, len)
+  }
+
   def bufferHandlerToJava(handler: Buffer => Unit) = fnToHandler(handler.compose { jbuffer: JBuffer => Buffer.apply(jbuffer) })
 }

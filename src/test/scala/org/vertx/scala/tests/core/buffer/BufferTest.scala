@@ -30,21 +30,117 @@ class BufferTest {
     }
 
     (realValue, computedValue) match {
-      case (x: Array[Byte], y: Array[Byte]) => (0 to x.length - 1) map (i => assertEquals(x(i), y(i)))
+      case (x: Array[Byte], y: Array[Byte]) => assertArrayEquals(x, y)
       case ((a, b), (x, y)) => assertEquals(a + " should match " + x, a, x)
       case (a, b) => assertEquals(a + " should match " + b, a, b)
     }
   }
 
-  @Test def testAppendBuffer(): Unit = appendTest(Buffer("test"))
-  @Test def testAppendByte(): Unit = appendTest(TestUtils.generateRandomByteArray(3)(1))
-  @Test def testAppendByteArray(): Unit = appendTest(TestUtils.generateRandomByteArray(5))
-  @Test def testAppendDouble(): Unit = appendTest(123.4)
-  @Test def testAppendFloat(): Unit = appendTest(123.4f)
-  @Test def testAppendInt(): Unit = appendTest(123)
-  @Test def testAppendLong(): Unit = appendTest(123L)
-  @Test def testAppendShort(): Unit = appendTest(Short.MaxValue)
-  @Test def testAppendString(): Unit = appendTest("hello")
-  @Test def testAppendStringWithEncoding(): Unit = appendTest("hellöäü", "UTF-8")
+  @Test def appendBuffer(): Unit = appendTest(Buffer("test"))
+  @Test def appendByte(): Unit = appendTest(TestUtils.generateRandomByteArray(3)(1))
+  @Test def appendByteArray(): Unit = appendTest(TestUtils.generateRandomByteArray(5))
+  @Test def appendDouble(): Unit = appendTest(123.4)
+  @Test def appendFloat(): Unit = appendTest(123.4f)
+  @Test def appendInt(): Unit = appendTest(123)
+  @Test def appendLong(): Unit = appendTest(123L)
+  @Test def appendShort(): Unit = appendTest(Short.MaxValue)
+  @Test def appendString(): Unit = appendTest("hello")
+  @Test def appendStringWithEncoding(): Unit = appendTest("hellöäü", "UTF-8")
+
+  @Test def appendBytesWithOffsetAndLen() {
+    val bytesLen = 100
+    val bytes = TestUtils.generateRandomByteArray(bytesLen)
+    val len = bytesLen - 2
+    val b = Buffer()
+    b.append(bytes, 1, len)
+    assertEquals(b.length(), len)
+    val copy  = new Array[Byte](len)
+    System.arraycopy(bytes, 1, copy, 0, len)
+    assertArrayEquals(copy, b.getBytes)
+    b.append(bytes, 1, len)
+    assertEquals(b.length(), 2 * len)
+  }
+
+  @Test def appendBufferWithOffsetAndLen() {
+    val bytesLen = 100
+    val bytes = TestUtils.generateRandomByteArray(bytesLen)
+    val src = Buffer(bytes)
+    val len = bytesLen - 2
+    val b = Buffer()
+    b.append(src, 1, len)
+    assertEquals(b.length(), len)
+    val copy = new Array[Byte](len)
+    System.arraycopy(bytes, 1, copy, 0, len)
+    assertArrayEquals(copy, b.getBytes)
+    b.append(src, 1, len)
+    assertEquals(b.length(), 2 * len)
+  }
+
+  @Test def setBytesWithOffsetAndLen() {
+    val bytesLen = 100
+    val bytes = TestUtils.generateRandomByteArray(bytesLen)
+    val len = bytesLen - 2
+    val b = Buffer()
+    b.setByte(0, '0'.asInstanceOf[Byte])
+    b.setBytes(1, bytes, 1, len)
+    assertEquals(b.length(), len + 1)
+    val copy = new Array[Byte](len)
+    System.arraycopy(bytes, 1, copy, 0, len)
+    assertArrayEquals(copy, b.getBytes(1, b.length()))
+    b.setBytes(b.length(), bytes, 1, len)
+    assertEquals(b.length(), 2 * len + 1)
+  }
+
+  @Test def setBufferWithOffsetAndLen() {
+    val bytesLen = 100
+    val bytes = TestUtils.generateRandomByteArray(bytesLen)
+    val src = Buffer(bytes)
+    val len = bytesLen - 2
+    val b = Buffer()
+    b.setByte(0, '0'.asInstanceOf[Byte])
+    b.setBuffer(1, src, 1, len)
+    assertEquals(b.length(), len + 1)
+    val copy: Array[Byte] = new Array[Byte](len)
+    System.arraycopy(bytes, 1, copy, 0, len)
+    assertArrayEquals(copy, b.getBytes(1, b.length()))
+    b.setBuffer(b.length(), src, 1, len)
+    assertEquals(b.length(), 2 * len + 1)
+  }
+
+  @Test(expected = classOf[IndexOutOfBoundsException])
+  def appendBytesWithNegativeOffset() {
+    val bytesLen = 100
+    val bytes = TestUtils.generateRandomByteArray(bytesLen)
+    val len = bytesLen - 2
+    val b = Buffer()
+    b.append(bytes, -1, len)
+  }
+
+  @Test(expected = classOf[IllegalArgumentException])
+  def appendBytesWithNegativeLen() {
+    val bytesLen = 100
+    val bytes = TestUtils.generateRandomByteArray(bytesLen)
+    val b = Buffer()
+    b.append(bytes, 1, -1)
+  }
+
+  @Test(expected = classOf[IndexOutOfBoundsException])
+  def setBytesWithNegativeOffset() {
+    val bytesLen = 100
+    val bytes = TestUtils.generateRandomByteArray(bytesLen)
+    val len = bytesLen - 2
+    val b = Buffer()
+    b.setByte(0, '0'.asInstanceOf[Byte])
+    b.setBytes(1, bytes, -1, len)
+  }
+
+  @Test(expected = classOf[IllegalArgumentException])
+  def setBytesWithNegativeLen() {
+    val bytesLen = 100
+    val bytes = TestUtils.generateRandomByteArray(bytesLen)
+    val b = Buffer()
+    b.setByte(0, '0'.asInstanceOf[Byte])
+    b.setBytes(1, bytes, 1, -1)
+  }
 
 }
