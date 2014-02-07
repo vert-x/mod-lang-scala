@@ -1,14 +1,13 @@
 package org.vertx.scala.tests.core.net
 
-import org.vertx.scala.testtools.TestVerticle
 import org.junit.Test
-import org.vertx.testtools.VertxAssert._
 import org.vertx.java.core.AsyncResult
-import org.vertx.scala.core.net.NetSocket
-import org.vertx.scala.core.net.NetClient
-import org.vertx.scala.core.net.NetServer
 import org.vertx.scala.core.buffer._
+import org.vertx.scala.core.net.NetServer
+import org.vertx.scala.core.net.NetSocket
 import org.vertx.scala.tests.util.TestUtils._
+import org.vertx.scala.testtools.TestVerticle
+import org.vertx.testtools.VertxAssert._
 
 class NetTest extends TestVerticle {
 
@@ -16,12 +15,12 @@ class NetTest extends TestVerticle {
 
   @Test
   def createNetServer() {
-    vertx.createNetServer.connectHandler(regularConnectHandler).listen(testPort, checkServer())
+    vertx.createNetServer().connectHandler(regularConnectHandler).listen(testPort, checkServer())
   }
 
   @Test
   def sslNetServer(): Unit = {
-    checkSslServerAndClient(false, regularConnectHandler, correctBodyHandler(testComplete))
+    checkSslServerAndClient(upgradeToSsl = false, regularConnectHandler, correctBodyHandler(testComplete))
   }
 
   @Test
@@ -44,40 +43,98 @@ class NetTest extends TestVerticle {
     })
   }
 
+  @Test def sendFile(): Unit = {
+    val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
+    val expectedLength = Buffer(content).length()
+    val received = Buffer()
+    vertx.createNetServer().connectHandler { socket =>
+      socket.sendFile(file.getAbsolutePath)
+    }.listen(testPort, { r =>
+      if (r.succeeded()) {
+        vertx.createNetClient().connect(testPort, { r =>
+          if (r.succeeded()) {
+            r.result().dataHandler({ buf =>
+              received.append(buf)
+              if (received.length() == expectedLength) {
+                assertEquals(content, received.toString())
+                file.delete()
+                testComplete()
+              }
+            })
+          } else {
+            fail("net client connect did not succeed: " + r.cause().getMessage)
+          }
+        })
+      } else {
+        fail("listening did not succeed: " + r.cause().getMessage)
+      }
+    })
+  }
+
+  @Test def sendFileWithHandler(): Unit = {
+    val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
+    val expectedLength = Buffer(content).length()
+    val received = Buffer()
+    vertx.createNetServer().connectHandler { socket =>
+      socket.sendFile(file.getAbsolutePath, { r =>
+        assertTrue(r.succeeded())
+        testComplete()
+      })
+    }.listen(testPort, { r =>
+      if (r.succeeded()) {
+        vertx.createNetClient().connect(testPort, { r =>
+          if (r.succeeded()) {
+            r.result().dataHandler({ buf =>
+              received.append(buf)
+              if (received.length() == expectedLength) {
+                assertEquals(content, received.toString())
+                file.delete()
+              }
+            })
+          } else {
+            fail("net client connect did not succeed: " + r.cause().getMessage)
+          }
+        })
+      } else {
+        fail("listening did not succeed: " + r.cause().getMessage)
+      }
+    })
+  }
+
   private def checkSslServerAndClient(upgradeToSsl: Boolean, serverConnectHandler: NetSocket => Unit, clientConnectHandler: AsyncResult[NetSocket] => Unit): Unit = {
-    val server = vertx.createNetServer.setSSL(!upgradeToSsl)
+    val server = vertx.createNetServer().setSSL(!upgradeToSsl)
 
     server.setKeyStorePath("./src/test/keystores/server-keystore.jks").setKeyStorePassword("wibble")
     server.setTrustStorePath("./src/test/keystores/server-truststore.jks").setTrustStorePassword("wibble")
 
     server.connectHandler(serverConnectHandler).listen(testPort, { ar: AsyncResult[NetServer] =>
       (if (ar.succeeded()) {
-        val c = vertx.createNetClient
+        val c = vertx.createNetClient()
         c.setSSL(!upgradeToSsl)
         c.setKeyStorePath("./src/test/keystores/client-keystore.jks").setKeyStorePassword("wibble")
         c.setTrustStorePath("./src/test/keystores/client-truststore.jks").setTrustStorePassword("wibble")
         c.connect(testPort, clientConnectHandler)
       } else {
-        fail("listening did not succeed: " + ar.cause().getMessage())
+        fail("listening did not succeed: " + ar.cause().getMessage)
       }): Unit
     })
   }
 
   @Test
   def invalidHost(): Unit = {
-    vertx.createNetServer.connectHandler({ r => }) listen (testPort, "iqwjdoqiwjdoiqwdiojwd", completeWithArFailed)
+    vertx.createNetServer().connectHandler({ r => }) listen (testPort, "iqwjdoqiwjdoiqwdiojwd", completeWithArFailed)
   }
 
   @Test
   def invalidPort(): Unit = {
-    vertx.createNetServer.connectHandler({ r => }).listen(1128371831, completeWithArFailed[NetServer])
+    vertx.createNetServer().connectHandler({ r => }).listen(1128371831, completeWithArFailed[NetServer])
   }
 
   private def checkServer() = { ar: AsyncResult[NetServer] =>
     (if (ar.succeeded()) {
-      vertx.createNetClient.connect(testPort, correctBodyHandler(testComplete))
+      vertx.createNetClient().connect(testPort, correctBodyHandler(testComplete))
     } else {
-      fail("listening did not succeed: " + ar.cause().getMessage())
+      fail("listening did not succeed: " + ar.cause().getMessage)
     }): Unit
   }
 
@@ -85,7 +142,7 @@ class NetTest extends TestVerticle {
     if (resp.succeeded()) {
       checks(resp.result())
     } else {
-      fail("listening did not succeed: " + resp.cause().getMessage())
+      fail("listening did not succeed: " + resp.cause().getMessage)
     }
   }
 

@@ -5,6 +5,7 @@ import org.vertx.testtools.VertxAssert._
 import org.vertx.scala.platform.Container
 import org.vertx.scala.core.buffer.Buffer
 import scala.annotation.tailrec
+import java.io.{FileOutputStream, OutputStreamWriter, BufferedWriter, File}
 
 /**
  * Port of some of the original TestUtils Helper methods.
@@ -63,6 +64,32 @@ object TestUtils {
       builder.append(generateChar())
     }
     builder.toString()
+  }
+
+  def generateRandomContentFile(filename: String, len: Int): (File, String) = {
+    val content = TestUtils.generateRandomUnicodeString(len)
+    val file = createFile(filename, content)
+    (file, content)
+  }
+
+  def generateFile(filename: String, content: String): (File, String) = {
+    val file = createFile(filename, content)
+    (file, content)
+  }
+
+  private def createFile(filename: String, content: String): File = {
+    val file = new File(System.getProperty("java.io.tmpdir"), filename)
+    if (file.exists())
+      file.delete()
+
+    val out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"))
+    try {
+      out.write(content)
+    } finally {
+      out.close()
+    }
+
+    file
   }
 
 }

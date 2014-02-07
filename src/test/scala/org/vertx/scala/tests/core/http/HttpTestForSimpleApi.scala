@@ -5,8 +5,7 @@ import org.vertx.scala.core.http.{ HttpClient, HttpClientResponse, HttpServer, H
 import org.vertx.scala.tests.util.TestUtils.completeWithArFailed
 import org.vertx.scala.testtools.TestVerticle
 import org.vertx.testtools.VertxAssert._
-import org.vertx.scala.tests.util.TestUtils
-import java.io.{BufferedWriter, FileOutputStream, OutputStreamWriter, File}
+import org.vertx.scala.tests.util.TestUtils._
 
 class HttpTestForSimpleApi extends TestVerticle {
   val testPort = 8844
@@ -83,8 +82,7 @@ class HttpTestForSimpleApi extends TestVerticle {
   @Test def httpPatchRequestMethod(): Unit = headAndBodyRequest("PATCH")
 
   @Test def sendFile(): Unit = {
-    val content = TestUtils.generateRandomUnicodeString(10000)
-    val file = setupFile("test-send-file.html", content)
+    val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
     checkServer(vertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath)) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(200, res.statusCode())
@@ -100,8 +98,7 @@ class HttpTestForSimpleApi extends TestVerticle {
   }
 
   @Test def sendFileWithHandler(): Unit = {
-    val content = TestUtils.generateRandomUnicodeString(10000)
-    val file = setupFile("test-send-file.html", content)
+    val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
     checkServer(vertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath, { res =>
       assertTrue(res.succeeded())
       testComplete()
@@ -132,8 +129,7 @@ class HttpTestForSimpleApi extends TestVerticle {
   }
 
   @Test def sendFileNotFoundWith404Page(): Unit = {
-    val content = "<html><body>This is my 404 page</body></html>"
-    val file = setupFile("my-404-page.html", content)
+    val (file, content) = generateFile("my-404-page.html", "<html><body>This is my 404 page</body></html>")
     checkServer(vertx.createHttpServer(),
         _.response().sendFile("doesnotexist.html", file.getAbsolutePath)
     ) { c =>
@@ -149,8 +145,7 @@ class HttpTestForSimpleApi extends TestVerticle {
   }
 
   @Test def sendFileNotFoundWith404PageAndHandler(): Unit = {
-    val content = "<html><body>This is my 404 page</body></html>"
-    val file = setupFile("my-404-page.html", content)
+    val (file, content) = generateFile("my-404-page.html", "<html><body>This is my 404 page</body></html>")
     checkServer(vertx.createHttpServer(),
       _.response().sendFile("doesnotexist.html", file.getAbsolutePath, { res =>
         assertTrue(res.succeeded())
@@ -168,8 +163,7 @@ class HttpTestForSimpleApi extends TestVerticle {
   }
 
   @Test def sendFileOverrideHeaders(): Unit = {
-    val content = TestUtils.generateRandomUnicodeString(10000)
-    val file = setupFile("test-send-file.html", content)
+    val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
     checkServer(vertx.createHttpServer(),
         _.response().putHeader("Content-Type", "wibble").sendFile(file.getAbsolutePath)
     ) { c =>
@@ -184,21 +178,6 @@ class HttpTestForSimpleApi extends TestVerticle {
         }
       })
     }
-  }
-
-  private def setupFile(fileName: String, content: String): File = {
-    val file = new File(System.getProperty("java.io.tmpdir"), fileName)
-    if (file.exists())
-      file.delete()
-
-    val out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"))
-    try {
-      out.write(content)
-    } finally {
-      out.close()
-    }
-
-    file
   }
 
   private def simpleRequest(fn: (HttpClient, () => Unit) => HttpClientResponse => Unit)(name: String): Unit = {
