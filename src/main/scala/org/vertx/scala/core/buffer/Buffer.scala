@@ -35,7 +35,21 @@ final class Buffer private[scala] (val asJava: JBuffer) extends Self {
    * @param value The value to append to the Buffer.
    * @return A reference to `this` so multiple operations can be appended together.
    */
-  def append[T: BufferType](value: T): Buffer = wrap(implicitly[BufferType[T]].appendToBuffer(asJava, value))
+  def append[T: BufferType](value: T): Buffer =
+    wrap(implicitly[BufferType[T]].appendToBuffer(asJava, value))
+
+  /**
+   * Appends the specified `T` starting at the `offset` using `len` to the end of this Buffer. The buffer will
+   * expand as necessary to accommodate any bytes written.<p>
+   * Returns a reference to `this` so multiple operations can be appended together.
+   *
+   * @throws IndexOutOfBoundsException
+   *         if the specified `offset` is less than `0`,
+   *         if `offset` + `len` is greater than the buffer's capacity
+   * @throws IllegalArgumentException if `len` is less than `0`
+   */
+  def append[T: BufferSeekType](value: T, offset: Int, len: Int): Buffer =
+    wrap(implicitly[BufferSeekType[T]].appendToBuffer(asJava, value, offset, len))
 
   /**
    * Returns a `String` representation of the Buffer assuming it contains a
@@ -171,6 +185,14 @@ final class Buffer private[scala] (val asJava: JBuffer) extends Self {
   def setBuffer(pos: Int, b: Buffer): Buffer = wrap(asJava.setBuffer(pos, b.asJava))
 
   /**
+   * Sets the bytes at position `pos` in the Buffer to the bytes represented by the `Buffer b`
+   * on the given `offset` and `len`.<p>
+   * The buffer will expand as necessary to accommodate any value written.
+   */
+  def setBuffer(pos: Int, b: Buffer, offset: Int, len: Int): Buffer =
+    wrap(asJava.setBuffer(pos, b.asJava, offset, len))
+
+  /**
    * Sets the bytes at position `pos` in the Buffer to the bytes represented by the `ByteBuffer b`.<p>
    * The buffer will expand as necessary to accommodate any value written.
    */
@@ -181,6 +203,20 @@ final class Buffer private[scala] (val asJava: JBuffer) extends Self {
    * The buffer will expand as necessary to accommodate any value written.
    */
   def setBytes(pos: Int, b: Array[Byte]): Buffer = wrap(asJava.setBytes(pos, b))
+
+  /**
+   * Sets the given number of bytes at position `pos` in the Buffer to
+   * the bytes represented by the `byte[] b`.<p></p>
+   * The buffer will expand as necessary to accommodate any value written.
+   *
+   * @throws IndexOutOfBoundsException
+   *         if the specified `offset` is less than `0`,
+   *         if `offset` + `len` is greater than the buffer's capacity, or
+   *         if `pos` + `length` is greater than `b.length`
+   * @throws IllegalArgumentException if `len` is less than `0`
+   */
+  def setBytes(pos: Int, b: Array[Byte], offset: Int, len: Int): Buffer =
+    wrap(asJava.setBytes(pos, b, offset, len))
 
   /**
    * Sets the bytes at position `pos` in the Buffer to the value of `str` encoded in UTF-8.<p>
