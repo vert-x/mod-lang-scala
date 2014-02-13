@@ -15,17 +15,18 @@
  */
 
 package org.vertx.scala.platform.impl
+
+import org.vertx.java.core.Future
 import org.vertx.java.core.{ Vertx => JVertx }
 import org.vertx.java.platform.{ Container => JContainer }
 import org.vertx.java.platform.{ Verticle => JVerticle }
-import org.vertx.java.core.Future
 import org.vertx.scala.core.Vertx
-import org.vertx.scala.platform.Verticle
-import org.vertx.scala.platform.Container
-import scala.util.Success
-import scala.util.Failure
 import org.vertx.scala.core.VertxExecutionContext
+import org.vertx.scala.platform.Container
+import org.vertx.scala.platform.Verticle
 import scala.concurrent.Promise
+import scala.util.Failure
+import scala.util.Success
 
 /**
  * @author swilliams
@@ -40,7 +41,9 @@ object ScalaVerticle {
   }
 }
 
-final private[platform] class ScalaVerticle(delegate: Verticle) extends JVerticle with VertxExecutionContext {
+final private[platform] class ScalaVerticle(delegate: Verticle) extends JVerticle {
+
+  implicit val executionContext = VertxExecutionContext.fromVertxAccess(delegate)
 
   override def setContainer(jcontainer: JContainer) = {
     delegate.setContainer(new Container(jcontainer))

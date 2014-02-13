@@ -225,6 +225,7 @@ class HttpTestForSimpleApi extends TestVerticle {
       localServer.listen(testPort, { res =>
         if (res.succeeded()) {
           val client = vertx.createHttpClient().setPort(testPort).setTryUseCompression(compression)
+          assertThread()
           fn(client)
         } else {
           fail("listening did not succeed: " + res.cause().getMessage)

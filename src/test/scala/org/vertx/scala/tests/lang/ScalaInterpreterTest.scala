@@ -50,9 +50,10 @@ class ScalaInterpreterTest extends TestVerticle {
 
   private def assertHttpClientGetNow(expected: String) {
     val client = vertx.createHttpClient().setPort(8080)
-    client.getNow("/", {
-      h => h.bodyHandler {
-        data => {
+    client.getNow("/", { h =>
+        assertThread()
+        h.bodyHandler { data => {
+          assertThread()
           assertEquals(expected, data.toString())
           testComplete()
         }

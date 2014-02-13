@@ -4,10 +4,14 @@ import java.lang.reflect.InvocationTargetException
 import org.junit.runner.RunWith
 import org.vertx.scala.platform.Verticle
 import org.vertx.testtools.VertxAssert
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
+import org.vertx.java.core.impl.{WorkerContext, DefaultContext, VertxInternal}
+import org.vertx.scala.core.VertxExecutionContext
 
 @RunWith(classOf[ScalaClassRunner])
 abstract class TestVerticle extends Verticle {
+
+  implicit val executionContext = VertxExecutionContext.fromVertxAccess(this)
 
   override final def start() {
     initialize()
@@ -30,7 +34,21 @@ abstract class TestVerticle extends Verticle {
    */
   def asyncBefore(): Future[Unit] = Future.successful()
 
-  protected final def initialize(): Unit = VertxAssert.initialize(vertx.asJava)
+  /**
+   * Expected thread
+   */
+  var th: Thread = _
+
+  /**
+   * Vertx internal context
+   */
+  var context: DefaultContext = _
+
+  protected final def initialize(): Unit = {
+    VertxAssert.initialize(vertx.asJava)
+    th = Thread.currentThread
+    context = vertx.asJava.asInstanceOf[VertxInternal].getContext
+  }
 
   protected final def startTests() {
     val methodName = container.config().getString("methodName")
@@ -45,6 +63,16 @@ abstract class TestVerticle extends Verticle {
         // Problem with invoking
         VertxAssert.handleThrowable(t)
     }
+  }
+
+  protected final def assertThread() {
+    if (!context.isInstanceOf[WorkerContext] && th != Thread.currentThread)
+      throw new IllegalStateException(
+        s"Expected: $th Actual: ${Thread.currentThread}")
+
+    if (context != vertx.asJava.asInstanceOf[VertxInternal].getContext)
+      throw new IllegalStateException(
+        s"Wrong context: Expected: $context Actual: ${vertx.asInstanceOf[VertxInternal].getContext}")
   }
 
 }

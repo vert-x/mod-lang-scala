@@ -28,6 +28,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.resolveA("vertx.io", { ar: AsyncResult[List[Inet4Address]] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: List[Inet4Address] = ar.result
 
@@ -48,6 +49,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.resolveAAAA("vertx.io", { ar: AsyncResult[List[Inet6Address]] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: List[Inet6Address] = ar.result
 
@@ -71,6 +73,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.resolveMX("vertx.io", { ar: AsyncResult[List[MxRecord]] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: List[MxRecord] = ar.result()
         val record: MxRecord = result(0)
@@ -93,6 +96,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.resolveTXT("vertx.io", { ar: AsyncResult[List[String]] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: List[String] = ar.result()
         assertTrue(!result.isEmpty)
@@ -113,6 +117,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.resolveNS("vertx.io", { ar: AsyncResult[List[String]] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: List[String] = ar.result()
         assertTrue(!result.isEmpty)
@@ -133,6 +138,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.resolveCNAME("vertx.io", { ar: AsyncResult[List[String]] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: List[String] = ar.result()
         val record: String = result(0)
@@ -155,6 +161,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.resolvePTR("10.0.0.1.in-addr.arpa", { ar: AsyncResult[String] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: String = ar.result()
         assertTrue(!result.isEmpty)
@@ -177,6 +184,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.resolveSRV("vertx.io", { ar: AsyncResult[List[SrvRecord]] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: List[SrvRecord] = ar.result()
         val record: SrvRecord = result(0)
@@ -201,6 +209,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.lookup4("vertx.io", { ar: AsyncResult[Inet4Address] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: InetAddress = ar.result()
         assertEquals(ip, result.getHostAddress())
@@ -219,6 +228,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.lookup6("vertx.io", { ar: AsyncResult[Inet6Address] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: Inet6Address = ar.result()
         (0 to IP6_BYTES.length - 1) map (i => assertEquals(IP6_BYTES(i),result.getAddress()(i)))
@@ -237,6 +247,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.lookup("vertx.io", { ar: AsyncResult[InetAddress] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: InetAddress = ar.result()
         assertEquals(ip, result.getHostAddress())
@@ -254,6 +265,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.lookup("gfegjegjf.sg1", { ar: AsyncResult[InetAddress] =>
+        assertThread()
         val cause: DnsException = ar.cause().asInstanceOf[DnsException]
         assertEquals(cause.code, DnsResponseCode.fromJava(JDnsResponseCode.NXDOMAIN))
         server.stop()
@@ -269,6 +281,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.reverseLookup("10.0.0.1", { ar: AsyncResult[InetAddress] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: InetAddress = ar.result()
         assertTrue(result.isInstanceOf[Inet4Address])
@@ -290,6 +303,7 @@ class DnsTest extends TestVerticle {
     val dns: DnsClient = prepareDns(server)
 
     dns.reverseLookup("::1", { ar: AsyncResult[InetAddress] =>
+      assertThread()
       if (ar.succeeded()) {
         val result: InetAddress = ar.result()
         assertTrue(result.isInstanceOf[Inet6Address])

@@ -40,6 +40,7 @@ class DatagramTest extends TestVerticle {
     for (p <- peer2) yield {
       p.exceptionHandler(t => fail(s"Unexpected throwable $t"))
       p.listen("127.0.0.1", 1234, { h =>
+        assertThread()
         assertTrue(h.succeeded())
         val buffer = generateRandomBuffer(128)
 
@@ -59,6 +60,7 @@ class DatagramTest extends TestVerticle {
     peer2 = Some(vertx.createDatagramSocket())
     for (p <- peer2) yield {
       p.listen("127.0.0.1", 1234, { h =>
+        assertThread()
         assertTrue(h.succeeded())
         testComplete()
       })
@@ -70,6 +72,7 @@ class DatagramTest extends TestVerticle {
     for (p <- peer2) yield {
       // Due to overloading, type information needs to be provided
       p.listen(1234, { h: AsyncResult[DatagramSocket] =>
+        assertThread()
         assertTrue(h.succeeded())
         testComplete()
       })
@@ -80,6 +83,7 @@ class DatagramTest extends TestVerticle {
     peer2 = Some(vertx.createDatagramSocket())
     for (p <- peer2) yield {
       p.listen(new InetSocketAddress("127.0.0.1", 1234), { h: AsyncResult[DatagramSocket] =>
+        assertThread()
         assertTrue(h.succeeded())
         testComplete()
       })
@@ -94,8 +98,10 @@ class DatagramTest extends TestVerticle {
       p2 <- peer2
     } yield {
       p2.listen(1234, { h: AsyncResult[DatagramSocket] =>
+        assertThread()
         assertTrue(h.succeeded())
         p1.listen(1234, { h: AsyncResult[DatagramSocket] =>
+          assertThread()
           assertTrue(h.failed())
           testComplete()
         })
@@ -115,9 +121,11 @@ class DatagramTest extends TestVerticle {
       p2.exceptionHandler(h => fail("Failed"))
 
       p2.listen("127.0.0.1", 1234, { h =>
+        assertThread()
         assertTrue(h.succeeded())
         val buffer = generateRandomBuffer(128)
         p2.dataHandler { h =>
+          assertThread()
           assertEquals(new InetSocketAddress("127.0.0.1", 1235), h.sender())
           assertEquals(buffer, h.data())
           p2.send(h.data(), "127.0.0.1", 1235, { h: AsyncResult[DatagramSocket] =>
@@ -126,7 +134,9 @@ class DatagramTest extends TestVerticle {
         }
 
         p1.listen("127.0.0.1", 1235, { h =>
+          assertThread()
           p1.dataHandler { h =>
+            assertThread()
             assertEquals(buffer, h.data())
             assertEquals(new InetSocketAddress("127.0.0.1", 1234), h.sender())
             testComplete()
@@ -176,13 +186,16 @@ class DatagramTest extends TestVerticle {
       p2.setBroadcast(broadcast = true)
 
       p2.listen(new InetSocketAddress(1234), { h: AsyncResult[DatagramSocket] =>
+        assertThread()
         assertTrue(h.succeeded())
         val buffer = generateRandomBuffer(128)
         p2.dataHandler { h =>
+          assertThread()
           assertEquals(buffer, h.data())
           testComplete()
         }
         p1.send(buffer, "255.255.255.255", 1234, { h: AsyncResult[DatagramSocket] =>
+          assertThread()
           assertTrue(h.succeeded())
         })
         ()
@@ -194,6 +207,7 @@ class DatagramTest extends TestVerticle {
     peer1 = Some(vertx.createDatagramSocket())
     for (p <- peer1) yield {
       p.send("test", "255.255.255.255", 1234, { h: AsyncResult[DatagramSocket] =>
+        assertThread()
         assertTrue(h.failed())
         testComplete()
       })
@@ -288,23 +302,29 @@ class DatagramTest extends TestVerticle {
     } yield {
       p2.dataHandler(h => assertEquals(buffer, h.data()))
       p2.listen("127.0.0.1", 1234, { h =>
+        assertThread()
         assertTrue(h.succeeded())
         p2.listenMulticastGroup(groupAddress, { h =>
+          assertThread()
           assertTrue(h.succeeded())
           p1.send(buffer, groupAddress, 1234, { h: AsyncResult[DatagramSocket] =>
+            assertThread()
             assertTrue(h.succeeded())
             // leave group
             p2.unlistenMulticastGroup(groupAddress, { h =>
+              assertThread()
               assertTrue(h.succeeded())
               val received = Promise[Boolean]()
               val future = received.future
               p2.dataHandler { h =>
-              // Should not receive any more event as it left the group
+                assertThread()
+                // Should not receive any more event as it left the group
                 received.complete(Success(true))
               }
               p1.send(buffer, groupAddress, 1234, { h: AsyncResult[DatagramSocket] =>
-              // schedule a timer which will check in 1 second if we received
-              // a message after the group was left before
+                assertThread()
+                // schedule a timer which will check in 1 second if we received
+                // a message after the group was left before
                 vertx.setTimer(1000, { h =>
                   if (!future.isCompleted) {
                     // Should not have completed

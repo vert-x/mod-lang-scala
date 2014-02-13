@@ -182,6 +182,7 @@ class FileTest extends TestVerticle {
   } yield assertEquals("Hello-World", rf.toString()))
 
   private def resultInPromise[T](p: Promise[T]): AsyncResult[T] => Unit = { ar: AsyncResult[T] =>
+    assertThread()
     if (ar.succeeded()) {
       p.success(ar.result())
     } else {

@@ -18,11 +18,13 @@ class EventBusTimeoutsTest extends TestVerticle {
   @Test
   def replyWithinTimeout(): Unit = {
     vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      assertThread()
       vertx.setTimer(100, timer => msg.reply("hello " + msg.body))
     })
 
     vertx.eventBus.sendWithTimeout("hello", "reply-within-timeout", 500, {
       case Success(reply) =>
+        assertThread()
         assertEquals("hello reply-within-timeout", reply.body)
         testComplete
       case Failure(ex) => fail("Should receive message within time, but got exception: " + ex)
@@ -37,7 +39,9 @@ class EventBusTimeoutsTest extends TestVerticle {
 
     vertx.eventBus.sendWithTimeout("hello", "no-reply-within-timeout", 100, {
       case Success(result) => fail("Should not receive a message within time, but got one: " + result.body)
-      case Failure(ex) => testComplete
+      case Failure(ex) =>
+        assertThread()
+        testComplete
     }: Try[Message[String]] => Unit)
   }
 
@@ -45,19 +49,23 @@ class EventBusTimeoutsTest extends TestVerticle {
   def noReplyWithinTimeoutNoRegisteredHandler(): Unit = {
     vertx.eventBus.sendWithTimeout("hello", "missing-handler", 100, {
       case Success(result) => fail("Should not receive a message within time, but got one: " + result.body)
-      case Failure(ex) => testComplete
+      case Failure(ex) =>
+        assertThread()
+        testComplete
     }: Try[Message[String]] => Unit)
   }
 
   @Test
   def lateReplyAfterTimeout(): Unit = {
     vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      assertThread()
       vertx.setTimer(300, timer => msg.reply("hello " + msg.body))
     })
 
     vertx.eventBus.sendWithTimeout("hello", "late-reply-within-timeout", 100, {
       case Success(result) => fail("Should not receive a message within time, but got one: " + result.body)
       case Failure(ex) =>
+        assertThread()
         assertThat("exception should be of kind ReplyException", ex, instanceOf(classOf[ReplyException]))
         assertEquals("exception should be a TIMEOUT", "TIMEOUT", ex.asInstanceOf[ReplyException].failureType().name())
         // Wait to complete test, so if a message still comes, it shouldn't be received here anymore
@@ -68,8 +76,10 @@ class EventBusTimeoutsTest extends TestVerticle {
   @Test
   def replyReplyWithinTimeout(): Unit = {
     vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      assertThread()
       msg.replyWithTimeout("hello " + msg.body, 500, {
         case Success(reply) =>
+          assertThread()
           assertEquals("got it", reply.body)
           testComplete
         case Failure(ex) => fail("Should get a reply on reply in time, but got " + ex.getMessage)
@@ -78,6 +88,7 @@ class EventBusTimeoutsTest extends TestVerticle {
 
     vertx.eventBus.sendWithTimeout("hello", "reply-within-timeout", 250, {
       case Success(reply) =>
+        assertThread()
         assertEquals("hello reply-within-timeout", reply.body)
         reply.reply("got it")
       case Failure(ex) =>
@@ -88,9 +99,12 @@ class EventBusTimeoutsTest extends TestVerticle {
   @Test
   def replyNoReplyWithinTimeout(): Unit = {
     vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      assertThread()
       msg.replyWithTimeout("hello " + msg.body, 100, {
         case Success(reply) => fail("Should not get a reply in time, but got " + reply.body)
-        case Failure(ex) => testComplete
+        case Failure(ex) =>
+          assertThread()
+          testComplete
       }: Try[Message[String]] => Unit)
     })
 
@@ -108,6 +122,7 @@ class EventBusTimeoutsTest extends TestVerticle {
       msg.replyWithTimeout("hello " + msg.body, 200, {
         case Success(reply) => fail("Should not get a reply in time, but got " + reply.body)
         case Failure(ex) =>
+          assertThread()
           assertThat("exception should be of kind ReplyException", ex, instanceOf(classOf[ReplyException]))
           assertEquals("exception should be a NO_HANDLERS", "NO_HANDLERS", ex.asInstanceOf[ReplyException].failureType().name())
           testComplete
@@ -125,6 +140,7 @@ class EventBusTimeoutsTest extends TestVerticle {
       msg.replyWithTimeout("late-reply", 100, {
         case Success(result) => fail("Should not receive a message within time, but got one: " + result.body)
         case Failure(ex) =>
+          assertThread()
           assertThat("exception should be of kind ReplyException", ex, instanceOf(classOf[ReplyException]))
           assertEquals("exception should be a TIMEOUT", "TIMEOUT", ex.asInstanceOf[ReplyException].failureType().name())
           // Wait to complete test, so if a message still comes, it shouldn't be received here anymore
@@ -149,6 +165,7 @@ class EventBusTimeoutsTest extends TestVerticle {
       if (ar.succeeded()) {
         fail("Should not succeed!")
       } else {
+        assertThread()
         assertThat("exception should be of kind ReplyException", ar.cause(), instanceOf(classOf[ReplyException]))
         val ex = ar.cause().asInstanceOf[ReplyException]
         assertEquals("Should get 123 as failureCode", 123, ex.failureCode())
