@@ -33,6 +33,10 @@ package object eventbus {
     case sth: JsonArray => JsonArrayData(sth)
     case sth: JsonObject => JsonObjectData(sth)
     case sth: Buffer => BufferData(sth)
+    // BufferData passes down the java buffer version
+    // The opposite happens here, convert the java version to the scala Buffer
+    // avoiding exposure of Java Buffer version to the client
+    case sth: JBuffer => BufferData(Buffer(sth))
     case sth: Array[Byte] => ByteArrayData(sth)
     case sth: Boolean => BooleanData(sth)
     case sth: Integer => IntegerData(sth)
@@ -88,16 +92,16 @@ package object eventbus {
 
   implicit class BufferData(val data: Buffer) extends MessageData {
     type InternalType = Buffer
-    def send(eb: JEventBus, address: String) = eb.send(address, data)
+    def send(eb: JEventBus, address: String) = eb.send(address, data.asJava)
     def send[T](eb: JEventBus, address: String, handler: Handler[JMessage[T]]) =
       eb.send(address, data.asJava, handler)
     def sendWithTimeout[T](eb: JEventBus, address: String, handler: Handler[AsyncResult[JMessage[T]]], timeout: Long) =
-      eb.sendWithTimeout(address, data, timeout, handler)
-    def publish(eb: JEventBus, address: String) = eb.publish(address, data)
-    def reply[A](msg: JMessage[A]) = msg.reply(data)
-    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data, handler)
+      eb.sendWithTimeout(address, data.asJava, timeout, handler)
+    def publish(eb: JEventBus, address: String) = eb.publish(address, data.asJava)
+    def reply[A](msg: JMessage[A]) = msg.reply(data.asJava)
+    def reply[A, B](msg: JMessage[A], handler: Handler[JMessage[B]]) = msg.reply(data.asJava, handler)
     def replyWithTimeout[A, B](msg: JMessage[A], timeout: Long, handler: Handler[AsyncResult[JMessage[B]]]) =
-      msg.replyWithTimeout(data, timeout, handler)
+      msg.replyWithTimeout(data.asJava, timeout, handler)
   }
 
   implicit class JBufferData(val data: JBuffer) extends JMessageData {
