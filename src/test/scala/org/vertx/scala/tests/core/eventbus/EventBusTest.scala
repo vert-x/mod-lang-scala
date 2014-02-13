@@ -29,6 +29,7 @@ class EventBusTest extends TestVerticle {
   @Test
   def registerHandler(): Unit = {
     vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      assertThread()
       assertEquals("hello", msg.address())
       testComplete
     })
@@ -39,10 +40,12 @@ class EventBusTest extends TestVerticle {
   @Test
   def replyBack(): Unit = {
     vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      assertThread()
       msg.reply("hello " + msg.body)
     })
 
     vertx.eventBus.send("hello", "world", { reply: Message[String] =>
+      assertThread()
       assertEquals("hello world", reply.body)
       testComplete
     })
@@ -51,13 +54,16 @@ class EventBusTest extends TestVerticle {
   @Test
   def registerMultipleHandlers(): Unit = {
     vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      assertThread()
       msg.reply("hello " + msg.body)
     })
     vertx.eventBus.registerHandler("goodbye", { msg: Message[String] =>
+      assertThread()
       msg.reply("goodbye " + msg.body)
     })
 
     vertx.eventBus.send("hello", "world", { reply: Message[String] =>
+      assertThread()
       assertEquals("hello world", reply.body)
       vertx.eventBus.send("goodbye", "abc", { reply: Message[String] =>
         assertEquals("goodbye abc", reply.body)
@@ -70,12 +76,14 @@ class EventBusTest extends TestVerticle {
   def publishing(): Unit = {
     val waitingFor = new AtomicInteger(2)
     vertx.eventBus.registerHandler("listeners", { msg: Message[String] =>
+      assertThread()
       assertEquals("yo!", msg.body)
       if (waitingFor.decrementAndGet == 0) {
         testComplete
       }
     })
     vertx.eventBus.registerHandler("listeners", { msg: Message[String] =>
+      assertThread()
       assertEquals("yo!", msg.body)
       if (waitingFor.decrementAndGet == 0) {
         testComplete
@@ -89,10 +97,12 @@ class EventBusTest extends TestVerticle {
   def onlyOneReceiverForSend(): Unit = {
     val waitingFor = new AtomicInteger(0)
     vertx.eventBus.registerHandler("listeners", { msg: Message[String] =>
+      assertThread()
       assertEquals("yo!", msg.body)
       waitingFor.incrementAndGet()
     })
     vertx.eventBus.registerHandler("listeners", { msg: Message[String] =>
+      assertThread()
       assertEquals("yo!", msg.body)
       waitingFor.incrementAndGet()
     })
@@ -100,6 +110,7 @@ class EventBusTest extends TestVerticle {
     vertx.eventBus.send("listeners", "yo!")
 
     vertx.setTimer(500, { timerId =>
+      assertThread()
       assertEquals(1, waitingFor.get())
       testComplete()
     })
@@ -108,6 +119,7 @@ class EventBusTest extends TestVerticle {
   @Test
   def replyBackTwice(): Unit = {
     vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      assertThread()
       val who = msg.body
       msg.reply("hello " + who, { followUp: Message[String] =>
         assertEquals("me again!", followUp.body)
@@ -116,6 +128,7 @@ class EventBusTest extends TestVerticle {
     })
 
     vertx.eventBus.send("hello", "world", { reply: Message[String] =>
+      assertThread()
       assertEquals("hello world", reply.body)
       reply.reply("me again!", { reply2: Message[String] =>
         assertEquals("hello again, world", reply2.body)
@@ -127,6 +140,7 @@ class EventBusTest extends TestVerticle {
   @Test
   def replyBackWithMultipleClients(): Unit = {
     vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      assertThread()
       val who = msg.body
       msg.reply("hello " + who, { followUp: Message[String] =>
         assertEquals("me again!", followUp.body)
@@ -135,12 +149,16 @@ class EventBusTest extends TestVerticle {
     })
 
     vertx.eventBus.send("hello", "world", { reply: Message[String] =>
+      assertThread()
       assertEquals("hello world", reply.body)
       vertx.eventBus.send("hello", "other", { otherReply: Message[String] =>
+        assertThread()
         assertEquals("hello other", otherReply.body)
         otherReply.reply("me again!", { otherReply2: Message[String] =>
+          assertThread()
           assertEquals("hello again, other", otherReply2.body)
           reply.reply("me again!", { reply2: Message[String] =>
+            assertThread()
             assertEquals("hello again, world", reply2.body)
             testComplete
           })
@@ -154,12 +172,14 @@ class EventBusTest extends TestVerticle {
     vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
       val who = msg.body
       msg.reply(who.hashCode(), { followUp: Message[Integer] =>
+        assertThread()
         assertEquals(42, followUp.body)
         followUp.reply(Json.obj("message" -> ("hello again, " + who), "someBool" -> true))
       })
     })
 
     vertx.eventBus.send("hello", "world", { reply: Message[String] =>
+      assertThread()
       assertEquals("world".hashCode(), reply.body)
       reply.reply(42, { reply2: Message[JsonObject] =>
         assertEquals(Json.obj("message" -> "hello again, world", "someBool" -> true), reply2.body)
@@ -174,7 +194,9 @@ class EventBusTest extends TestVerticle {
 
     def unregister() {
       vertx.setTimer(200, { timerId =>
+        assertThread()
         rh.unregister({ ar =>
+          assertThread()
           if (ar.succeeded()) {
             vertx.eventBus.sendWithTimeout("hello", "test", 500, { ar2: AsyncResult[_] =>
               if (ar2.succeeded()) {
@@ -191,6 +213,7 @@ class EventBusTest extends TestVerticle {
     }
 
     rh = vertx.eventBus.registerHandler("hello", { msg: Message[String] =>
+      assertThread()
       fail("should not get here!")
     }, { ar =>
       if (ar.succeeded()) {

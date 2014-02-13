@@ -16,28 +16,37 @@
 package org.vertx.scala.core
 
 import scala.concurrent.ExecutionContext
-import org.vertx.java.core.logging.Logger
+import org.vertx.scala.core.logging.Logger
 
 /**
  * Vert.x Scala execution context
  *
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
+ * @author Galder Zamarreño
  */
-trait VertxExecutionContext extends ExecutionContext {
-  type HasLogger = { def logger: Logger }
-  def execute(runnable: Runnable): Unit = {
-    runnable.run()
-  }
-  def reportFailure(t: Throwable): Unit = {
-    this match {
-      case x: HasLogger =>
-        import scala.language.reflectiveCalls
-        x.logger.error("Error executing Future in VertxExecutionContext", t)
-      case _ => t.printStackTrace()
-    }
+object VertxExecutionContext {
+
+  /**
+   * Vert.x execution context for use in verticles extending [[VertxAccess]]
+   * trait. Scala verticles do extend this trait to facilitate access to
+   * internal components.
+   */
+  def fromVertxAccess(vertxAccess: VertxAccess): ExecutionContext =
+    new VertxExecutionContextImpl(vertxAccess.vertx, vertxAccess.logger)
+
+  /**
+   * Vert.x execution context for situations where verticles are written in
+   * other languages except Scala, where there's no access to [[VertxAccess]],
+   * but access to [[Logger]] and [[Vertx]] class instances are available.
+   */
+  def fromVertx(vertx: => Vertx, logger: => Logger): ExecutionContext =
+    new VertxExecutionContextImpl(vertx, logger)
+
+  private final class VertxExecutionContextImpl(vertx: => Vertx, logger: => Logger) extends ExecutionContext {
+    override def reportFailure(t: Throwable): Unit =
+      logger.error("Error executing Future in VertxExecutionContext", t)
+    override def execute(runnable: Runnable): Unit =
+      vertx.runOnContext(runnable.run())
   }
 
-  implicit val executionContext = VertxExecutionContext
 }
-
-object VertxExecutionContext extends VertxExecutionContext

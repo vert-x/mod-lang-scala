@@ -26,14 +26,17 @@ class PumpTest extends TestVerticle {
   @Test
   def pumpingHttp(): Unit = {
     vertx.createHttpServer.requestHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
+      assertThread()
       val chunk = Buffer("hello pump")
       val req = c.post("/", { resp =>
         assertEquals(200, resp.statusCode)
         val buffer = Buffer()
         resp.dataHandler { buff =>
+          assertThread()
           buffer.append(buff)
         }
         resp.endHandler {
+          assertThread()
           assertEquals(chunk.length(), buffer.length())
           assertEquals(chunk, buffer)
           testComplete()
@@ -49,6 +52,7 @@ class PumpTest extends TestVerticle {
   def pumpingFile(): Unit = withPumpFiles { (filename, oldFile, newFile) =>
 
     oldFile.endHandler({
+      assertThread()
       assertEquals(vertx.fileSystem.propsSync(filename).size, vertx.fileSystem.propsSync(filename + ".copy").size)
       vertx.fileSystem.deleteSync(filename + ".copy")
       testComplete
@@ -69,6 +73,7 @@ class PumpTest extends TestVerticle {
     }
 
     oldFile.endHandler({
+      assertThread()
       val filesizeNew = vertx.fileSystem.propsSync(filename + ".copy").size
       val oldContents = vertx.fileSystem.readFileSync(filename)
       val newContents = vertx.fileSystem.readFileSync(filename + ".copy")
@@ -87,9 +92,11 @@ class PumpTest extends TestVerticle {
     }
     vertx.fileSystem.createFileSync(file + ".copy")
     vertx.fileSystem.open(file, { ar1: AsyncResult[AsyncFile] =>
+      assertThread()
       assertTrue("Should be able to open " + file, ar1.succeeded())
       val oldFile = ar1.result()
       vertx.fileSystem.open(file + ".copy", { ar2: AsyncResult[AsyncFile] =>
+        assertThread()
         assertTrue("Should be able to open " + file + ".copy", ar2.succeeded())
         val newFile = ar2.result()
         fn(file, oldFile, newFile)
@@ -104,6 +111,7 @@ class PumpTest extends TestVerticle {
   }
 
   private def checkServer(clientFn: HttpClient => Unit) = { ar: AsyncResult[HttpServer] =>
+    assertThread()
     if (ar.succeeded()) {
       val httpClient = vertx.createHttpClient.setPort(testPort)
       clientFn(httpClient)
@@ -114,6 +122,7 @@ class PumpTest extends TestVerticle {
 
   private def correctHandler(fn: () => Unit) = { resp: HttpClientResponse =>
     resp.bodyHandler({ buf =>
+      assertThread()
       assertEquals(html, buf.toString)
       fn()
     }): Unit

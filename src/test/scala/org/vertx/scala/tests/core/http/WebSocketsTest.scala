@@ -26,6 +26,7 @@ class WebSocketsTest extends TestVerticle {
 
   @Test def websocketServer(): Unit = {
     vertx.createHttpServer.websocketHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
+      assertThread()
       c.connectWebsocket("/", correctBodyHandler(testComplete))
     }))
   }
@@ -37,6 +38,7 @@ class WebSocketsTest extends TestVerticle {
     server.setTrustStorePath("./src/test/keystores/server-truststore.jks").setTrustStorePassword("wibble")
 
     server.websocketHandler(regularRequestHandler).listen(testPort, checkServer({ c =>
+      assertThread()
       c.setSSL(true)
       c.setKeyStorePath("./src/test/keystores/client-keystore.jks").setKeyStorePassword("wibble")
       c.setTrustStorePath("./src/test/keystores/client-truststore.jks").setTrustStorePassword("wibble")
@@ -47,6 +49,7 @@ class WebSocketsTest extends TestVerticle {
   @Test def pingPongMessages(): Unit = {
     vertx.createHttpServer.websocketHandler({ ws: ServerWebSocket =>
       ws.dataHandler({ buf =>
+        assertThread()
         if (buf.toString() == "ping") {
           ws.write(Buffer("pong"))
         } else if (buf.toString() == "ping2") {
@@ -54,10 +57,14 @@ class WebSocketsTest extends TestVerticle {
         }
       })
     }).listen(testPort, checkServer({ c =>
+      assertThread()
       c.connectWebsocket("/", { resp: WebSocket =>
+        assertThread()
         resp.dataHandler({ buf =>
+          assertThread()
           assertEquals("pong", buf.toString)
           resp.dataHandler({ buf =>
+            assertThread()
             assertEquals("pong2", buf.toString)
             testComplete()
           })
@@ -73,6 +80,7 @@ class WebSocketsTest extends TestVerticle {
       assertNotNull(ws.remoteAddress())
       assertNotNull(ws.localAddress())
       ws.dataHandler({ buf =>
+        assertThread()
         val addresses = buf.toString().split("\n")
         assertEquals(ws.remoteAddress().getAddress().getHostAddress().toString(), addresses(1))
         assertEquals(ws.localAddress().getAddress().getHostAddress().toString(), addresses(0))
@@ -80,6 +88,7 @@ class WebSocketsTest extends TestVerticle {
       })
     }).listen(testPort, checkServer({ c =>
       c.connectWebsocket("/", { ws: WebSocket =>
+        assertThread()
         ws.write(Buffer(ws.remoteAddress().getAddress().getHostAddress().toString() + "\n"
           + ws.localAddress().getAddress().getHostAddress().toString()))
       })
@@ -90,6 +99,7 @@ class WebSocketsTest extends TestVerticle {
     ws.write(Buffer(html))
 
     ws.dataHandler({ buf =>
+      assertThread()
       assertEquals(html, buf.toString)
       testComplete()
     }): Unit
@@ -97,12 +107,14 @@ class WebSocketsTest extends TestVerticle {
 
   private def correctBodyHandler(fn: () => Unit) = { resp: WebSocket =>
     resp.dataHandler({ buf =>
+      assertThread()
       assertEquals(html, buf.toString)
       fn()
     }): Unit
   }
 
   private def checkServer(clientFn: HttpClient => Unit) = { ar: AsyncResult[HttpServer] =>
+    assertThread()
     if (ar.succeeded()) {
       val httpClient = vertx.createHttpClient.setPort(testPort)
       clientFn(httpClient)

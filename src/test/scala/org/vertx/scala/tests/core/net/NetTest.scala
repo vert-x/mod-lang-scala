@@ -20,17 +20,22 @@ class NetTest extends TestVerticle {
 
   @Test
   def sslNetServer(): Unit = {
-    checkSslServerAndClient(upgradeToSsl = false, regularConnectHandler, correctBodyHandler(testComplete))
+    checkSslServerAndClient(upgradeToSsl = false, regularConnectHandler, correctBodyHandler {
+      assertThread()
+      testComplete
+    })
   }
 
   @Test
   def sslUpgrade(): Unit = {
     checkSslServerAndClient(true, { ns =>
+      assertThread()
       assertFalse(ns.isSsl)
       ns.ssl({
         ns.write("ssl-test")
       })
     }, checkConnectedNetSocketHandler { ns =>
+      assertThread()
       assertFalse(ns.isSsl)
       ns.ssl({
         assertTrue(ns.isSsl)
@@ -48,12 +53,16 @@ class NetTest extends TestVerticle {
     val expectedLength = Buffer(content).length()
     val received = Buffer()
     vertx.createNetServer().connectHandler { socket =>
+      assertThread()
       socket.sendFile(file.getAbsolutePath)
     }.listen(testPort, { r =>
+      assertThread()
       if (r.succeeded()) {
         vertx.createNetClient().connect(testPort, { r =>
+          assertThread()
           if (r.succeeded()) {
             r.result().dataHandler({ buf =>
+              assertThread()
               received.append(buf)
               if (received.length() == expectedLength) {
                 assertEquals(content, received.toString())
@@ -76,15 +85,19 @@ class NetTest extends TestVerticle {
     val expectedLength = Buffer(content).length()
     val received = Buffer()
     vertx.createNetServer().connectHandler { socket =>
+      assertThread()
       socket.sendFile(file.getAbsolutePath, { r =>
         assertTrue(r.succeeded())
         testComplete()
       })
     }.listen(testPort, { r =>
+      assertThread()
       if (r.succeeded()) {
         vertx.createNetClient().connect(testPort, { r =>
+          assertThread()
           if (r.succeeded()) {
             r.result().dataHandler({ buf =>
+              assertThread()
               received.append(buf)
               if (received.length() == expectedLength) {
                 assertEquals(content, received.toString())
@@ -131,6 +144,7 @@ class NetTest extends TestVerticle {
   }
 
   private def checkServer() = { ar: AsyncResult[NetServer] =>
+    assertThread()
     (if (ar.succeeded()) {
       vertx.createNetClient().connect(testPort, correctBodyHandler(testComplete))
     } else {
@@ -139,6 +153,7 @@ class NetTest extends TestVerticle {
   }
 
   private def checkConnectedNetSocketHandler(checks: NetSocket => Unit) = { resp: AsyncResult[NetSocket] =>
+    assertThread()
     if (resp.succeeded()) {
       checks(resp.result())
     } else {
@@ -148,6 +163,7 @@ class NetTest extends TestVerticle {
 
   private def correctBodyHandler(fn: () => Unit) = checkConnectedNetSocketHandler { ns =>
     ns.dataHandler({ buf =>
+      assertThread()
       assertEquals("hello-World", buf.toString)
       fn()
     }): Unit

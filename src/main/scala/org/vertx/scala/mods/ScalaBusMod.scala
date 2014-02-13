@@ -32,9 +32,11 @@ import org.vertx.scala.core.AsyncResult
  * `Error` replies. Exceptions that you forget to catch will always yield a "MODULE_EXCEPTION" error
  * code.
  */
-trait ScalaBusMod extends (Message[JsonObject] => Unit) with VertxExecutionContext with VertxAccess {
+trait ScalaBusMod extends (Message[JsonObject] => Unit) with VertxAccess {
 
   import ScalaBusMod._
+
+  implicit val executionContext = VertxExecutionContext.fromVertxAccess(this)
 
   private val noActionMatch: BusModReply = Error("No matching action.", "INVALID_ACTION")
   private val noAction: BusModReply = Error("No action received.", "MISSING_ACTION")

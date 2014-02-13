@@ -33,9 +33,11 @@ class EventBusBridgeTest extends TestVerticle {
     sockJSServer.bridge(Json.obj("prefix" -> "/eventbus"), permitted, permitted)
 
     server.listen(8080, result => {
+      assertThread()
       def client = vertx.createHttpClient().setPort(8080)
       // We use rawwebsocket transport
       client.connectWebsocket("/eventbus/websocket", websocket => {
+        assertThread()
         // Register
         val msg = Json.obj("type" -> "register", "address" -> "someaddress")
         websocket.writeTextFrame(msg.encode())
@@ -45,6 +47,7 @@ class EventBusBridgeTest extends TestVerticle {
         websocket.writeTextFrame(msg2.encode())
 
         websocket.dataHandler { buffer =>
+            assertThread()
             val msg = buffer.toString()
             val received = Json.fromObjectString(msg)
             assert(received.getString("body").equals("hello world"))

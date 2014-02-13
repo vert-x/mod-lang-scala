@@ -16,10 +16,10 @@
 
 package org.vertx.scala.platform
 
-import scala.concurrent.Promise
-import org.vertx.scala.core.{ Vertx, VertxExecutionContext }
-import org.vertx.scala.core.logging.Logger
+import org.vertx.scala.core.Vertx
 import org.vertx.scala.core.VertxAccess
+import org.vertx.scala.core.logging.Logger
+import scala.concurrent.Promise
 
 /**
  * A verticle is the unit of execution in the Vert.x platform<p>
@@ -30,7 +30,7 @@ import org.vertx.scala.core.VertxAccess
  * @author swilliams
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
  */
-trait Verticle extends VertxExecutionContext with VertxAccess {
+trait Verticle extends VertxAccess {
 
   private var _vertx: Vertx = _
   private var _container: Container = _
