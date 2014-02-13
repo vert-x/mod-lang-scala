@@ -8,6 +8,7 @@ import org.vertx.scala.core.net.NetSocket
 import org.vertx.scala.tests.util.TestUtils._
 import org.vertx.scala.testtools.TestVerticle
 import org.vertx.testtools.VertxAssert._
+import org.vertx.scala.core.eventbus.Message
 
 class NetTest extends TestVerticle {
 
@@ -120,14 +121,33 @@ class NetTest extends TestVerticle {
     })
   }
 
-  @Test
-  def invalidHost(): Unit = {
+  @Test def invalidHost(): Unit = {
     vertx.createNetServer().connectHandler({ r => }) listen (testPort, "iqwjdoqiwjdoiqwdiojwd", completeWithArFailed)
   }
 
-  @Test
-  def invalidPort(): Unit = {
+  @Test def invalidPort(): Unit = {
     vertx.createNetServer().connectHandler({ r => }).listen(1128371831, completeWithArFailed[NetServer])
+  }
+
+  @Test def eventBusForwarding(): Unit = {
+    vertx.createNetServer().connectHandler(regularConnectHandler).listen(testPort, { r =>
+      if (r.succeeded()) {
+        vertx.createNetClient().connect(testPort, { r =>
+          r.result().dataHandler { buf =>
+            assertEquals("hello-World", buf.toString)
+            // Register a handler to receive messages
+            vertx.eventBus.registerHandler("forwarding", { msg: Message[Buffer] =>
+              assertEquals("hello-World", msg.body().toString)
+              testComplete()
+            })
+            // Forward buffer to event bus
+            vertx.eventBus.publish("forwarding", buf)
+          }
+        })
+      } else {
+        fail("listening did not succeed: " + r.cause().getMessage)
+      }
+    })
   }
 
   private def checkServer() = { ar: AsyncResult[NetServer] =>
