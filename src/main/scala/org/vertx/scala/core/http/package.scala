@@ -22,7 +22,6 @@ import org.vertx.java.core.http.CaseInsensitiveMultiMap
 
 package object http {
 
-  type HttpServerFileUpload = org.vertx.java.core.http.HttpServerFileUpload
   type HttpVersion = org.vertx.java.core.http.HttpVersion
   type WebSocketVersion = org.vertx.java.core.http.WebSocketVersion
 
@@ -32,13 +31,7 @@ package object http {
    * Implicit conversion for [[org.vertx.java.core.MultiMap]] to [[scala.collection.mutable.MultiMap]].
    */
   implicit def multiMapToScalaMultiMap(n: JMultiMap): mutable.MultiMap[String, String] = {
-    val multiMap = new mutable.HashMap[String, mutable.Set[String]] with mutable.MultiMap[String, String]
-    val it = n.iterator()
-    while(it.hasNext) {
-      val next = it.next()
-      multiMap.addBinding(next.getKey.toLowerCase, next.getValue)
-    }
-    multiMap
+    new JMultiMapWrapper(n)
   }
 
   /**
@@ -48,6 +41,61 @@ package object http {
     val jmultiMap = new CaseInsensitiveMultiMap
     n.foreach { entry => jmultiMap.put(entry._1, entry._2)}
     jmultiMap
+  }
+
+  private class JMultiMapWrapper(val underlying: JMultiMap)
+      extends mutable.MultiMap[String, String] {
+    override def addBinding(key: String, value: String): this.type = {
+      underlying.add(key, value)
+      this
+    }
+    override def removeBinding(key: String, value: String): this.type = {
+      val it = underlying.iterator()
+      while (it.hasNext) {
+        val next = it.next()
+        if (next.getKey.equalsIgnoreCase(key) && next.getValue == value)
+          it.remove()
+      }
+      this
+    }
+    override def entryExists(key: String, p: (String) => Boolean): Boolean = {
+      val it = underlying.iterator()
+      while (it.hasNext) {
+        val next = it.next()
+        if (next.getKey.equalsIgnoreCase(key) && p(next.getValue))
+          return true
+      }
+      false
+    }
+    override def iterator: Iterator[(String, mutable.Set[String])] = {
+      val mm = new mutable.HashMap[String, mutable.Set[String]] with MultiMap
+      val it = underlying.iterator()
+      while (it.hasNext) {
+        val next = it.next()
+        mm.addBinding(next.getKey, next.getValue)
+      }
+      mm.iterator
+    }
+    override def get(key: String): Option[mutable.Set[String]] = {
+      val set = mutable.HashSet[String]()
+      val it = underlying.iterator()
+      while (it.hasNext) {
+        val next = it.next()
+        if (next.getKey.equalsIgnoreCase(key))
+          set.add(next.getValue)
+      }
+      if (seq.isEmpty) None else Some(set)
+    }
+    override def -=(key: String): this.type = {
+      underlying.remove(key)
+      this
+    }
+    override def +=(kv: (String, mutable.Set[String])): this.type = {
+      kv._2.foreach { v =>
+        underlying.add(kv._1, v)
+      }
+      this
+    }
   }
 
 }

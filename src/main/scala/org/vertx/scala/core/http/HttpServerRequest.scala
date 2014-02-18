@@ -22,6 +22,7 @@ import org.vertx.scala.core.net.NetSocket
 import org.vertx.scala.core.buffer._
 import org.vertx.scala.core.Handler
 import org.vertx.scala.Self
+import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.streams.ReadStream
 
 /**
@@ -151,7 +152,8 @@ final class HttpServerRequest private[scala] (val asJava: JHttpServerRequest) ex
    * Set the upload handler. The handler will get notified once a new file upload was received and so allow to
    * get notified by the upload in progress.
    */
-  def uploadHandler(handler: Handler[HttpServerFileUpload]): HttpServerRequest = wrap(asJava.uploadHandler(handler))
+  def uploadHandler(handler: HttpServerFileUpload => Unit): HttpServerRequest =
+    wrap(asJava.uploadHandler(fnToHandler(handler.compose(HttpServerFileUpload.apply))))
 
   /**
    * Returns a map of all form attributes which was found in the request. Be aware that this message should only get

@@ -6,6 +6,9 @@ import org.vertx.scala.tests.util.TestUtils.completeWithArFailed
 import org.vertx.scala.testtools.TestVerticle
 import org.vertx.testtools.VertxAssert._
 import org.vertx.scala.tests.util.TestUtils._
+import java.util.concurrent.atomic.AtomicInteger
+import org.vertx.scala.core.buffer.Buffer
+import java.net.URLEncoder
 
 class HttpTest extends TestVerticle {
 
@@ -185,6 +188,125 @@ class HttpTest extends TestVerticle {
           testComplete()
         }
       })
+    }
+  }
+
+  @Test def formUploadAttributes(): Unit = {
+    val attributeCount = new AtomicInteger()
+    checkServer(vertx.createHttpServer(), req =>
+      if (req.uri().startsWith("/form")) {
+        req.response().setChunked(chunked = true)
+        req.expectMultiPart(expect = true)
+        req.uploadHandler(_.dataHandler(buffer => fail()))
+        req.endHandler({
+          val attrs = req.formAttributes()
+          attributeCount.set(attrs.size)
+          assertEquals("vert x", attrs("framework").head)
+          assertEquals("jvm", attrs("runson").head)
+          req.response().end()
+        })
+      }
+    ) { c =>
+      val req = c.post("/form", resp => {
+        // assert the response
+        assertEquals(200, resp.statusCode())
+        resp.bodyHandler(body => {
+          assertEquals(0, body.length())
+          assertEquals(2, attributeCount.get())
+          testComplete()
+        })
+      })
+
+      val buffer = Buffer()
+      buffer.append("framework=" + URLEncoder.encode("vert x", "UTF-8") + "&runson=jvm", "UTF-8")
+      req.headers().addBinding("content-length", String.valueOf(buffer.length()))
+      req.headers().addBinding("content-type", "application/x-www-form-urlencoded")
+      req.write(buffer).end()
+    }
+  }
+
+  @Test def formUploadAttributes2(): Unit = {
+    val attributeCount = new AtomicInteger()
+    checkServer(vertx.createHttpServer(), req =>
+      if (req.uri().startsWith("/form")) {
+        req.response().setChunked(chunked = true)
+        req.expectMultiPart(expect = true)
+        req.uploadHandler(_.dataHandler(buffer => fail()))
+        req.endHandler({
+          val attrs = req.formAttributes()
+          attributeCount.set(attrs.size)
+          assertEquals("junit-testUserAlias", attrs("origin").head)
+          assertEquals("admin@foo.bar", attrs("login").head)
+          assertEquals("admin", attrs("pass word").head)
+          req.response().end()
+        })
+      }
+    ) { c =>
+      val req = c.post("/form", resp => {
+        // assert the response
+        assertEquals(200, resp.statusCode())
+        resp.bodyHandler(body => {
+          assertEquals(0, body.length())
+          assertEquals(3, attributeCount.get())
+          testComplete()
+        })
+      })
+
+      val buffer = Buffer()
+      buffer.append("origin=junit-testUserAlias&login=admin%40foo.bar&pass+word=admin")
+      req.headers().addBinding("content-length", String.valueOf(buffer.length()))
+      req.headers().addBinding("content-type", "application/x-www-form-urlencoded")
+      req.write(buffer).end()
+    }
+  }
+
+  @Test def formUploadFile(): Unit = {
+    val attributeCount = new AtomicInteger()
+    val content = "Vert.x rocks!"
+    checkServer(vertx.createHttpServer(), req =>
+      if (req.uri().startsWith("/form")) {
+        req.response().setChunked(chunked = true)
+        req.expectMultiPart(expect = true)
+        req.uploadHandler(upload => {
+          upload.dataHandler(buff => assertEquals(content, buff.toString("UTF-8")))
+          assertEquals("file", upload.name())
+          assertEquals("tmp-0.txt", upload.filename())
+          assertEquals("image/gif", upload.contentType())
+          upload.endHandler(
+            assertEquals(upload.size(), content.length)
+          )
+        })
+        req.endHandler({
+          val attrs = req.formAttributes()
+          attributeCount.set(attrs.size)
+          req.response().end()
+        })
+      }
+    ) { c =>
+      val req = c.post("/form", resp => {
+        // assert the response
+        assertEquals(200, resp.statusCode())
+        resp.bodyHandler(body => {
+          assertEquals(0, body.length())
+          assertEquals(0, attributeCount.get())
+          testComplete()
+        })
+      })
+
+      val boundary = "dLV9Wyq26L_-JQxk6ferf-RT153LhOO"
+      val buffer = Buffer()
+      val body =
+          "--" + boundary + "\r\n" +
+          "Content-Disposition: form-data; name=\"file\"; filename=\"tmp-0.txt\"\r\n" +
+          "Content-Type: image/gif\r\n" +
+          "\r\n" +
+          content + "\r\n" +
+          "--" + boundary + "--\r\n"
+
+      buffer.append(body)
+      req.headers().addBinding("content-length", String.valueOf(buffer.length()))
+      req.headers().addBinding("content-type", "multipart/form-data; boundary=" + boundary)
+      req.write(buffer).end()
     }
   }
 
