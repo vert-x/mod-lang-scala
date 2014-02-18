@@ -104,4 +104,5 @@ class RouteMatcher private[scala] (val asJava: JRouteMatcher = new JRouteMatcher
 /** Factory for [[org.vertx.scala.core.http.RouteMatcher]] instances. */
 object RouteMatcher {
   def apply(actual: JRouteMatcher): RouteMatcher = new RouteMatcher(actual)
+  def apply(): RouteMatcher = new RouteMatcher()
 }
