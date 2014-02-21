@@ -28,7 +28,7 @@ class HttpCompressionTest extends HttpTest {
     checkServer(vertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath)) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(200, res.statusCode())
-        assertEquals("text/html", res.headers().get("content-type"))
+        assertTrue(res.headers().entryExists("content-type", _ == "text/html"))
         res.bodyHandler { buff =>
           assertEquals(content, buff.toString())
           file.delete()
@@ -46,7 +46,7 @@ class HttpCompressionTest extends HttpTest {
     } )) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(200, res.statusCode())
-        assertEquals("text/html", res.headers().get("content-type"))
+        assertTrue(res.headers().entryExists("content-type", _ == "text/html"))
         res.bodyHandler { buff =>
           assertEquals(content, buff.toString())
           file.delete()
@@ -64,7 +64,7 @@ class HttpCompressionTest extends HttpTest {
     ) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(200, res.statusCode())
-        assertEquals("wibble", res.headers().get("content-type"))
+        assertTrue(res.headers().entryExists("content-type", _ == "wibble"))
         res.bodyHandler { buff =>
           assertEquals(content, buff.toString())
           file.delete()

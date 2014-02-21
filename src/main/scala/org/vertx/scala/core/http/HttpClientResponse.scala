@@ -59,16 +59,22 @@ class HttpClientResponse private[scala] (val asJava: JHttpClientResponse) extend
   /**
    * Returns the HTTP headers.
    *
+   * This method converts a Java collection into a Scala collection every
+   * time it gets called, so use it sensibly.
+   *
    * @return The HTTP headers.
    */
-  def headers(): MultiMap = asJava.headers
+  def headers(): MultiMap = multiMapToScalaMultiMap(asJava.headers)
 
   /**
    * Returns the HTTP trailers.
    *
+   * This method converts a Java collection into a Scala collection every
+   * time it gets called, so call it sensibly.
+   *
    * @return The HTTP trailers.
    */
-  def trailers(): MultiMap = asJava.trailers
+  def trailers(): MultiMap = multiMapToScalaMultiMap(asJava.trailers)
 
   /**
    * Returns the Set-Cookie headers (including trailers).

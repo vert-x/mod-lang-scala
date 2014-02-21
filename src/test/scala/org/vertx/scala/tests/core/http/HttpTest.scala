@@ -89,8 +89,9 @@ class HttpTest extends TestVerticle {
     checkServer(vertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath)) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(200, res.statusCode())
-        assertEquals(file.length(), res.headers().get("content-length").toLong)
-        assertEquals("text/html", res.headers().get("content-type"))
+        val headers = res.headers()
+        assertTrue(headers.entryExists("content-length", _.toLong == file.length()))
+        assertTrue(headers.entryExists("content-type", _ == "text/html"))
         res.bodyHandler { buff =>
           assertEquals(content, buff.toString())
           file.delete()
@@ -108,8 +109,9 @@ class HttpTest extends TestVerticle {
     } )) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(200, res.statusCode())
-        assertEquals(file.length(), res.headers().get("content-length").toLong)
-        assertEquals("text/html", res.headers().get("content-type"))
+        val headers = res.headers()
+        assertTrue(headers.entryExists("content-length", _.toLong == file.length()))
+        assertTrue(headers.entryExists("content-type", _ == "text/html"))
         res.bodyHandler { buff =>
           assertEquals(content, buff.toString())
           file.delete()
@@ -124,7 +126,7 @@ class HttpTest extends TestVerticle {
     checkServer(vertx.createHttpServer(), _.response().sendFile("doesnotexist.html")) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(404, res.statusCode())
-        assertEquals("text/html", res.headers().get("content-type"))
+        assertTrue(res.headers().entryExists("content-type", _ == "text/html"))
         res.bodyHandler { buff =>
           assertEquals("<html><body>Resource not found</body><html>", buff.toString())
           testComplete()
@@ -140,7 +142,7 @@ class HttpTest extends TestVerticle {
     ) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(404, res.statusCode())
-        assertEquals("text/html", res.headers().get("content-type"))
+        assertTrue(res.headers().entryExists("content-type", _ == "text/html"))
         res.bodyHandler { buff =>
           assertEquals(content, buff.toString())
           testComplete()
@@ -174,9 +176,9 @@ class HttpTest extends TestVerticle {
     ) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(200, res.statusCode())
-        assertEquals(file.length(), res.headers().get("content-length").toLong)
-
-        assertEquals("wibble", res.headers().get("content-type"))
+        val headers = res.headers()
+        assertTrue(headers.entryExists("content-length", _.toLong == file.length()))
+        assertTrue(headers.entryExists("content-type", _ == "wibble"))
         res.bodyHandler { buff =>
           assertEquals(content, buff.toString())
           file.delete()

@@ -18,6 +18,7 @@ package org.vertx.scala.core.http
 
 import org.vertx.java.core.http.{ ServerWebSocket => JServerWebSocket }
 import org.vertx.scala.Self
+import org.vertx.scala.core.MultiMap
 
 /**
  * Represents a server side WebSocket that is passed into a the websocketHandler of an [[org.vertx.scala.core.http.HttpServer]]<p>
@@ -51,7 +52,7 @@ final class ServerWebSocket private[scala] (val asJava: JServerWebSocket) extend
   /**
    * A map of all headers in the request to upgrade to websocket
    */
-  def headers(): org.vertx.java.core.MultiMap = asJava.headers()
+  def headers(): MultiMap = multiMapToScalaMultiMap(asJava.headers())
 
   /**
    * Reject the WebSocket<p>

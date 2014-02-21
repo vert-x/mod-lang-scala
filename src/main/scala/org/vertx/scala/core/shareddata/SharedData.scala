@@ -16,8 +16,9 @@
 package org.vertx.scala.core.shareddata
 
 import org.vertx.java.core.shareddata.{ SharedData => JSharedData }
-import org.vertx.java.core.shareddata.ConcurrentSharedMap
-import java.util.Set
+import scala.collection.concurrent
+import scala.collection.mutable
+import scala.collection.JavaConversions._
 
 /**
  * Sometimes it is desirable to share immutable data between different event loops, for example to implement a
@@ -50,16 +51,26 @@ import java.util.Set
 final class SharedData private[scala] (val asJava: JSharedData) extends AnyVal {
 
   /**
-   * Return a `Map` with the specific `name`. All invocations of this method with the same value of `name`
-   * are guaranteed to return the same `Map` instance. <p>
+   * Return a [[scala.collection.concurrent.Map]] facade for the internal map
+   * with the specific `name`. All invocations of this method with the same
+   * value of `name` are guaranteed to return the same underlying internal
+   * map instance. <p>
+   *
+   * This method converts a Java collection into a Scala collection every
+   * time it gets called, so use it sensibly.
    */
-  def getMap[K, V](name: String): ConcurrentSharedMap[K, V] = asJava.getMap(name)
+  def getMap[K, V](name: String): concurrent.Map[K, V] = mapAsScalaConcurrentMap(asJava.getMap(name))
 
   /**
-   * Return a `Set` with the specific `name`. All invocations of this method with the same value of `name`
-   * are guaranteed to return the same `Set` instance. <p>
+   * Return a [[scala.collection.mutable.Set]] facade for the internal set
+   * with the specific `name`. All invocations of this method with the same
+   * value of `name` are guaranteed to return the same underlying internal
+   * set instance. <p>
+   *
+   * This method converts a Java collection into a Scala collection every
+   * time it gets called, so use it sensibly.
    */
-  def getSet[E](name: String): Set[E] = asJava.getSet(name)
+  def getSet[E](name: String): mutable.Set[E] = asScalaSet(asJava.getSet(name))
 
   /**
    * Remove the `Map` with the specific `name`.

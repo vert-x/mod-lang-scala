@@ -130,7 +130,7 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
    * The connect is done asynchronously and `wsConnect` is called back with the websocket
    */
   def connectWebsocket(uri: String, wsVersion: WebSocketVersion, headers: MultiMap, wsConnect: WebSocket => Unit): HttpClient =
-    wrap(asJava.connectWebsocket(uri, wsVersion, headers, webSocketFnConverter(wsConnect)))
+    wrap(asJava.connectWebsocket(uri, wsVersion, scalaMultiMapToMultiMap(headers), webSocketFnConverter(wsConnect)))
 
   /**
    * This is a quick version of the [[org.vertx.scala.core.http.HttpClient.get(String, org.vertx.java.core.Handler)]]
@@ -147,16 +147,7 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
    * except that it allows you specify a set of `headers` that will be sent with the request.
    */
   def getNow(uri: String, headers: MultiMap, responseHandler: HttpClientResponse => Unit): HttpClient =
-    wrap(asJava.getNow(uri, headers, httpClientResponseFnConverter(responseHandler)))
-
-  // TODO the following could reduce the code a lot, but would the compiler be able to optimize it?
-  // private def httpRequest(internalMethod: (String, Handler[JHttpClientResponse]) => JHttpClientRequest) ={
-  //   (uri: String, responseHandler: JHttpClientResponse=>Unit) => 
-  //     HttpClientRequest(internalMethod(uri, responseHandler))
-  // }
-  // def options = httpRequest(internal.options)
-  // def get = httpRequest(internal.get)
-  // ...
+    wrap(asJava.getNow(uri, scalaMultiMapToMultiMap(headers), httpClientResponseFnConverter(responseHandler)))
 
   /**
    * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP OPTIONS request with the specified `uri`.<p>
