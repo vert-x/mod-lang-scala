@@ -80,9 +80,13 @@ final class HttpClientRequest private[scala] (val asJava: JHttpClientRequest) ex
 
   /**
    * Returns the HTTP headers.
+   *
+   * This method converts a Java collection into a Scala collection every
+   * time it gets called, so use it sensibly.
+   *
    * @return The HTTP headers.
    */
-  def headers(): MultiMap = asJava.headers()
+  def headers(): MultiMap = multiMapToScalaMultiMap(asJava.headers())
 
   /**
    * Put an HTTP header - fluent API.

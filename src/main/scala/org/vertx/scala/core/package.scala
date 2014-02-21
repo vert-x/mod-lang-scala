@@ -23,7 +23,7 @@ package object core {
 
   type AsyncResult[T] = org.vertx.java.core.AsyncResult[T]
   type Handler[T] = org.vertx.java.core.Handler[T]
-  type MultiMap = org.vertx.java.core.MultiMap
+  type MultiMap = scala.collection.mutable.MultiMap[String, String]
 
   def newVertx() = new Vertx(JVertxFactory.newVertx())
 

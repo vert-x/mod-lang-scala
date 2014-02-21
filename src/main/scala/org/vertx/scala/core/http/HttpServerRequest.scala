@@ -83,16 +83,23 @@ final class HttpServerRequest private[scala] (val asJava: JHttpServerRequest) ex
    * A map of all headers in the request, If the request contains multiple headers with the same key, the values
    * will be concatenated together into a single header with the same key value, with each value separated by a comma,
    * as specified <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2">here</a>.
+   *
    * The headers will be automatically lower-cased when they reach the server
+   *
+   * This method converts a Java collection into a Scala collection every
+   * time it gets called, so use it sensibly.
    */
-  def headers(): MultiMap = asJava.headers
+  def headers(): MultiMap = multiMapToScalaMultiMap(asJava.headers)
 
   /**
    * Returns a map of all the parameters in the request.
    *
+   * This method converts a Java collection into a Scala collection every
+   * time it gets called, so use it sensibly.
+   *
    * @return A map of all the parameters in the request.
    */
-  def params(): MultiMap = asJava.params
+  def params(): MultiMap = multiMapToScalaMultiMap(asJava.params)
 
   /**
    * Return the remote (client side) address of the request.

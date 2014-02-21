@@ -18,7 +18,7 @@ package org.vertx.scala.core
 
 import org.vertx.java.core.{ MultiMap => JMultiMap }
 import scala.collection.mutable
-import scala.collection.JavaConversions._
+import org.vertx.java.core.http.CaseInsensitiveMultiMap
 
 package object http {
 
@@ -33,8 +33,21 @@ package object http {
    */
   implicit def multiMapToScalaMultiMap(n: JMultiMap): mutable.MultiMap[String, String] = {
     val multiMap = new mutable.HashMap[String, mutable.Set[String]] with mutable.MultiMap[String, String]
-    n.iterator.foldLeft(multiMap) { (prev, next) =>
-      prev.addBinding(next.getKey, next.getValue)
+    val it = n.iterator()
+    while(it.hasNext) {
+      val next = it.next()
+      multiMap.addBinding(next.getKey.toLowerCase, next.getValue)
     }
+    multiMap
   }
+
+  /**
+   * Implicit conversion for [[scala.collection.mutable.MultiMap]] to [[org.vertx.java.core.MultiMap]].
+   */
+  implicit def scalaMultiMapToMultiMap(n: mutable.MultiMap[String, String]): JMultiMap = {
+    val jmultiMap = new CaseInsensitiveMultiMap
+    n.foreach { entry => jmultiMap.put(entry._1, entry._2)}
+    jmultiMap
+  }
+
 }

@@ -102,9 +102,12 @@ final class HttpServerResponse private[scala] (val asJava: JHttpServerResponse) 
   /**
    * Returns the HTTP headers.
    *
+   * This method converts a Java collection into a Scala collection every
+   * time it gets called, so use it sensibly.
+   *
    * @return The HTTP headers.
    */
-  def headers(): org.vertx.java.core.MultiMap = asJava.headers()
+  def headers(): MultiMap = multiMapToScalaMultiMap(asJava.headers())
 
   /**
    * Is the response chunked?
@@ -217,9 +220,12 @@ final class HttpServerResponse private[scala] (val asJava: JHttpServerResponse) 
   /**
    * Returns the HTTP trailers.
    *
+   * This method converts a Java collection into a Scala collection every
+   * time it gets called, so use it sensibly.
+   *
    * @return The HTTP trailers.
    */
-  def trailers(): MultiMap = asJava.trailers()
+  def trailers(): MultiMap = multiMapToScalaMultiMap(asJava.trailers())
 
   /**
    * Write a [[java.lang.String]] to the response body, encoded in UTF-8.
