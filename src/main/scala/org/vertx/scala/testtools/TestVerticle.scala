@@ -1,6 +1,6 @@
 package org.vertx.scala.testtools
 
-import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.{Method, InvocationTargetException}
 import org.junit.runner.RunWith
 import org.vertx.scala.platform.Verticle
 import org.vertx.testtools.VertxAssert
@@ -53,7 +53,7 @@ abstract class TestVerticle extends Verticle {
   protected final def startTests() {
     val methodName = container.config().getString("methodName")
     try {
-      val m = getClass.getDeclaredMethod(methodName)
+      val m = findMethod(getClass, methodName)
       m.invoke(this)
     } catch {
       case e: InvocationTargetException =>
@@ -73,6 +73,18 @@ abstract class TestVerticle extends Verticle {
     if (context != vertx.asJava.asInstanceOf[VertxInternal].getContext)
       throw new IllegalStateException(
         s"Wrong context: Expected: $context Actual: ${vertx.asInstanceOf[VertxInternal].getContext}")
+  }
+
+  def findMethod(clazz: Class[_], methodName: String): Method = {
+    try {
+      clazz.getDeclaredMethod(methodName)
+    } catch {
+      case e: NoSuchMethodException =>
+        if ((clazz == classOf[AnyRef]) || clazz.isInterface)
+          throw e
+
+        findMethod(clazz.getSuperclass, methodName)
+    }
   }
 
 }
