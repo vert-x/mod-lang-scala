@@ -4,7 +4,7 @@ import org.junit.Test
 import org.vertx.scala.testtools.TestVerticle
 import org.vertx.testtools.VertxAssert._
 
-class HttpConfigurationTests extends TestVerticle {
+class HttpConfigurationTest extends TestVerticle {
 
   @Test def testSetGetMaxWebSocketFrameSizeServer() {
     val server = vertx.createHttpServer()

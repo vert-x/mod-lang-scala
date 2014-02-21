@@ -7,7 +7,8 @@ import org.vertx.scala.testtools.TestVerticle
 import org.vertx.testtools.VertxAssert._
 import org.vertx.scala.tests.util.TestUtils._
 
-class HttpTestForSimpleApi extends TestVerticle {
+class HttpTest extends TestVerticle {
+
   val testPort = 8844
 
   val html = <html>
@@ -18,7 +19,9 @@ class HttpTestForSimpleApi extends TestVerticle {
                  <h1>Hello world!</h1>
                </body>
              </html>.toString()
-
+  
+  var compression = false
+  
   @Test def httpServer(): Unit = {
     checkServer(vertx.createHttpServer(), regularRequestHandler) { c =>
       c.getNow("/", correctHeadAndBodyHandler(c, testComplete))
@@ -99,9 +102,9 @@ class HttpTestForSimpleApi extends TestVerticle {
 
   @Test def sendFileWithHandler(): Unit = {
     val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
+    var sendComplete = false
     checkServer(vertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath, { res =>
-      assertTrue(res.succeeded())
-      testComplete()
+      sendComplete = true
     } )) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(200, res.statusCode())
@@ -110,6 +113,8 @@ class HttpTestForSimpleApi extends TestVerticle {
         res.bodyHandler { buff =>
           assertEquals(content, buff.toString())
           file.delete()
+          assertTrue(sendComplete)
+          testComplete()
         }
       })
     }
@@ -170,6 +175,7 @@ class HttpTestForSimpleApi extends TestVerticle {
       c.getNow("some-uri", { res =>
         assertEquals(200, res.statusCode())
         assertEquals(file.length(), res.headers().get("content-length").toLong)
+
         assertEquals("wibble", res.headers().get("content-type"))
         res.bodyHandler { buff =>
           assertEquals(content, buff.toString())
@@ -217,21 +223,19 @@ class HttpTestForSimpleApi extends TestVerticle {
     }).apply(resp): Unit
   }
 
-  private def checkServer(server: => HttpServer, req: HttpServerRequest => Unit)(fn: HttpClient => Unit) = {
-    List(true, false).foreach { compression =>
-      val localServer = server // on purpose, call by-name function to create server
-      localServer.setCompressionSupported(compressionSupported = compression)
-      localServer.requestHandler(req)
-      localServer.listen(testPort, { res =>
-        if (res.succeeded()) {
-          val client = vertx.createHttpClient().setPort(testPort).setTryUseCompression(compression)
-          assertThread()
-          fn(client)
-        } else {
-          fail("listening did not succeed: " + res.cause().getMessage)
-        }
-      })
-    }
+  protected def checkServer(server: => HttpServer, req: HttpServerRequest => Unit)(fn: HttpClient => Unit) = {
+    val localServer = server // on purpose, call by-name function to create server
+    localServer.setCompressionSupported(compressionSupported = compression)
+    localServer.requestHandler(req)
+    localServer.listen(testPort, { res =>
+      if (res.succeeded()) {
+        val client = vertx.createHttpClient().setPort(testPort).setTryUseCompression(compression)
+        assertThread()
+        fn(client)
+      } else {
+        fail("listening did not succeed: " + res.cause().getMessage)
+      }
+    })
   }
 
   private def assertMessage(c: HttpClient) =
