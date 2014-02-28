@@ -43,12 +43,13 @@ package object http {
     jmultiMap
   }
 
-  private class JMultiMapWrapper(val underlying: JMultiMap)
-      extends mutable.MultiMap[String, String] {
+  private class JMultiMapWrapper(val underlying: JMultiMap) extends mutable.MultiMap[String, String] {
+
     override def addBinding(key: String, value: String): this.type = {
       underlying.add(key, value)
       this
     }
+
     override def removeBinding(key: String, value: String): this.type = {
       val it = underlying.iterator()
       while (it.hasNext) {
@@ -58,6 +59,7 @@ package object http {
       }
       this
     }
+
     override def entryExists(key: String, p: (String) => Boolean): Boolean = {
       val it = underlying.iterator()
       while (it.hasNext) {
@@ -67,6 +69,7 @@ package object http {
       }
       false
     }
+
     override def iterator: Iterator[(String, mutable.Set[String])] = {
       val mm = new mutable.HashMap[String, mutable.Set[String]] with MultiMap
       val it = underlying.iterator()
@@ -76,6 +79,7 @@ package object http {
       }
       mm.iterator
     }
+
     override def get(key: String): Option[mutable.Set[String]] = {
       val set = mutable.HashSet[String]()
       val it = underlying.iterator()
@@ -86,16 +90,19 @@ package object http {
       }
       if (seq.isEmpty) None else Some(set)
     }
+
     override def -=(key: String): this.type = {
       underlying.remove(key)
       this
     }
+
     override def +=(kv: (String, mutable.Set[String])): this.type = {
       kv._2.foreach { v =>
         underlying.add(kv._1, v)
       }
       this
     }
+
   }
 
 }
