@@ -15,6 +15,7 @@
  */
 package org.vertx.scala.core.http
 
+import scala.collection.JavaConverters._
 import org.vertx.scala.core.buffer.Buffer
 import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.MultiMap
@@ -92,19 +93,11 @@ final class HttpClientRequest private[scala] (val asJava: JHttpClientRequest) ex
    * Put an HTTP header - fluent API.
    *
    * @param name The header name
-   * @param value The header value
-   * @return A reference to this, so multiple method calls can be chained.
-   */
-  def putHeader(name: String, value: String): HttpClientRequest = wrap(asJava.putHeader(name, value))
-
-  /**
-   * Put an HTTP header - fluent API.
-   *
-   * @param name The header name
    * @param values The header values
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def putHeader(name: String, values: java.lang.Iterable[String]): HttpClientRequest = wrap(asJava.putHeader(name, values))
+  def putHeader(name: String, values: String*): HttpClientRequest =
+    wrap(asJava.putHeader(name, values.asJava))
 
   /**
    * Write a [[java.lang.String]] to the request body, encoded in UTF-8.

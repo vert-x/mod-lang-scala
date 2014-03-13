@@ -121,17 +121,8 @@ final class HttpServerResponse private[scala] (val asJava: JHttpServerResponse) 
    * @param values  The header values.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def putHeader(name: String, values: java.lang.Iterable[String]): HttpServerResponse =
-    wrap(asJava.putHeader(name, values))
-
-  /**
-   * Put an HTTP header - fluent API.
-   *
-   * @param name The header name
-   * @param value The header value.
-   * @return A reference to this, so multiple method calls can be chained.
-   */
-  def putHeader(name: String, value: String): HttpServerResponse = wrap(asJava.putHeader(name, value))
+  def putHeader(name: String, values: String*): HttpServerResponse =
+    wrap(asJava.putHeader(name, values.asJava))
 
   /**
    * Put an HTTP trailer - fluent API.
