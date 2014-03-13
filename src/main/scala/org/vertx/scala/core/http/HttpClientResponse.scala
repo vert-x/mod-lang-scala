@@ -22,6 +22,7 @@ import org.vertx.scala.core.buffer._
 import org.vertx.scala.core.net.NetSocket
 import org.vertx.scala.core.streams.ReadStream
 import org.vertx.scala.Self
+import scala.collection.JavaConverters._
 
 /**
  * Represents a client-side HTTP response.<p>
@@ -81,7 +82,7 @@ class HttpClientResponse private[scala] (val asJava: JHttpClientResponse) extend
    *
    * @return The Set-Cookie headers (including trailers).
    */
-  def cookies(): java.util.List[String] = asJava.cookies()
+  def cookies(): List[String] = asJava.cookies().asScala.toList
 
   /**
    * Convenience method for receiving the entire request body in one piece. This saves the user having to manually
