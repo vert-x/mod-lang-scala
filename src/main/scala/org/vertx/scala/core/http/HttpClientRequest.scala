@@ -16,7 +16,7 @@
 package org.vertx.scala.core.http
 
 import org.vertx.scala.core.buffer.Buffer
-import org.vertx.scala.core.Handler
+import org.vertx.scala.core.FunctionConverters._
 import org.vertx.scala.core.MultiMap
 import org.vertx.java.core.http.{ HttpClientRequest => JHttpClientRequest }
 import org.vertx.scala.core.streams.WriteStream
@@ -128,7 +128,8 @@ final class HttpClientRequest private[scala] (val asJava: JHttpClientRequest) ex
    * the [[org.vertx.scala.core.http.HttpClientRequest.sendHead()]] method to force the request header to be written before the request has ended.
    * @return A reference to this, so multiple method calls can be chained.
    */
-  def continueHandler(handler: Handler[Void]): HttpClientRequest = wrap(asJava.continueHandler(handler))
+  def continueHandler(handler: => Unit): HttpClientRequest =
+    wrap(asJava.continueHandler(lazyToVoidHandler(handler)))
 
   /**
    * Forces the head of the request to be written before [[org.vertx.scala.core.http.HttpClientRequest.end()]] is called on the request or
