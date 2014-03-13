@@ -310,6 +310,116 @@ class HttpTest extends TestVerticle {
     }
   }
 
+  @Test def sendFileMultipleOverrideHeaders(): Unit = {
+    val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
+    checkServer(vertx.createHttpServer(),
+      _.response().putHeader("ConTeNt-TypE", "wibble", "wibble2", "wibble3").sendFile(file.getAbsolutePath)
+    ) { c =>
+      c.getNow("some-uri", { res =>
+        assertEquals(200, res.statusCode())
+        val headers = res.headers()
+        assertTrue(headers.entryExists("content-type", _ == "wibble"))
+        assertTrue(headers.entryExists("content-type", _ == "wibble2"))
+        assertTrue(headers.entryExists("content-type", _ == "wibble3"))
+        res.bodyHandler { buff =>
+          assertEquals(content, buff.toString())
+          file.delete()
+          testComplete()
+        }
+      })
+    }
+  }
+
+  @Test def headerOverridesPossible(): Unit =  {
+    val serverHandler = { req: HttpServerRequest =>
+      assertThread()
+      assertTrue(req.headers().entryExists("Host", _ == "localhost:4444"))
+      assertTrue(req.headers().entryExists("content-type", _ == "wibble"))
+      assertTrue(req.headers().entryExists("content-type", _ == "wibble2"))
+      assertTrue(req.headers().entryExists("content-type", _ == "wibble3"))
+      req.response().end()
+    }
+
+    val clientHandler = { client: HttpClient =>
+      val req = client.get("some-uri", { res: HttpClientResponse =>
+        assertThread()
+        testComplete()
+      })
+      req.putHeader("Host", "localhost:4444")
+      req.putHeader("Content-Type", "wibble", "wibble2", "wibble3")
+      req.end()
+    }
+
+    checkServer(vertx.createHttpServer(), serverHandler)(clientHandler)
+  }
+
+  @Test def continue100Default(): Unit = {
+    val buffer = generateRandomBuffer(1000)
+
+    val serverHandler = { req: HttpServerRequest =>
+      req.bodyHandler { data =>
+        assertThread()
+        assertEquals(buffer, data)
+        req.response().end()
+      }
+      ()
+    }
+
+    val clientHandler = { client: HttpClient =>
+      val req = client.get("some-uri", { res: HttpClientResponse =>
+        res.endHandler {
+          assertThread()
+          testComplete()
+        }
+      })
+      req.headers().addBinding("Expect", "100-continue")
+      req.setChunked(chunked = true)
+      req.continueHandler {
+        assertThread()
+        req.write(buffer)
+        req.end()
+      }
+      req.sendHead()
+      ()
+    }
+
+    checkServer(vertx.createHttpServer(), serverHandler)(clientHandler)
+  }
+
+  @Test def continue100Handled(): Unit = {
+    val buffer = generateRandomBuffer(1000)
+
+    val serverHandler = { req: HttpServerRequest =>
+      req.response().headers().addBinding("HTTP/1.1", "100 Continue")
+      req.bodyHandler { data =>
+        assertThread()
+        assertEquals(buffer, data)
+        req.response().end()
+      }
+      ()
+    }
+
+    val clientHandler = { client: HttpClient =>
+      val req = client.get("some-uri", { res: HttpClientResponse =>
+        res.endHandler {
+          assertThread()
+          testComplete()
+        }
+      })
+      req.headers().addBinding("Expect", "100-continue")
+      req.setChunked(chunked = true)
+      req.continueHandler {
+        assertThread()
+        req.write(buffer)
+        req.end()
+      }
+      req.sendHead()
+      ()
+    }
+
+    checkServer(vertx.createHttpServer(), serverHandler)(clientHandler)
+  }
+
   private def simpleRequest(fn: (HttpClient, () => Unit) => HttpClientResponse => Unit)(name: String): Unit = {
     checkServer(vertx.createHttpServer(), regularRequestHandler) { c =>
       c.request(name, "/", fn(c, testComplete)).end()
