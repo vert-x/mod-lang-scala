@@ -1,24 +1,19 @@
 == Scala Module for Vert.x
 
-Scala language implementation for Vert.x 2.1
+Scala language implementation for Vert.x.
+
+=== Versions
+
+Vert.x Scala 1.0.x is designed for Vert.x 2.1 and works with Scala 2.10
 
 === Quickstart
 
-To use it, we've added a first "Hello World"-like example to the 
+To use it, we've added a first "Hello World"-like example to the
 https://github.com/vert-x/vertx-examples/blob/master/src/raw/scala[Vert.x Examples repository]
 which can be run like this:
 
-1. Download Vert.x distribution 2.1-M1 or higher.
-2. Open [VERTX_HOME]/conf/langs.properties file and these lines:
-+
-...............................................................................
-scala=io.vertx~lang-scala~0.3.0:org.vertx.scala.platform.impl.ScalaVerticleFactory
-.scala=scala
-...............................................................................
-+
-
-3. Clone or download the Vert.x Examples Git repository
-4. Change directory to `src/raw/scala` and type:
+1. Clone or download the https://github.com/vert-x/vertx-examples[Vert.x Examples Git repository]
+2. Change directory to `src/raw/scala` and type:
 +
 ...............................................................................
 [VERTX_HOME]/bin/vertx run http/Server.scala
@@ -56,3 +51,31 @@ method that sends a `org.vertx.scala.core.buffer.Buffer` instead of a String.
 A possible workaround would have been to use function currying, but doing so
 would limit the API capability to add `scala.concurrent.Future` based methods,
 which are better suited for implementing handlers.
+
+=== Plugging Vert.x Scala language extension
+
+Vert.x 2.1 comes with Vert.x Scala language support embedded within it, but if
+you want to test a different version of the Vert.x Scala language
+implementation, follow these instructions:
+
+1. Download a Vert.x distribution.
+2. Open `[VERTX_HOME]/conf/langs.properties` file and modify this line to match
+the Vert.x Scala version to test:
++
+...............................................................................
+scala=io.vertx~lang-scala~X.Y.Z:org.vertx.scala.platform.impl.ScalaVerticleFactory
+...............................................................................
++
+
+
+Optionally, if you're testing a locally built Vert.x Scala extension, you'll
+need to do the following steps additionally:
+
+1. Clone the Vert.x Scala source repository
+2. Execute:
++
+...............................................................................
+./gradlew clean install
+[VERTX_HOME]/bin/vertx install io.vertx~lang-scala~X.Y.Z
+...............................................................................
++
