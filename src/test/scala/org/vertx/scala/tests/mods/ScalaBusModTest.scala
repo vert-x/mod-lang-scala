@@ -141,14 +141,11 @@ class ScalaBusModTest extends TestVerticle {
 
   @Test
   def ignoreReply(): Unit = {
-    val timeAtStart = System.currentTimeMillis()
     val randomAddress = java.util.UUID.randomUUID().toString()
     val i = new AtomicInteger(2)
     vertx.eventBus.registerHandler(randomAddress, { msg: Message[JsonObject] =>
       assertThread()
-      val timeAtEnd = System.currentTimeMillis()
       assertEquals("bla", msg.body.getString("echo"))
-      assertTrue("Should get a message here within 500 millis", timeAtStart >= (timeAtEnd - 500))
       if (i.decrementAndGet() == 0) {
         testComplete()
       }
