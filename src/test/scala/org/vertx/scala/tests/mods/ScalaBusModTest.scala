@@ -147,7 +147,7 @@ class ScalaBusModTest extends TestVerticle {
       assertThread()
       assertEquals("bla", msg.body.getString("echo"))
       if (i.decrementAndGet() == 0) {
-        testComplete()
+        fail("The timeout handler should have been evaluated later.")
       }
     })
 
@@ -158,6 +158,8 @@ class ScalaBusModTest extends TestVerticle {
         assertTrue("Should fail because of timeout", ar.failed())
         if (i.decrementAndGet() == 0) {
           testComplete()
+        } else {
+          fail("The handler that doesn't send a reply should have been evaluated first.")
         }
       })
   }
