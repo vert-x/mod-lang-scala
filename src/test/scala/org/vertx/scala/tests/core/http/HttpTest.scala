@@ -389,17 +389,16 @@ class HttpTest extends TestVerticle {
   @Test def continue100Handled(): Unit = {
     val buffer = generateRandomBuffer(1000)
 
-    val serverHandler = { req: HttpServerRequest =>
+    val serverHandler: HttpServerRequest => Unit = { req =>
       req.response().headers().addBinding("HTTP/1.1", "100 Continue")
       req.bodyHandler { data =>
         assertThread()
         assertEquals(buffer, data)
         req.response().end()
       }
-      ()
     }
 
-    val clientHandler = { client: HttpClient =>
+    def clientHandler(client: HttpClient): Unit = {
       val req = client.get("some-uri", { res: HttpClientResponse =>
         res.endHandler {
           assertThread()
@@ -414,7 +413,6 @@ class HttpTest extends TestVerticle {
         req.end()
       }
       req.sendHead()
-      ()
     }
 
     checkServer(vertx.createHttpServer(), serverHandler)(clientHandler)
