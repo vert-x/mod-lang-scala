@@ -1,14 +1,14 @@
 package org.vertx.scala.tests.core.streams
 
+import java.nio.file.{Paths, Files}
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.vertx.scala.core.AsyncResult
 import org.vertx.scala.core.buffer.{ Buffer, BufferElem }
+import org.vertx.scala.core.file.AsyncFile
 import org.vertx.scala.core.http.{ HttpClient, HttpClientResponse, HttpServer, HttpServerRequest }
 import org.vertx.scala.core.streams.Pump
-import org.vertx.scala.testtools.{ ScalaClassRunner, TestVerticle }
+import org.vertx.scala.testtools.TestVerticle
 import org.vertx.testtools.VertxAssert._
-import org.vertx.scala.core.file.AsyncFile
 
 class PumpTest extends TestVerticle {
 
@@ -50,15 +50,28 @@ class PumpTest extends TestVerticle {
 
   @Test
   def pumpingFile(): Unit = withPumpFiles { (filename, oldFile, newFile) =>
-
     oldFile.endHandler({
       assertThread()
-      assertEquals(vertx.fileSystem.propsSync(filename).size, vertx.fileSystem.propsSync(filename + ".copy").size)
-      vertx.fileSystem.deleteSync(filename + ".copy")
-      testComplete
+      oldFile.close { readCloseResult =>
+        if (readCloseResult.failed())
+          fail("Fail to close read file")
+        else {
+          newFile.close { writeCloseResult =>
+            if (writeCloseResult.failed())
+              fail("Fail to close write file")
+            else {
+              val readFileSize = vertx.fileSystem.propsSync(filename).size()
+              val writtenBytes = Files.readAllBytes(Paths.get(filename + ".copy"))
+              assertEquals(readFileSize, writtenBytes.length)
+              vertx.fileSystem.deleteSync(filename + ".copy")
+              testComplete()
+            }
+          }
+        }
+      }
     })
 
-    Pump.createPump(oldFile, newFile).start
+    Pump.createPump(oldFile, newFile).start()
   }
 
   @Test
