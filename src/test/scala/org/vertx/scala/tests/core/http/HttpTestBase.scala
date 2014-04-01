@@ -1,6 +1,5 @@
 package org.vertx.scala.tests.core.http
 
-import org.junit.Test
 import org.vertx.testtools.VertxAssert._
 import org.vertx.scala.tests.util.TestUtils._
 import org.vertx.scala.core.http.{HttpClientResponse, HttpClient, HttpServerRequest, HttpServer}
@@ -12,7 +11,7 @@ import org.vertx.scala.core.Vertx
 /**
  * @author Galder Zamarreño
  */
-trait HttpTestBase {
+object HttpTestBase {
 
   val testPort = 8844
 
@@ -25,18 +24,14 @@ trait HttpTestBase {
     </body>
   </html>.toString()
 
-  def compression: Boolean
-
-  def getVertx: Vertx
-
-  @Test def httpServer(): Unit = {
-    checkServer(getVertx.createHttpServer(), regularRequestHandler) { c =>
+  def httpServer()(implicit v: Vertx, c: Compression): Unit = {
+    checkServer(v.createHttpServer(), regularRequestHandler) { c =>
       c.getNow("/", correctHeadAndBodyHandler(c, testComplete))
     }
   }
 
-  @Test def httpsServer(): Unit = {
-    checkServer(getVertx.createHttpServer()
+  def httpsServer()(implicit v: Vertx, c: Compression): Unit = {
+    checkServer(v.createHttpServer()
       .setSSL(ssl = true)
       .setKeyStorePath("./src/test/keystores/server-keystore.jks")
       .setKeyStorePassword("wibble")
@@ -49,51 +44,51 @@ trait HttpTestBase {
     }
   }
 
-  @Test def invalidPort(): Unit = {
-    getVertx.createHttpServer().requestHandler({ r => }).listen(1128371831, completeWithArFailed[HttpServer])
+  def invalidPort()(implicit v: Vertx, c: Compression): Unit = {
+    v.createHttpServer().requestHandler({ r => }).listen(1128371831, completeWithArFailed[HttpServer])
   }
 
-  @Test def invalidHost(): Unit = {
-    getVertx.createHttpServer().requestHandler({ r => }) listen (testPort, "iqwjdoqiwjdoiqwdiojwd", completeWithArFailed)
+  def invalidHost()(implicit v: Vertx, c: Compression): Unit = {
+    v.createHttpServer().requestHandler({ r => }) listen (testPort, "iqwjdoqiwjdoiqwdiojwd", completeWithArFailed)
   }
 
-  @Test def httpPostMethod(): Unit = {
-    checkServer(getVertx.createHttpServer(), regularRequestHandler) { c =>
+  def httpPostMethod()(implicit v: Vertx, c: Compression): Unit = {
+    checkServer(v.createHttpServer(), regularRequestHandler) { c =>
       c.post("/", correctHeadAndBodyHandler(c, testComplete)).end()
     }
   }
 
-  @Test def httpGetMethod(): Unit = {
-    checkServer(getVertx.createHttpServer(), regularRequestHandler) { c =>
+  def httpGetMethod()(implicit v: Vertx, c: Compression): Unit = {
+    checkServer(v.createHttpServer(), regularRequestHandler) { c =>
       c.get("/", correctHeadAndBodyHandler(c, testComplete)).end()
     }
   }
 
-  @Test def httpHeadMethod(): Unit = {
-    checkServer(getVertx.createHttpServer(), regularRequestHandler) { c =>
+  def httpHeadMethod()(implicit v: Vertx, c: Compression): Unit = {
+    checkServer(v.createHttpServer(), regularRequestHandler) { c =>
       c.head("/", correctHeadAndEmptyBodyHandler(c, testComplete)).end()
     }
   }
 
-  @Test def httpConnectMethod(): Unit = {
-    checkServer(getVertx.createHttpServer(), regularRequestHandler) { c =>
+  def httpConnectMethod()(implicit v: Vertx, c: Compression): Unit = {
+    checkServer(v.createHttpServer(), regularRequestHandler) { c =>
       c.connect("/", correctHeadAndEmptyBodyHandler(c, testComplete)).end()
     }
   }
 
-  @Test def httpGetRequestMethod(): Unit = headAndBodyRequest("GET")
-  @Test def httpPostRequestMethod(): Unit = headAndBodyRequest("POST")
-  @Test def httpPutRequestMethod(): Unit = headAndBodyRequest("PUT")
-  @Test def httpDeleteRequestMethod(): Unit = headAndBodyRequest("DELETE")
-  @Test def httpHeadRequestMethod(): Unit = headOnlyRequest("HEAD")
-  @Test def httpTraceRequestMethod(): Unit = headAndBodyRequest("TRACE")
-  @Test def httpConnectRequestMethod(): Unit = headOnlyRequest("CONNECT")
-  @Test def httpOptionsRequestMethod(): Unit = headAndBodyRequest("OPTIONS")
-  @Test def httpPatchRequestMethod(): Unit = headAndBodyRequest("PATCH")
+  def httpGetRequestMethod()(implicit v: Vertx, c: Compression): Unit = headAndBodyRequest("GET")
+  def httpPostRequestMethod()(implicit v: Vertx, c: Compression): Unit = headAndBodyRequest("POST")
+  def httpPutRequestMethod()(implicit v: Vertx, c: Compression): Unit = headAndBodyRequest("PUT")
+  def httpDeleteRequestMethod()(implicit v: Vertx, c: Compression): Unit = headAndBodyRequest("DELETE")
+  def httpHeadRequestMethod()(implicit v: Vertx, c: Compression): Unit = headOnlyRequest("HEAD")
+  def httpTraceRequestMethod()(implicit v: Vertx, c: Compression): Unit = headAndBodyRequest("TRACE")
+  def httpConnectRequestMethod()(implicit v: Vertx, c: Compression): Unit = headOnlyRequest("CONNECT")
+  def httpOptionsRequestMethod()(implicit v: Vertx, c: Compression): Unit = headAndBodyRequest("OPTIONS")
+  def httpPatchRequestMethod()(implicit v: Vertx, c: Compression): Unit = headAndBodyRequest("PATCH")
 
-  @Test def sendFile(): Unit = {
+  def sendFile()(implicit v: Vertx, c: Compression): Unit = {
     val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
-    checkServer(getVertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath)) { c =>
+    checkServer(v.createHttpServer(), _.response().sendFile(file.getAbsolutePath)) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(200, res.statusCode())
         val headers = res.headers()
@@ -108,10 +103,10 @@ trait HttpTestBase {
     }
   }
 
-  @Test def sendFileWithHandler(): Unit = {
+  def sendFileWithHandler()(implicit v: Vertx, c: Compression): Unit = {
     val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
     var sendComplete = false
-    checkServer(getVertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath, { res =>
+    checkServer(v.createHttpServer(), _.response().sendFile(file.getAbsolutePath, { res =>
       sendComplete = true
     } )) { c =>
       c.getNow("some-uri", { res =>
@@ -129,8 +124,8 @@ trait HttpTestBase {
     }
   }
 
-  @Test def sendFileNotFound(): Unit = {
-    checkServer(getVertx.createHttpServer(), _.response().sendFile("doesnotexist.html")) { c =>
+  def sendFileNotFound()(implicit v: Vertx, c: Compression): Unit = {
+    checkServer(v.createHttpServer(), _.response().sendFile("doesnotexist.html")) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(404, res.statusCode())
         assertTrue(res.headers().entryExists("content-type", _ == "text/html"))
@@ -142,9 +137,9 @@ trait HttpTestBase {
     }
   }
 
-  @Test def sendFileNotFoundWith404Page(): Unit = {
+  def sendFileNotFoundWith404Page()(implicit v: Vertx, c: Compression): Unit = {
     val (file, content) = generateFile("my-404-page.html", "<html><body>This is my 404 page</body></html>")
-    checkServer(getVertx.createHttpServer(),
+    checkServer(v.createHttpServer(),
       _.response().sendFile("doesnotexist.html", file.getAbsolutePath)
     ) { c =>
       c.getNow("some-uri", { res =>
@@ -158,9 +153,9 @@ trait HttpTestBase {
     }
   }
 
-  @Test def sendFileNotFoundWith404PageAndHandler(): Unit = {
+  def sendFileNotFoundWith404PageAndHandler()(implicit v: Vertx, c: Compression): Unit = {
     val (file, content) = generateFile("my-404-page.html", "<html><body>This is my 404 page</body></html>")
-    checkServer(getVertx.createHttpServer(),
+    checkServer(v.createHttpServer(),
       _.response().sendFile("doesnotexist.html", file.getAbsolutePath, { res =>
         assertTrue(res.succeeded())
         testComplete()
@@ -176,9 +171,9 @@ trait HttpTestBase {
     }
   }
 
-  @Test def sendFileOverrideHeaders(): Unit = {
+  def sendFileOverrideHeaders()(implicit v: Vertx, c: Compression): Unit = {
     val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
-    checkServer(getVertx.createHttpServer(),
+    checkServer(v.createHttpServer(),
       _.response().putHeader("Content-Type", "wibble").sendFile(file.getAbsolutePath)
     ) { c =>
       c.getNow("some-uri", { res =>
@@ -195,9 +190,9 @@ trait HttpTestBase {
     }
   }
 
-  @Test def formUploadAttributes(): Unit = {
+  def formUploadAttributes()(implicit v: Vertx, c: Compression): Unit = {
     val attributeCount = new AtomicInteger()
-    checkServer(getVertx.createHttpServer(), req =>
+    checkServer(v.createHttpServer(), req =>
       if (req.uri().startsWith("/form")) {
         req.response().setChunked(chunked = true)
         req.expectMultiPart(expect = true)
@@ -229,9 +224,9 @@ trait HttpTestBase {
     }
   }
 
-  @Test def formUploadAttributes2(): Unit = {
+  def formUploadAttributes2()(implicit v: Vertx, c: Compression): Unit = {
     val attributeCount = new AtomicInteger()
-    checkServer(getVertx.createHttpServer(), req =>
+    checkServer(v.createHttpServer(), req =>
       if (req.uri().startsWith("/form")) {
         req.response().setChunked(chunked = true)
         req.expectMultiPart(expect = true)
@@ -264,10 +259,10 @@ trait HttpTestBase {
     }
   }
 
-  @Test def formUploadFile(): Unit = {
+  def formUploadFile()(implicit v: Vertx, c: Compression): Unit = {
     val attributeCount = new AtomicInteger()
     val content = "Vert.x rocks!"
-    checkServer(getVertx.createHttpServer(), req =>
+    checkServer(v.createHttpServer(), req =>
       if (req.uri().startsWith("/form")) {
         req.response().setChunked(chunked = true)
         req.expectMultiPart(expect = true)
@@ -314,9 +309,9 @@ trait HttpTestBase {
     }
   }
 
-  @Test def sendFileMultipleOverrideHeaders(): Unit = {
+  def sendFileMultipleOverrideHeaders()(implicit v: Vertx, c: Compression): Unit = {
     val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
-    checkServer(getVertx.createHttpServer(),
+    checkServer(v.createHttpServer(),
       _.response().putHeader("ConTeNt-TypE", "wibble", "wibble2", "wibble3").sendFile(file.getAbsolutePath)
     ) { c =>
       c.getNow("some-uri", { res =>
@@ -334,7 +329,7 @@ trait HttpTestBase {
     }
   }
 
-  @Test def headerOverridesPossible(): Unit =  {
+  def headerOverridesPossible()(implicit v: Vertx, c: Compression): Unit =  {
     val serverHandler = { req: HttpServerRequest =>
       // assertThread()
       assertTrue(req.headers().entryExists("Host", _ == "localhost:4444"))
@@ -354,10 +349,10 @@ trait HttpTestBase {
       req.end()
     }
 
-    checkServer(getVertx.createHttpServer(), serverHandler)(clientHandler)
+    checkServer(v.createHttpServer(), serverHandler)(clientHandler)
   }
 
-  @Test def continue100Default(): Unit = {
+  def continue100Default()(implicit v: Vertx, c: Compression): Unit = {
     val buffer = generateRandomBuffer(1000)
 
     val serverHandler = { req: HttpServerRequest =>
@@ -387,10 +382,10 @@ trait HttpTestBase {
       ()
     }
 
-    checkServer(getVertx.createHttpServer(), serverHandler)(clientHandler)
+    checkServer(v.createHttpServer(), serverHandler)(clientHandler)
   }
 
-  @Test def continue100Handled(): Unit = {
+  def continue100Handled()(implicit v: Vertx, c: Compression): Unit = {
     val buffer = generateRandomBuffer(1000)
 
     val serverHandler: HttpServerRequest => Unit = { req =>
@@ -402,8 +397,7 @@ trait HttpTestBase {
       }
     }
 
-    // Define as val instead of def, otherwise some weird classMethod appears causing test timeouts
-    val clientHandler: HttpClient => Unit = { client =>
+    def clientHandler(client: HttpClient): Unit = {
       val req = client.get("some-uri", { res: HttpClientResponse =>
         res.endHandler {
           // assertThread()
@@ -420,17 +414,21 @@ trait HttpTestBase {
       req.sendHead()
     }
 
-    checkServer(getVertx.createHttpServer(), serverHandler)(clientHandler)
+    checkServer(v.createHttpServer(), serverHandler)(clientHandler)
   }
 
-  private def simpleRequest(fn: (HttpClient, () => Unit) => HttpClientResponse => Unit)(name: String): Unit = {
-    checkServer(getVertx.createHttpServer(), regularRequestHandler) { c =>
+  private def simpleRequest(fn: (HttpClient, () => Unit) => HttpClientResponse => Unit)(name: String)
+        (implicit v: Vertx, c: Compression): Unit = {
+    checkServer(v.createHttpServer(), regularRequestHandler) { c =>
       c.request(name, "/", fn(c, testComplete)).end()
     }
   }
 
-  private def headAndBodyRequest(name: String): Unit = simpleRequest(correctHeadAndBodyHandler)(name)
-  private def headOnlyRequest(name: String): Unit = simpleRequest(correctHeadAndEmptyBodyHandler)(name)
+  private def headAndBodyRequest(name: String)(implicit v: Vertx, c: Compression): Unit =
+      simpleRequest(correctHeadAndBodyHandler)(name)
+
+  private def headOnlyRequest(name: String)(implicit v: Vertx, c: Compression): Unit =
+    simpleRequest(correctHeadAndEmptyBodyHandler)(name)
 
   private def regularRequestHandler: HttpServerRequest => Unit = { req =>
     req.response().end(html)
@@ -460,13 +458,14 @@ trait HttpTestBase {
     }).apply(resp): Unit
   }
 
-  protected def checkServer(server: => HttpServer, req: HttpServerRequest => Unit)(fn: HttpClient => Unit) = {
+  def checkServer(server: => HttpServer, req: HttpServerRequest => Unit)(fn: HttpClient => Unit)
+        (implicit v: Vertx, c: Compression) = {
     val localServer = server // on purpose, call by-name function to create server
-    localServer.setCompressionSupported(compressionSupported = compression)
+    localServer.setCompressionSupported(compressionSupported = c.enabled())
     localServer.requestHandler(req)
     localServer.listen(testPort, { res =>
       if (res.succeeded()) {
-        val client = getVertx.createHttpClient().setPort(testPort).setTryUseCompression(compression)
+        val client = v.createHttpClient().setPort(testPort).setTryUseCompression(c.enabled())
         // assertThread()
         fn(client)
       } else {
