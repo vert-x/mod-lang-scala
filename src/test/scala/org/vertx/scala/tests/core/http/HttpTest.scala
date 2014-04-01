@@ -398,7 +398,8 @@ class HttpTest extends TestVerticle {
       }
     }
 
-    def clientHandler(client: HttpClient): Unit = {
+    // Define as val instead of def, otherwise some weird classMethod appears causing test timeouts
+    val clientHandler: HttpClient => Unit = { client =>
       val req = client.get("some-uri", { res: HttpClientResponse =>
         res.endHandler {
           assertThread()
