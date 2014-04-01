@@ -62,9 +62,16 @@ repositories {
 
 dependencies {
   provided "io.vertx:vertx-core:$vertxVersion"
-  provided "io.vertx:vertx-platform:$vertxVersion"
-  provided "junit:junit:$junitVersion"
-  provided "io.vertx:testtools:$toolsVersion"
+  provided "io.vertx:vertx-platform:$vertxVersion" , {
+    exclude group: "io.vertx", module: "vertx-core"
+  }
+  provided "junit:junit:$junitVersion" , {
+    exclude group: "org.hamcrest"
+  }
+  provided "io.vertx:testtools:$toolsVersion"  , {
+    exclude group: "io.vertx"
+    exclude group: "junit"
+  }
 }
 
 // This sets up the classpath for the script itself
