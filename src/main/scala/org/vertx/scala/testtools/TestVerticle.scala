@@ -53,9 +53,6 @@ abstract class TestVerticle extends Verticle {
   protected final def startTests() {
     val methodName = container.config().getString("methodName")
     try {
-      if (methodName == "classMethod")
-        println("`classMethod` coming from container.config().getString(\"methodName\"), why??")
-
       val m = findMethod(getClass, methodName)
       m.invoke(this)
     } catch {
@@ -80,13 +77,16 @@ abstract class TestVerticle extends Verticle {
 
   def findMethod(clazz: Class[_], methodName: String): Method = {
     try {
+      logger.info(s"Find method '$methodName' in $clazz")
       clazz.getDeclaredMethod(methodName)
     } catch {
       case e: NoSuchMethodException =>
         if ((clazz == classOf[AnyRef]) || clazz.isInterface)
           throw e
 
-        findMethod(clazz.getSuperclass, methodName)
+        val superclass = clazz.getSuperclass
+        logger.info(s"Method not found, try super-class $superclass")
+        findMethod(superclass, methodName)
     }
   }
 
