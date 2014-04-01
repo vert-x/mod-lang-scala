@@ -53,6 +53,9 @@ abstract class TestVerticle extends Verticle {
   protected final def startTests() {
     val methodName = container.config().getString("methodName")
     try {
+      if (methodName == "classMethod")
+        println("`classMethod` coming from container.config().getString(\"methodName\"), why??")
+
       val m = findMethod(getClass, methodName)
       m.invoke(this)
     } catch {
