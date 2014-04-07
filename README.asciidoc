@@ -63,7 +63,7 @@ implementation, follow these instructions:
 the Vert.x Scala version to test:
 +
 ...............................................................................
-scala=io.vertx~lang-scala~X.Y.Z:org.vertx.scala.platform.impl.ScalaVerticleFactory
+scala=io.vertx~lang-scala~1.0.0:org.vertx.scala.platform.impl.ScalaVerticleFactory
 ...............................................................................
 +
 
