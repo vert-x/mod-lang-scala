@@ -15,20 +15,17 @@
  */
 package org.vertx.scala.tests.plattform.impl
 
-import org.vertx.scala.platform.Verticle
-import org.vertx.scala.testtools.TestVerticle
-import org.vertx.scala.tests.lang.VerticleClass
-import org.vertx.scala.core.json.Json
+import java.net.{URLClassLoader, URL}
 import org.hamcrest.Matchers.startsWith
+import org.junit.Assert._
 import org.junit.{After, Before, Test}
 import org.vertx.java.platform.{PlatformManager, PlatformLocator}
-import org.vertx.scala.core.FunctionConverters._
-import java.net.{URLClassLoader, URL}
-import scala.collection.mutable
 import org.vertx.scala.core.AsyncResult
-import scala.concurrent.{Await, Promise}
+import org.vertx.scala.core.FunctionConverters._
+import org.vertx.scala.tests.lang.VerticleClass
+import scala.collection.mutable
 import scala.concurrent.duration._
-import org.junit.Assert._
+import scala.concurrent.{Await, Promise}
 
 /**
  * @author Galder Zamarreño
@@ -49,11 +46,12 @@ class SystemPropertyDefaultLangOverrideTest {
 
   @Test def testDeployVerticle(): Unit = {
     val p = Promise[String]()
-    mgr.deployVerticle(classOf[VerticleClass].getName, null, findURLs().orNull, 1, null, { res: AsyncResult[String] =>
-      if (res.succeeded()) p.success(res.result())
-      else p.failure(res.cause())
-      ()
-    })
+
+    val handler: AsyncResult[String] => Unit = { res =>
+      if (res.succeeded()) p.success(res.result()) else p.failure(res.cause())
+    }
+
+    mgr.deployVerticle(classOf[VerticleClass].getName, null, findURLs().orNull, 1, null, handler)
     assertThat(Await.result(p.future, 10 second), startsWith("deployment-"))
   }
 

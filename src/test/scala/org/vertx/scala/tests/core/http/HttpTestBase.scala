@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import org.vertx.scala.core.buffer.Buffer
 import java.net.URLEncoder
 import org.vertx.scala.core.Vertx
+import scala.concurrent.{Await, Promise}
+import scala.concurrent.duration._
 
 /**
  * @author Galder Zamarreño
@@ -155,17 +157,20 @@ object HttpTestBase {
 
   def sendFileNotFoundWith404PageAndHandler()(implicit v: Vertx, c: Compression): Unit = {
     val (file, content) = generateFile("my-404-page.html", "<html><body>This is my 404 page</body></html>")
+    val sendFileHandlerPromise = Promise[Boolean]()
     checkServer(v.createHttpServer(),
       _.response().sendFile("doesnotexist.html", file.getAbsolutePath, { res =>
-        assertTrue(res.succeeded())
-        testComplete()
+        if (res.succeeded()) sendFileHandlerPromise.success(res.succeeded())
+        else sendFileHandlerPromise.failure(res.cause())
       })
     ) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(404, res.statusCode())
-        assertEquals("text/html", res.headers().get("content-type"))
+        assertTrue(res.headers().entryExists("content-type", _ == "text/html"))
         res.bodyHandler { buff =>
           assertEquals(content, buff.toString())
+          assertTrue(Await.result(sendFileHandlerPromise.future, 10 second))
+          testComplete()
         }
       })
     }
