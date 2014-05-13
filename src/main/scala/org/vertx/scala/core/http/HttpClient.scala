@@ -216,6 +216,9 @@ final class HttpClient private[scala] (val asJava: JHttpClient) extends Self
    * This method returns an [[org.vertx.scala.core.http.HttpClientRequest]] instance which represents an HTTP request with the specified `uri`.
    * The specific HTTP method (e.g. GET, POST, PUT etc) is specified using the parameter `method`<p>
    * When an HTTP response is received from the server the `responseHandler` is called passing in the response.
+   *
+   * Because of the nature of CONNECT, the connection is automatically upgraded to raw TCP if a response code of 200 is received from the
+   * remote peer. In this case you are able to get hold of the raw TCP socket via calling {@link HttpClientResponse#netSocket()}.
    */
   def request(method: String, uri: String, responseHandler: HttpClientResponse => Unit): HttpClientRequest =
     HttpClientRequest(asJava.request(method, uri, httpClientResponseFnConverter(responseHandler)))
