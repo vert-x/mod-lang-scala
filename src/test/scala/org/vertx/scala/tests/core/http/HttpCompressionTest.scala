@@ -10,7 +10,7 @@ final class HttpCompressionTest extends HttpTestBase {
 
   @Test override def sendFile(): Unit = {
     val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
-    checkServer(vertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath)) { c =>
+    withClient(vertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath)) { c =>
       c.getNow("some-uri", { res =>
         assertEquals(200, res.statusCode())
         assertTrue(res.headers().entryExists("content-type", _ == "text/html"))
@@ -26,7 +26,7 @@ final class HttpCompressionTest extends HttpTestBase {
   @Test override def sendFileWithHandler(): Unit = {
     val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
     var sendComplete = false
-    checkServer(vertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath, { res =>
+    withClient(vertx.createHttpServer(), _.response().sendFile(file.getAbsolutePath, { res =>
       sendComplete = true
     } )) { c =>
       c.getNow("some-uri", { res =>
@@ -44,7 +44,7 @@ final class HttpCompressionTest extends HttpTestBase {
 
   @Test override def sendFileOverrideHeaders(): Unit = {
     val (file, content) = generateRandomContentFile("test-send-file.html", 10000)
-    checkServer(vertx.createHttpServer(),
+    withClient(vertx.createHttpServer(),
       _.response().putHeader("Content-Type", "wibble").sendFile(file.getAbsolutePath)
     ) { c =>
       c.getNow("some-uri", { res =>
