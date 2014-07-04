@@ -180,6 +180,20 @@ class ScalaBusModTest extends TestVerticle {
   }
 
   @Test
+  def replyBackAndForthWithError(): Unit = {
+    vertx.eventBus.send(address, Json.obj("action" -> "reply-error-ok", "echo" -> "bla"), { msg: Message[JsonObject] =>
+      assertEquals("error", msg.body.getString("status"))
+      msg.reply(Json.obj("action" -> "please", "echo" -> "bla"), {
+        msg: Message[JsonObject] =>
+          assertThread()
+          assertEquals("ok", msg.body.getString("status"))
+          assertEquals("bla", msg.body.getString("echo"))
+          testComplete()
+      })
+    })
+  }
+
+  @Test
   def replyTimeout(): Unit = {
     val timeAtStart = System.currentTimeMillis()
     val randomAddress = java.util.UUID.randomUUID().toString()

@@ -38,8 +38,7 @@ case class Ok(x: JsonObject = Json.obj(), replyHandler: Option[ReplyReceiver] = 
   def toJson = x.putString("status", "ok")
 }
 
-case class Error(message: String, id: String = "MODULE_EXCEPTION", obj: JsonObject = Json.obj()) extends SyncReply {
-  val replyHandler = None
+case class Error(message: String, id: String = "MODULE_EXCEPTION", obj: JsonObject = Json.obj(), replyHandler: Option[ReplyReceiver] = None) extends SyncReply {
   def toJson = Json.obj("status" -> "error", "message" -> message, "error" -> id).mergeIn(obj)
 }
 

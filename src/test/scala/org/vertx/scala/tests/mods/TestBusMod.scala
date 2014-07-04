@@ -74,6 +74,10 @@ class TestBusMod extends Verticle with ScalaBusMod {
       }, 500L, { () =>
         vertx.eventBus.send(clientAddress, Json.obj("state" -> "timeout"))
       })))
+    case "reply-error-ok" =>
+      Error("no.", replyHandler = Some(Receiver(msg => {
+        case "please" => Ok(Json.obj("echo" -> msg.body.getString("echo")))
+      })))
     case "no-direct-reply" =>
       val clientAddress = msg.body.getString("address")
       vertx.eventBus.send(clientAddress, Json.obj("echo" -> msg.body.getString("echo")))
