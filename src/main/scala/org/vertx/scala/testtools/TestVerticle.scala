@@ -77,7 +77,6 @@ abstract class TestVerticle extends Verticle {
 
   def findMethod(clazz: Class[_], methodName: String): Method = {
     try {
-      logger.info(s"Find method '$methodName' in $clazz")
       clazz.getDeclaredMethod(methodName)
     } catch {
       case e: NoSuchMethodException =>

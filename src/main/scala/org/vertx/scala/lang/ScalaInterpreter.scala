@@ -4,7 +4,6 @@ import java.io.{ File, PrintWriter }
 import scala.annotation.tailrec
 import scala.io.Source
 import scala.reflect.internal.util.BatchSourceFile
-import scala.reflect.io.Path.jfile2path
 import scala.reflect.io.PlainFile
 import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.{ IMain, NamedParam }
@@ -41,18 +40,16 @@ class ScalaInterpreter(
   def runScript(script: URL): Try[Unit] = {
     val content = Source.fromURL(script).mkString
     val ops = List(
-      () => addImports(
-        "org.vertx.scala._",
-        "org.vertx.scala.core._",
-        "org.vertx.scala.core.buffer._",
-        "org.vertx.scala.core.dns._",
-        "org.vertx.scala.core.eventbus._",
-        "org.vertx.scala.core.file._",
-        "org.vertx.scala.core.http._",
-        "org.vertx.scala.core.json._",
-        "org.vertx.scala.core.net._",
-        "org.vertx.scala.core.streams._"
-      ),
+      () => addImport("org.vertx.scala._"),
+      () => addImport("org.vertx.scala.core._"),
+      () => addImport("org.vertx.scala.core.buffer._"),
+      () => addImport("org.vertx.scala.core.dns._"),
+      () => addImport("org.vertx.scala.core.eventbus._"),
+      () => addImport("org.vertx.scala.core.file._"),
+      () => addImport("org.vertx.scala.core.http._"),
+      () => addImport("org.vertx.scala.core.json._"),
+      () => addImport("org.vertx.scala.core.net._"),
+      () => addImport("org.vertx.scala.core.streams._"),
       () => bind("vertx", "org.vertx.scala.core.Vertx", vertx),
       () => bind("container", "org.vertx.scala.platform.Container", container),
       () => interpret(content)
@@ -65,10 +62,8 @@ class ScalaInterpreter(
     }
   }
 
-  private def addImports(ids: String*): Result =
-    verboseOrQuiet(
-      interpreter.addImports(ids: _*),
-      interpreter.quietImport(ids: _*))
+  private def addImport(id: String): Result =
+    interpret("import " + id)
 
   private def bind(name: String, boundType: String, value: Any): Result =
     verboseOrQuiet(
@@ -85,7 +80,7 @@ class ScalaInterpreter(
   }
 
   def compileClass(classFile: File): Try[ClassLoader] = {
-    val source = new BatchSourceFile(PlainFile.fromPath(classFile))
+    val source = new BatchSourceFile(new PlainFile(classFile))
     val result = interpreter.compileSources(source)
     if (result)
       Success(interpreter.classLoader)

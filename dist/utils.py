@@ -356,13 +356,13 @@ class DryRunUploader(DryRun):
 
 def build_publish(settings):
     """Builds the distribution in the current working dir"""
-    sbt_commands = [['clean', "install"]]
+    sbt_commands = [['clean', '+ package']]
     if not settings.dry_run:
-        sbt_commands.append(['uploadArchives'])
+        sbt_commands.append(['publish-signed'])
 
     for c in sbt_commands:
-        c.insert(0, './gradlew')
-        prettyprint("Execute Gradle command %s" % c, Levels.DEBUG)
+        c.insert(0, 'sbt')
+        prettyprint("Execute SBT command %s" % c, Levels.DEBUG)
         subprocess.check_call(c)
 
 
