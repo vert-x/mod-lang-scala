@@ -22,3 +22,4 @@ bin
 build
 *.pyc
 mods
+target
