@@ -145,9 +145,11 @@ class ScalaBusModTest extends TestVerticle {
     val i = new AtomicInteger(2)
     vertx.eventBus.registerHandler(randomAddress, { msg: Message[JsonObject] =>
       assertThread()
+      logger.info(s"in registerHandler handler at ${System.currentTimeMillis()}")
       assertEquals("bla", msg.body.getString("echo"))
       if (i.decrementAndGet() == 0) {
-        testComplete()
+        logger.info(s"in registerHandler decrement at ${System.currentTimeMillis()}")
+        fail("The timeout handler should have been evaluated later.")
       }
     })
 
@@ -155,9 +157,13 @@ class ScalaBusModTest extends TestVerticle {
       "address" -> randomAddress, "echo" -> "bla"),
       500L, { ar: AsyncResult[Message[JsonObject]] =>
         assertThread()
+        logger.info(s"in sendWithTimeout handler at ${System.currentTimeMillis()}")
         assertTrue("Should fail because of timeout", ar.failed())
         if (i.decrementAndGet() == 0) {
           testComplete()
+        } else {
+          logger.info(s"in sendWithTimeout decrement at ${System.currentTimeMillis()}")
+          fail("The handler that doesn't send a reply should have been evaluated first.")
         }
       })
   }
