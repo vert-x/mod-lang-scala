@@ -8,7 +8,8 @@ object VertxScalaBuild extends Build {
     name                := "lang-scala",
     version             := "1.0.1-SNAPSHOT",
     scalaVersion        := "2.10.4",
-    crossScalaVersions  := Seq("2.10.4", "2.11.1")
+    crossScalaVersions  := Seq("2.10.4", "2.11.1"),
+    description         := "Vert.x module that provides Scala support"
   )
 
   lazy val project = Project (
@@ -41,7 +42,6 @@ object VertxScalaBuild extends Build {
           Some("Sonatype Releases"  at sonatype + "service/local/staging/deploy/maven2")
       },
       pomExtra :=
-        <description>Vert.x module that provides Scala support</description>
         <inceptionYear>2013</inceptionYear>
         <url>http://vertx.io</url>
         <licenses>
