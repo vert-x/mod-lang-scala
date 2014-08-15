@@ -30,12 +30,13 @@ def help_and_exit():
         
 %s        Usage:%s
         
-            $ bin/release.py <mod-lang-scala-version>
+            $ bin/release.py <mod-lang-scala-version> <branch to tag from>
             
 %s        E.g.,%s
         
-            $ bin/release.py 0.1.0 %s<-- this will tag off master.%s
-            
+            $ bin/release.py 1.0.0 %s<-- this will tag off master.%s
+            $ bin/release.py 1.0.1 1.0.x %s<-- this will tag off 1.0.x.%s
+
     ''' % (
     Colors.yellow(), Colors.end_color(), Colors.yellow(), Colors.end_color(),
     Colors.green(), Colors.end_color()),
@@ -130,6 +131,9 @@ def release():
 
     base_dir = os.getcwd()
     branch = "master"
+
+    if len(sys.argv) > 2:
+        branch = sys.argv[2]
 
     next_version = settings.next_version
     if next_version is None:
