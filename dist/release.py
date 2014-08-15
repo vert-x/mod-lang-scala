@@ -20,8 +20,8 @@ except:
 modules = []
 uploader = None
 git = None
-gradle_version_exprs = '\s*version=', 'version=%s\n'
-vertx_version_exprs = '\s*scala=', 'scala=io.vertx~lang-scala~%s:org.vertx.scala.platform.impl.ScalaVerticleFactory\n'
+sbt_version_exprs = '\s*version             := ', '    version             := \"%s\",\n'
+vertx_version_exprs = '\s*scala=', 'scala=io.vertx~lang-scala_2.10~%s:org.vertx.scala.platform.impl.ScalaVerticleFactory\n'
 
 
 def help_and_exit():
@@ -67,7 +67,7 @@ def switch_to_tag_release(branch):
 def update_version(base_dir, version, next):
     os.chdir(base_dir)
     files = [
-        update_version_file(version, './gradle.properties', gradle_version_exprs),
+        update_version_file(version, './project/VertxScalaBuild.scala', sbt_version_exprs),
         update_version_file(version, './src/test/resources/langs.properties',vertx_version_exprs)
     ]
     if not next:
@@ -92,7 +92,7 @@ def update_version_file(version, file, exprs):
     finally:
         f_in.close()
         f_out.close()
-    # Rename back gradle properties file
+    # Rename back file
     os.rename(file + ".tmp", file)
     return file
 

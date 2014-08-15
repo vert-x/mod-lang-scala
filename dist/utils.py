@@ -356,7 +356,7 @@ class DryRunUploader(DryRun):
 
 def build_publish(settings):
     """Builds the distribution in the current working dir"""
-    sbt_commands = [['clean', '+ package']]
+    sbt_commands = [['clean', '+ package', '+ publishM2']]
     if not settings.dry_run:
         sbt_commands.append(['publish-signed'])
 
