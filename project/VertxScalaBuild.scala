@@ -83,7 +83,7 @@ object VertxScalaBuild extends Build {
           </developer>
         </developers>
     )
-  ).settings( addArtifact(Artifact("lang-scala", "zip", "zip"), zipMod).settings : _* )
+  ).settings( addArtifact(Artifact("lang-scala", "zip", "zip", "mod"), zipMod).settings : _* )
 
   val copyMod = TaskKey[Unit]("copy-mod", "Assemble the module into the local mods directory")
   val zipMod = TaskKey[File]("zip-mod", "Package the module .zip file")
