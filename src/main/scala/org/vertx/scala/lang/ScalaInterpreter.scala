@@ -6,7 +6,7 @@ import scala.io.Source
 import scala.reflect.internal.util.BatchSourceFile
 import scala.reflect.io.PlainFile
 import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.{ IMain, NamedParam }
+import scala.tools.nsc.interpreter.{NamedParamClass, IMain}
 import scala.tools.nsc.interpreter.Results.Result
 import scala.tools.nsc.interpreter.Results.{ Error => InterpreterError }
 import scala.tools.nsc.interpreter.Results.{ Incomplete => InterpreterIncomplete}
@@ -68,12 +68,12 @@ class ScalaInterpreter(
   private def bind(name: String, boundType: String, value: Any): Result =
     verboseOrQuiet(
       interpreter.bind(name, boundType, value),
-      interpreter.quietBind(NamedParam(name, boundType, value)))
+      interpreter.quietBind(NamedParamClass(name, boundType, value)))
 
   private def interpret(content: String): Result =
     verboseOrQuiet(
       interpreter.interpret(content),
-      interpreter.beSilentDuring(interpreter.interpret(content)))
+      interpreter.beQuietDuring(interpreter.interpret(content)))
 
   private def verboseOrQuiet(verbose: => Result, quiet: => Result): Result = {
     if (ScalaInterpreter.isVerbose) verbose else quiet

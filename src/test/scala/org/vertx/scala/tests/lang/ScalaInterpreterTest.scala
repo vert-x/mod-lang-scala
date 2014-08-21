@@ -1,15 +1,17 @@
 package org.vertx.scala.tests.lang
 
-import java.io.{File, Writer, StringWriter, PrintWriter}
-import org.junit.Test
-import org.vertx.scala.testtools.TestVerticle
+import java.io.{File, PrintWriter, StringWriter, Writer}
+
 import org.junit.Assert.fail
-import org.vertx.testtools.VertxAssert._
+import org.junit.Test
 import org.vertx.scala.lang.{ClassLoaders, ScalaInterpreter}
-import org.vertx.scala.platform.impl.ScalaVerticle
 import org.vertx.scala.platform.Verticle
+import org.vertx.scala.platform.impl.ScalaVerticle
+import org.vertx.scala.testtools.TestVerticle
+import org.vertx.testtools.VertxAssert._
+
 import scala.tools.nsc.Settings
-import scala.util.Try
+import scala.util.{Failure, Success}
 
 class ScalaInterpreterTest extends TestVerticle {
 
@@ -18,8 +20,13 @@ class ScalaInterpreterTest extends TestVerticle {
     val path = new File("src/test/scripts/VerticleScript.scala").toURI.toURL
     val out = new StringWriter()
     val interpreter = createInterpreter(out)
-    assertInterpret(out, interpreter.runScript(path))
-    assertHttpClientGetNow("Hello verticle script!")
+    interpreter.runScript(path) match {
+      case Success(s) =>
+        assertHttpClientGetNow("Hello verticle script!")
+      case Failure(ex) =>
+        println(out.toString)
+        fail(ex.toString)
+    }
   }
 
   @Test
@@ -40,12 +47,6 @@ class ScalaInterpreterTest extends TestVerticle {
     settings.usejavacp.value = true
     settings.verbose.value = ScalaInterpreter.isVerbose
     new ScalaInterpreter(settings, vertx, container, new PrintWriter(out))
-  }
-
-  private def assertInterpret(out: Writer, result: Try[_]) {
-    result.recover {
-      case _ => fail(out.toString)
-    }
   }
 
   private def assertHttpClientGetNow(expected: String) {
