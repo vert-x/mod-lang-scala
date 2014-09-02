@@ -140,21 +140,21 @@ class ScalaVerticleFactory extends VerticleFactory {
       case None =>
         Failure(new IllegalStateException("Unable to resolve mod-lang-scala root location"))
       case Some(loc) =>
-        settings.bootclasspath.append(loc)
+        settings.bootclasspath.append(loc.getAbsolutePath)
         settings.usejavacp.value = true
         settings.verbose.value = ScalaInterpreter.isVerbose
         Success(settings)
     }
   }
 
-  private def getRootModuleLocation: Option[String] = {
-    AccessController.doPrivileged(new PrivilegedAction[Option[String]]() {
-      def run(): Option[String] = {
+  private def getRootModuleLocation: Option[File] = {
+    AccessController.doPrivileged(new PrivilegedAction[Option[File]]() {
+      def run(): Option[File] = {
         for {
           pd <- Option(classOf[ScalaVerticleFactory].getProtectionDomain)
           cs <- Option(pd.getCodeSource)
           loc <- Option(cs.getLocation)
-        } yield loc.toExternalForm
+        } yield new File(loc.toURI)
       }
     })
   }
