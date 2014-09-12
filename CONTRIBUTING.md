@@ -10,6 +10,77 @@ wish to install Git, you can download source bundle
 Since this is a Scala language implementation for Vert.x, the code base is
 written in Scala.
 
+# Building and Testing
+Vert.x Scala uses SBT to build, test, package and publish itself. The key 
+aspect that Vert.x Scala benefits from SBT is the fact that it has excellent
+support for cross-compilation, allowing Vert.x Scala to build, test, package
+and publish jars cross-compiled with multiple Scala versions. This is crucial
+for Vert.x Scala users so that they get access to jars indepedent of the Scala
+version that they use.
+
+To get started with SBT, you need to [download SBT](http://www.scala-sbt.org/download.html), 
+put it somewhere in your environment and add the `bin/sbt` to your path.
+ 
+Here's a summary of the most commonly used commands to build Vert.x Scala:
+
+* `sbt clean` - Cleans the project
+* `sbt test` - Runs tests with the base Scala version
+* `sbt package` - Creates jars and language extension module with the base Scala version
+* `sbt publishM2` - Creates jars and language extension module with the base Scala version 
+and publishes them to the local Maven repository. This is a useful command for
+installing Vert.x with a locally built Vert.x Scala language extension.
+
+As mentioned earlier, a crucial aspect of SBT is the ability to do the full 
+build lifecycle with multiple Scala versions. This is very useful for example
+to make sure that code change works fine with all Scala versions. Here's a 
+brief guide to the useful cross-compilation commands:
+
+* `sbt +test` - Runs tests with the base and cross-compiled Scala versions
+* `sbt +publishM2` - Creates jars and language extension module with the both 
+base and cross-compiled Scala versions and publishes them to the local Maven repository. 
+This is a useful command for installing Vert.x with a locally built Vert.x 
+Scala language extensions.
+* `sbt +publishM2 +publish-signed` - Creates language extension modules in all
+Scala versions and publishes them to the remote Maven repository where published 
+Vert.x Scala jars are stored. Executing this command requires credentials from 
+[Sonatype](http://www.sonatype.org/) and 
+[some environment specific configuration](http://www.scala-sbt.org/0.13/docs/Using-Sonatype.html).
+
+# IDE integration
+Any Vert.x Scala user wanting to contribute or simply browse the code benefits
+from being able to load Vert.x Scala into an IDE. Here are some instructions 
+depending on your IDE of choice:
+
+## IntelliJ IDEA
+The primary way of loading Vert.x Scala into IntelliJ is by installing the 
+[SBT plugin](http://plugins.jetbrains.com/plugin/5007), restart Intellij, and 
+then clicking `Open...` and selecting the folder where a Vert.x Scala clone 
+lives. You can find more information about in the 
+[Getting Started with SBT in IntelliJ IDEA](http://confluence.jetbrains.com/display/IntelliJIDEA/Getting+Started+with+SBT) 
+guide.
+
+If the primary method fails to create a project which you can compile and test,
+there's a secondary method which involves using SBT command line to generate 
+IntelliJ IDEA project files:
+
+1. Go to [sbt-idea repository](https://github.com/mpeltonen/sbt-idea) and 
+follow the installation instructions. It is recommended that the SBT plugin 
+is installed in `~/.sbt/0.13/plugins/build.sbt` instead of in the Vert.x Scala 
+project itself.
+2. Go to root directory of the Vert.x Scala clone and execute: `sbt gen-idea`
+3. Start IntelliJ IDEA and open the project selecting the root directory of 
+the Vert.x Scala clone.
+
+## Eclipse
+To load Vert.x Scala into Eclipse, it's recommended that 
+[Scala IDE](http://scala-ide.org/index.html) is installed and then follow the 
+[Getting Started instructions](http://scala-ide.org/docs/user/gettingstarted.html)
+which include instructions on how to import an SBT project.
+
+Note that Vert.x Scala requires SBT `0.13.5` or higher, so when following the 
+instructions above, you'll need the [sbteclipse](https://github.com/typesafehub/sbteclipse)
+SBT plugin.
+
 # License
 mod-lang-scaa is licensed under the Apache License, Version 2.0 (the "License").
 A license header must be placed at the top of each file containing this
