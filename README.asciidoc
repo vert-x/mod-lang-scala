@@ -67,15 +67,25 @@ scala=io.vertx~lang-scala~X.Y.Z:org.vertx.scala.platform.impl.ScalaVerticleFacto
 ...............................................................................
 +
 
-
 Optionally, if you're testing a locally built Vert.x Scala extension, you'll
 need to do the following steps additionally:
 
-1. Clone the Vert.x Scala source repository
-2. Execute:
+1. Download latest http://www.scala-sbt.org/download.html[SBT release]
+2. Put `[SBT_HOME]/bin/sbt` or `[SBT_HOME]/bin/sbt.bar` into your path
+3. Clone the Vert.x Scala source repository
+4a. If you want build plugin with the base Scala version used (e.g. 2.10), execute:
 +
 ...............................................................................
-./gradlew clean install
-[VERTX_HOME]/bin/vertx install io.vertx~lang-scala~X.Y.Z
+$ sbt clean publishM2
+$ [VERTX_HOME]/bin/vertx install io.vertx~lang-scala_2.10~X.Y.Z
 ...............................................................................
 +
+4b. On the other hand, if you want build plugin with a cross compiled Scala version (e.g. 2.11), execute:
++
+...............................................................................
+$ sbt clean +publishM2
+$ [VERTX_HOME]/bin/vertx install io.vertx~lang-scala_2.11~X.Y.Z
+...............................................................................
++
+
+For more information on building Vert.x Scala, check the contributing guide.
