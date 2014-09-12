@@ -143,7 +143,7 @@ object VertxScalaBuild extends Build {
 
 object Dependencies {
   object Versions {
-    val vertxVersion            = "2.1.1"
+    val vertxVersion            = "2.1.2"
     val testtoolsVersion        = "2.0.3-final"
     val hamcrestVersion         = "1.3"
     val junitInterfaceVersion   = "0.10"
