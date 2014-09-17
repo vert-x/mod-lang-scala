@@ -11,8 +11,6 @@ import org.vertx.scala.core.VertxExecutionContext
 @RunWith(classOf[ScalaClassRunner])
 abstract class TestVerticle extends Verticle {
 
-  implicit val executionContext = VertxExecutionContext.fromVertxAccess(this)
-
   override final def start() {
     initialize()
     before()
