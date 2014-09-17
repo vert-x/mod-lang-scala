@@ -46,7 +46,7 @@ object VertxExecutionContext {
     override def reportFailure(t: Throwable): Unit =
       logger.error("Error executing Future in VertxExecutionContext", t)
     override def execute(runnable: Runnable): Unit =
-      vertx.runOnContext(runnable.run())
+      runnable.run()
   }
 
 }

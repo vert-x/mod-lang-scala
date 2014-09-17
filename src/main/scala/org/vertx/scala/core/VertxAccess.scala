@@ -12,4 +12,6 @@ trait VertxAccess {
   val vertx: Vertx
   val container: Container
   val logger: Logger
+
+  protected implicit val executionContext = VertxExecutionContext.fromVertx(vertx, logger)
 }
