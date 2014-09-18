@@ -6,7 +6,7 @@ object VertxScalaBuild extends Build {
   val baseSettings = Defaults.defaultSettings ++ Seq(
     organization        := "io.vertx",
     name                := "lang-scala",
-    version             := "1.1.0-SNAPSHOT",
+    version             := "1.1.0-M1",
     scalaVersion        := "2.10.4",
     crossScalaVersions  := Seq("2.10.4", "2.11.2"),
     description         := "Vert.x module that provides Scala support"
