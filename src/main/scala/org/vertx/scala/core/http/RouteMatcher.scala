@@ -66,6 +66,9 @@ class RouteMatcher private[scala] (val asJava: JRouteMatcher = new JRouteMatcher
   def headWithRegEx(regex: String, handler: HttpServerRequest => Unit): RouteMatcher =
     wrap(asJava.headWithRegEx(regex, wrapHandler(handler)))
 
+  def noMatch(handler: HttpServerRequest => Unit): RouteMatcher =
+    wrap(asJava.noMatch(wrapHandler(handler)))
+
   def options(uri: String, handler: HttpServerRequest => Unit): RouteMatcher =
     wrap(asJava.options(uri, wrapHandler(handler)))
 
