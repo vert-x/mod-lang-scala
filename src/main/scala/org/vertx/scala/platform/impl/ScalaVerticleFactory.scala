@@ -51,8 +51,6 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   private var loader: ClassLoader = null
 
-  //private var interpreter: ScalaInterpreter = null
-
   override def init(jvertx: JVertx, jcontainer: JContainer, aloader: ClassLoader): Unit = {
     this.loader = aloader
 
@@ -88,7 +86,6 @@ class ScalaVerticleFactory extends VerticleFactory {
   }
 
   def close(): Unit = {
-    //interpreter.close()
   }
 
   private def load(main: String): Try[Verticle] = {
