@@ -51,16 +51,13 @@ class ScalaVerticleFactory extends VerticleFactory {
 
   private var loader: ClassLoader = null
 
-  private var interpreter: ScalaInterpreter = null
+  //private var interpreter: ScalaInterpreter = null
 
   override def init(jvertx: JVertx, jcontainer: JContainer, aloader: ClassLoader): Unit = {
     this.loader = aloader
 
     vertx = Vertx(jvertx)
     container = new Container(jcontainer)
-    val settings = interpreterSettings()
-    interpreter = new ScalaInterpreter(
-        settings.get, vertx, container, new LogPrintWriter(logger))
   }
 
   @throws(classOf[Exception])
@@ -91,11 +88,16 @@ class ScalaVerticleFactory extends VerticleFactory {
   }
 
   def close(): Unit = {
-    interpreter.close()
+    //interpreter.close()
   }
 
   private def load(main: String): Try[Verticle] = {
-    runAsScript(main).recoverWith { case _ =>
+
+    val settings = interpreterSettings()
+    val interpreter = new ScalaInterpreter(
+      settings.get, vertx, container, new LogPrintWriter(logger))
+
+    runAsScript(main, interpreter).recoverWith { case _ =>
       // Recover by trying to compile it as a Scala class
       logger.info(s"Script contains compilation errors, or $main is a Scala class (pass -Dvertx.scala.interpreter.verbose=true to find out more)")
       logger.info(s"Compiling as a Scala class")
@@ -113,7 +115,7 @@ class ScalaVerticleFactory extends VerticleFactory {
     }
   }
 
-  private def runAsScript(main: String): Try[Verticle] = {
+  private def runAsScript(main: String, interpreter:ScalaInterpreter): Try[Verticle] = {
     logger.info(s"Compiling $main as Scala script")
     // Try running it as a script
     for {
