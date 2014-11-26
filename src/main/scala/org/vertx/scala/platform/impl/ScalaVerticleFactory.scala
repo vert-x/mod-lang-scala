@@ -94,21 +94,25 @@ class ScalaVerticleFactory extends VerticleFactory {
     val interpreter = new ScalaInterpreter(
       settings.get, vertx, container, new LogPrintWriter(logger))
 
-    runAsScript(main, interpreter).recoverWith { case _ =>
-      // Recover by trying to compile it as a Scala class
-      logger.info(s"Script contains compilation errors, or $main is a Scala class (pass -Dvertx.scala.interpreter.verbose=true to find out more)")
-      logger.info(s"Compiling as a Scala class")
+    try {
+      runAsScript(main, interpreter).recoverWith { case _ =>
+        // Recover by trying to compile it as a Scala class
+        logger.info(s"Script contains compilation errors, or $main is a Scala class (pass -Dvertx.scala.interpreter.verbose=true to find out more)")
+        logger.info(s"Compiling as a Scala class")
 
-      val className = extractClassName(main)
-      val classFile = getClassFile(main)
+        val className = extractClassName(main)
+        val classFile = getClassFile(main)
 
-      for {
-        classLoader <- interpreter.compileClass(classFile)
-        verticle <- newVerticleInstance(className, classLoader)
-      } yield {
-        logger.info(s"Starting $className")
-        verticle
+        for {
+          classLoader <- interpreter.compileClass(classFile)
+          verticle <- newVerticleInstance(className, classLoader)
+        } yield {
+          logger.info(s"Starting $className")
+          verticle
+        }
       }
+    } finally {
+      interpreter.close()
     }
   }
 
